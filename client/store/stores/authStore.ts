@@ -1,6 +1,7 @@
 import { EventEmitter } from "../../lib/EventEmitter";
 import dispatcher, { FluxAction } from "../dispatcher";
-import { AuthActionTypes, User } from "../actions/authActions";
+import { AuthActionTypes } from "../../store/constants/authConstants"
+import {  User } from "../actions/authActions";
 
 export interface AuthState {
   isAuthenticated: boolean;
@@ -11,10 +12,19 @@ export interface AuthState {
 
 class AuthStore extends EventEmitter {
   private state: AuthState = {
-    isAuthenticated: false,
+    isAuthenticated: !!localStorage.getItem("token"),
     isLoading: false,
-    user: null,
     error: null,
+    user: localStorage.getItem("token")
+      ? {
+          id: localStorage.getItem("dni") || "",
+          email: localStorage.getItem("email") || "",
+          name: localStorage.getItem("name") || "",
+          token: localStorage.getItem("token") || "",
+          admin: JSON.parse(localStorage.getItem("admin") || "false"),
+          url_image: localStorage.getItem("url_image") || "",
+        }
+      : null,
   };
 
   getState(): AuthState {

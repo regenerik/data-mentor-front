@@ -15,8 +15,14 @@ import {
     LogOut,
     Zap,
 } from "lucide-react";
+import {  authActions  } from "../store";
 
 export default function Dashboard() {
+
+    const handlerLogOut = () => {
+        authActions.logout()
+    }
+
     return (
         <div className="min-h-screen bg-background">
             {/* Sección principal */}
@@ -37,7 +43,7 @@ export default function Dashboard() {
                                 Análisis potenciado por IA
                             </span>
                         </div>
-                        <div className="inline-flex items-center gap-2 bg-primary/10 border border-primary/20 rounded-full px-4 py-2 mb-6 ml-4">
+                        <div onClick={handlerLogOut} className="inline-flex items-center gap-2 bg-primary/10 border border-primary/20 rounded-full px-4 py-2 mb-6 ml-4 cursor-pointer">
                             <LogOut className="h-4 w-4 text-primary" />
                             <span className="text-sm font-medium text-primary">
                                 Log-Out
