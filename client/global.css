@@ -1,0 +1,117 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  /**
+   * Tailwind CSS theme
+   * tailwind.config.ts expects the following color variables to be expressed as HSL values.
+   * A different format will require also updating the theme in tailwind.config.ts.
+  */
+  :root {
+    --background: 220 27% 7%;
+    --foreground: 210 40% 98%;
+
+    --card: 220 23% 11%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 220 23% 11%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 217 91% 60%;
+    --primary-foreground: 220 27% 7%;
+
+    --secondary: 220 15% 15%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 220 15% 15%;
+    --muted-foreground: 215 20% 65%;
+
+    --accent: 217 91% 60%;
+    --accent-foreground: 220 27% 7%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 220 15% 20%;
+    --input: 220 15% 15%;
+    --ring: 217 91% 60%;
+
+    --radius: 0.75rem;
+
+    --sidebar-background: 220 23% 11%;
+    --sidebar-foreground: 210 40% 98%;
+    --sidebar-primary: 217 91% 60%;
+    --sidebar-primary-foreground: 220 27% 7%;
+    --sidebar-accent: 220 15% 15%;
+    --sidebar-accent-foreground: 210 40% 98%;
+    --sidebar-border: 220 15% 20%;
+    --sidebar-ring: 217 91% 60%;
+
+    /* Futuristic cyber colors */
+    --cyber-50: 220 60% 95%;
+    --cyber-100: 220 60% 88%;
+    --cyber-200: 220 55% 78%;
+    --cyber-300: 220 50% 65%;
+    --cyber-400: 220 45% 50%;
+    --cyber-500: 220 40% 35%;
+    --cyber-600: 220 35% 25%;
+    --cyber-700: 220 30% 18%;
+    --cyber-800: 220 25% 12%;
+    --cyber-900: 220 27% 7%;
+
+    /* Neon accent colors */
+    --neon-blue: 217 91% 60%;
+    --neon-purple: 271 81% 56%;
+    --neon-green: 142 76% 36%;
+    --neon-pink: 322 81% 56%;
+  }
+
+  .dark {
+    --background: 220 27% 7%;
+    --foreground: 210 40% 98%;
+
+    --card: 220 23% 11%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 220 23% 11%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 217 91% 60%;
+    --primary-foreground: 220 27% 7%;
+
+    --secondary: 220 15% 15%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 220 15% 15%;
+    --muted-foreground: 215 20% 65%;
+
+    --accent: 217 91% 60%;
+    --accent-foreground: 220 27% 7%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 220 15% 20%;
+    --input: 220 15% 15%;
+    --ring: 217 91% 60%;
+    --sidebar-background: 220 23% 11%;
+    --sidebar-foreground: 210 40% 98%;
+    --sidebar-primary: 217 91% 60%;
+    --sidebar-primary-foreground: 220 27% 7%;
+    --sidebar-accent: 220 15% 15%;
+    --sidebar-accent-foreground: 210 40% 98%;
+    --sidebar-border: 220 15% 20%;
+    --sidebar-ring: 217 91% 60%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
