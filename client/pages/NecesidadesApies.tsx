@@ -174,6 +174,10 @@ export default function NecesidadesApies() {
   const progressRef = useRef<HTMLDivElement | null>(null);
   const downloadButtonRef = useRef<HTMLButtonElement | null>(null);
 
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "auto" });
+  }, []);
+
   return (
     <div className="min-h-screen bg-background">
       <div className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-10">

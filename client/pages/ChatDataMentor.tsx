@@ -62,6 +62,10 @@ export default function ChatDataMentor() {
     }, 2000);
   };
 
+    useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "auto" });
+  }, []);
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
