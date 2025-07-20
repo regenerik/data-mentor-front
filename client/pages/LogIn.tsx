@@ -91,19 +91,19 @@ export default function LogIn() {
       <div className="relative z-10 w-full max-w-md mx-auto px-4 mb-6">
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center gap-2 bg-primary/10 border border-primary/20 rounded-full px-4 py-2 mb-6">
+          <div className="inline-flex items-center gap-2 bg-primary/10 border border-primary/20 rounded-full px-4 py-2 mb-6 mt-4">
             <Brain className="h-4 w-4 text-primary" />
             <span className="text-sm font-medium text-primary">
-              Secure Access Portal
+              Portal de Acceso Seguro
             </span>
           </div>
 
           <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent mb-3">
-            Welcome to Data Mentor
+            Bienvenid@ a Data Mentor
           </h1>
 
           <p className="text-muted-foreground">
-            Please log in first to access your analytics dashboard
+            Por favor, primero logueate para acceder al dashboard analytics de Data Mentor Tools
           </p>
         </div>
 
@@ -117,10 +117,10 @@ export default function LogIn() {
               <Lock className="h-6 w-6 text-primary" />
             </div>
             <CardTitle className="text-xl font-semibold text-foreground">
-              Secure Login
+              Login Seguro
             </CardTitle>
             <CardDescription className="text-muted-foreground">
-              Enter your credentials to access the platform
+              Proporcioná tus credenciales para acceder a la plataforma
             </CardDescription>
           </CardHeader>
 
@@ -129,14 +129,14 @@ export default function LogIn() {
               {/* Email Field */}
               <div className="space-y-2">
                 <Label htmlFor="email" className="text-foreground font-medium">
-                  Email Address
+                  Dirección de Email
                 </Label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
                     id="email"
                     type="email"
-                    placeholder="your.email@example.com"
+                    placeholder="tu.email@ejemplo.com"
                     value={credentials.email}
                     onChange={(e) => handleInputChange("email", e.target.value)}
                     className="pl-10 bg-background/50 border-border/50 focus:border-primary/50 transition-colors"
@@ -152,14 +152,14 @@ export default function LogIn() {
                   htmlFor="password"
                   className="text-foreground font-medium"
                 >
-                  Password
+                  Contraseña
                 </Label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
                     id="password"
                     type="password"
-                    placeholder="Enter your password"
+                    placeholder="Ingresa acá tu contraseña"
                     value={credentials.password}
                     onChange={(e) =>
                       handleInputChange("password", e.target.value)
@@ -200,7 +200,7 @@ export default function LogIn() {
                   ) : (
                     <>
                       <Zap className="h-4 w-4" />
-                      Access Dashboard
+                      Acceder al Dashboard
                     </>
                   )}
                 </div>
@@ -209,7 +209,7 @@ export default function LogIn() {
               {/* Demo Credentials */}
               <div className="text-center">
                 <p className="text-xs text-muted-foreground">
-                  Demo: Use any email and password to proceed
+                  Para obtener sus credenciales contacte al administrador.
                 </p>
               </div>
             </form>
@@ -234,7 +234,7 @@ export default function LogIn() {
                   style={{ animationDelay: "300ms" }}
                 ></div>
               </div>
-              <span>Connecting to secure servers...</span>
+              <span>Conectando a servidor seguro...</span>
             </div>
           </div>
         )}
