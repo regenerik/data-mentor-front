@@ -110,7 +110,7 @@ export default function NecesidadesApies() {
     setIsCompleted(false);
     setPorcentaje(0);
 
-    fetch("http://localhost:5000/comentarios_necesidades_final", {
+    fetch("https://repomatic-turbo.onrender.com/comentarios_necesidades_final", {
       method: "POST",
       body: formData,
     })
@@ -144,7 +144,7 @@ export default function NecesidadesApies() {
     // }
 
     try {
-      const response = await fetch(`http://localhost:5000/comentarios_resultado/1`, {
+      const response = await fetch(`https://repomatic-turbo.onrender.com/comentarios_resultado/1`, {
         method: "GET",
       });
 
