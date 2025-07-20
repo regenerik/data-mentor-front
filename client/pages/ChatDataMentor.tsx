@@ -18,12 +18,13 @@ export default function ChatDataMentor() {
       id: "1",
       type: "bot",
       content:
-        "¡Hola! Soy tu Mentor de Datos. Puedo ayudarte a analizar información, generar ideas y responder preguntas sobre tus conjuntos de datos. ¿En qué puedo ayudarte hoy?",
+        "¡Hola! Soy tu Mentor de Datos. ¿En qué puedo ayudarte hoy?",
       timestamp: new Date(),
     },
   ]);
   const [inputValue, setInputValue] = useState("");
   const [isTyping, setIsTyping] = useState(false);
+  const [threadId, setThreadId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -48,21 +49,47 @@ export default function ChatDataMentor() {
     setInputValue("");
     setIsTyping(true);
 
-    // Simulate bot response
-    setTimeout(() => {
-      const botMessage: Message = {
-        id: (Date.now() + 1).toString(),
+    try {
+      const response = await fetch("https://repomatic-turbo.onrender.com/chat_mentor", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: "1803-1989-1803-1989",
+        },
+        body: JSON.stringify({
+          prompt: inputValue,
+          ...(threadId && { thread_id: threadId }),
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setThreadId(data.thread_id);
+        const botMessage: Message = {
+          id: Date.now().toString() + "-bot",
+          type: "bot",
+          content: data.response || "No se obtuvo respuesta del asistente.",
+          timestamp: new Date(),
+        };
+        setMessages((prev) => [...prev, botMessage]);
+      } else {
+        throw new Error(data.error || "Error desconocido");
+      }
+    } catch (error: any) {
+      const errorMsg: Message = {
+        id: Date.now().toString() + "-err",
         type: "bot",
-        content:
-          "Entiendo que buscás ayuda con análisis de datos. Aunque esta es una interfaz de demostración, en una implementación real me conectaría con modelos de IA avanzados para darte respuestas detalladas sobre tus consultas.",
+        content: `⚠️ Error: ${error.message}`,
         timestamp: new Date(),
       };
-      setMessages((prev) => [...prev, botMessage]);
+      setMessages((prev) => [...prev, errorMsg]);
+    } finally {
       setIsTyping(false);
-    }, 2000);
+    }
   };
 
-    useEffect(() => {
+  useEffect(() => {
     window.scrollTo({ top: 0, behavior: "auto" });
   }, []);
 
@@ -71,10 +98,7 @@ export default function ChatDataMentor() {
       {/* Header */}
       <div className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-10">
         <div className="container mx-auto px-4 py-4 flex items-center gap-4">
-          <Link
-            to="/"
-            className="text-muted-foreground hover:text-foreground transition-colors"
-          >
+          <Link to="/" className="text-muted-foreground hover:text-foreground transition-colors">
             <ArrowLeft className="h-5 w-5" />
           </Link>
           <div className="flex items-center gap-3">
@@ -82,9 +106,7 @@ export default function ChatDataMentor() {
               <Bot className="h-5 w-5 text-primary" />
             </div>
             <div>
-              <h1 className="text-xl font-semibold text-foreground">
-                Mentor de Datos
-              </h1>
+              <h1 className="text-xl font-semibold text-foreground">Mentor de Datos</h1>
               <p className="text-sm text-muted-foreground">
                 Asistente de análisis de datos con IA
               </p>
@@ -138,18 +160,9 @@ export default function ChatDataMentor() {
                   </div>
                   <div className="max-w-[80%] rounded-xl px-4 py-3 bg-muted">
                     <div className="flex gap-1">
-                      <div
-                        className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce"
-                        style={{ animationDelay: "0ms" }}
-                      ></div>
-                      <div
-                        className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce"
-                        style={{ animationDelay: "150ms" }}
-                      ></div>
-                      <div
-                        className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce"
-                        style={{ animationDelay: "300ms" }}
-                      ></div>
+                      <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" />
+                      <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
+                      <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
                     </div>
                   </div>
                 </div>
@@ -166,12 +179,9 @@ export default function ChatDataMentor() {
                 onChange={(e) => setInputValue(e.target.value)}
                 placeholder="Preguntame lo que quieras sobre tus datos..."
                 className="flex-1 bg-background"
-                onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
+                onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
               />
-              <Button
-                onClick={handleSendMessage}
-                disabled={!inputValue.trim() || isTyping}
-              >
+              <Button onClick={handleSendMessage} disabled={!inputValue.trim() || isTyping}>
                 <Send className="h-4 w-4" />
               </Button>
             </div>
