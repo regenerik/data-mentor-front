@@ -52,7 +52,7 @@ export default function NecesidadesApies() {
     if (!isProcessing || !procesoId) return;
 
     const interval = setInterval(() => {
-      fetch(`http://localhost:5000/progreso/${procesoId}`)
+      fetch(`https://repomatic-turbo.onrender.com/progreso/${procesoId}`)
         .then((res) => res.json())
         .then((data) => {
           setPorcentaje(data.porcentaje);
