@@ -119,7 +119,7 @@ export default function ChatDataMentor() {
       <div className="container mx-auto px-4 py-6 max-w-4xl">
         <div className="bg-card border border-border rounded-xl shadow-2xl overflow-hidden">
           {/* Messages */}
-          <ScrollArea className="h-[600px] p-6">
+          <ScrollArea className="h-[400px] p-6">
             <div className="space-y-6">
               {messages.map((message) => (
                 <div
