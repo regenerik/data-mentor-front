@@ -35,3 +35,17 @@ Y en el mismo archivo un poco mas abajo la exportacion que es algo asi  :
 Y por último no olvidarse de importarlo en el componente
 
 ------------------------------------------------------------------------------------------------------------------------------------------
+
+Si no te esta navegando desde la url en render.com hace lo siguiente ( ya lo hice acá ):
+
+
+Entrás al panel de tu sitio en Render.com
+
+Bajás a la sección Redirects/Rewrites
+
+Hacés click en "Add Rewrite Rule"
+
+Y agregás esta regla:
+
+Source	Destination	    Type
+/*	    /index.html	    Rewrite
