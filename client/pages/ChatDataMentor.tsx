@@ -48,9 +48,9 @@ export default function ChatDataMentor() {
     setMessages((prev) => [...prev, userMessage]);
     setInputValue("");
     setIsTyping(true);
-
+//https://repomatic-turbo-meww.onrender.com/chat_mentor
     try {
-      const response = await fetch("https://repomatic-turbo.onrender.com/chat_mentor", {
+      const response = await fetch("https://repomatic-turbo-meww.onrender.com/chat_mentor", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

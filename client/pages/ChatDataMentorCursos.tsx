@@ -1,5 +1,4 @@
 import { useState, useRef, useEffect } from "react";
-import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -22,18 +21,6 @@ import {
   Clock,
 } from "lucide-react";
 
-interface Message {
-  id: string;
-  type: "user" | "bot";
-  content: string;
-  timestamp: Date;
-  courseContext?: {
-    title: string;
-    module: string;
-    lesson: string;
-  };
-}
-
 interface Course {
   id: string;
   title: string;
@@ -43,6 +30,18 @@ interface Course {
   duration: string;
   level: "Principiante" | "Intermedio" | "Advanzado";
   status: "Disponible" | "En Progreso" | "Completo";
+}
+
+interface Message {
+  id: string;
+  type: "user" | "bot";
+  content: string;
+  timestamp: Date;
+  // courseContext?: {
+  //   title: string;
+  //   module: string;
+  //   lesson: string;
+  // };
 }
 
 const sampleCourses: Course[] = [
@@ -90,17 +89,21 @@ export default function ChatDataMentorCursos() {
   ]);
   const [inputValue, setInputValue] = useState("");
   const [isTyping, setIsTyping] = useState(false);
+  const [threadId, setThreadId] = useState<string | null>(null);
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  // Scroll to the bottom of the messages list
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
+  // Effect to scroll to the bottom whenever a new message is added
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
 
+  // Handler for sending a message
   const handleSendMessage = async () => {
     if (!inputValue.trim()) return;
 
@@ -109,47 +112,61 @@ export default function ChatDataMentorCursos() {
       type: "user",
       content: inputValue,
       timestamp: new Date(),
-      courseContext: selectedCourse
-        ? {
-            title: selectedCourse.title,
-            module: "Module 1",
-            lesson: "Introduction",
-          }
-        : undefined,
     };
 
     setMessages((prev) => [...prev, userMessage]);
+    const promptToSend = inputValue; // Save the input value before clearing
     setInputValue("");
     setIsTyping(true);
 
-    // Simulate bot response based on course context
-    setTimeout(() => {
-      let botResponse = "";
-      if (selectedCourse) {
-        botResponse = `Great question about "${selectedCourse.title}"! Based on the course content, here's what I can help you with. This course covers ${selectedCourse.modules} modules with ${selectedCourse.lessons} lessons. Since you're working on ${selectedCourse.level} level material, I recommend starting with the fundamentals and building up gradually.`;
-      } else {
-        botResponse =
-          "I'd be happy to help you with that! To provide more specific guidance, you might want to select a course from the available options. Each course has structured content designed to build your skills progressively.";
-      }
+    try {
+      const response = await fetch("https://repomatic-turbo-meww.onrender.com/chat_mentor_cursos", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: "1803-1989-1803-1989", // Placeholder for your token
+        },
+        body: JSON.stringify({
+          prompt: promptToSend,
+          ...(threadId && { thread_id: threadId }),
+          ...(selectedCourse && { course_context: selectedCourse }),
+        }),
+      });
 
-      const botMessage: Message = {
-        id: (Date.now() + 1).toString(),
+      const data = await response.json();
+
+      if (response.ok) {
+        setThreadId(data.thread_id);
+        const botMessage: Message = {
+          id: Date.now().toString() + "-bot",
+          type: "bot",
+          content: data.response || "No se obtuvo respuesta del asistente.",
+          timestamp: new Date(),
+        };
+        setMessages((prev) => [...prev, botMessage]);
+      } else {
+        throw new Error(data.error || "Error desconocido");
+      }
+    } catch (error: any) {
+      const errorMsg: Message = {
+        id: Date.now().toString() + "-err",
         type: "bot",
-        content: botResponse,
+        content: `⚠️ Error: ${error.message}`,
         timestamp: new Date(),
       };
-      setMessages((prev) => [...prev, botMessage]);
+      setMessages((prev) => [...prev, errorMsg]);
+    } finally {
       setIsTyping(false);
-    }, 2000);
+    }
   };
 
   const getLevelColor = (level: string) => {
     switch (level) {
-      case "Beginner":
+      case "Principiante":
         return "bg-neon-green/20 text-neon-green border-neon-green/30";
-      case "Intermediate":
+      case "Intermedio":
         return "bg-neon-blue/20 text-neon-blue border-neon-blue/30";
-      case "Advanced":
+      case "Advanzado":
         return "bg-neon-purple/20 text-neon-purple border-neon-purple/30";
       default:
         return "bg-muted text-muted-foreground";
@@ -158,11 +175,11 @@ export default function ChatDataMentorCursos() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "Available":
+      case "Disponible":
         return "bg-primary/20 text-primary border-primary/30";
-      case "In Progress":
+      case "En Progreso":
         return "bg-neon-blue/20 text-neon-blue border-neon-blue/30";
-      case "Completed":
+      case "Completo":
         return "bg-neon-green/20 text-neon-green border-neon-green/30";
       default:
         return "bg-muted text-muted-foreground";
@@ -174,12 +191,12 @@ export default function ChatDataMentorCursos() {
       {/* Header */}
       <div className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-10">
         <div className="container mx-auto px-4 py-4 flex items-center gap-4">
-          <Link
-            to="/dashboard"
+          <a
+            href="/dashboard"
             className="text-muted-foreground hover:text-foreground transition-colors"
           >
             <ArrowLeft className="h-5 w-5" />
-          </Link>
+          </a>
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center">
               <GraduationCap className="h-5 w-5 text-primary" />
@@ -320,12 +337,6 @@ export default function ChatDataMentorCursos() {
                             : "bg-muted text-muted-foreground"
                         }`}
                       >
-                        {message.courseContext && (
-                          <div className="text-xs opacity-70 mb-2">
-                            Context: {message.courseContext.title} -{" "}
-                            {message.courseContext.module}
-                          </div>
-                        )}
                         <p className="text-sm leading-relaxed">
                           {message.content}
                         </p>

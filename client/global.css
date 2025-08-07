@@ -9,10 +9,10 @@
    * A different format will require also updating the theme in tailwind.config.ts.
   */
   :root {
-    --background: 220 27% 7%;
+    --background: 220 27% 12%;
     --foreground: 210 40% 98%;
 
-    --card: 220 23% 11%;
+    --card: 220 23% 16%;
     --card-foreground: 210 40% 98%;
 
     --popover: 220 23% 11%;
@@ -68,10 +68,10 @@
   }
 
   .dark {
-    --background: 220 27% 7%;
+    --background: 220 27% 18%;
     --foreground: 210 40% 98%;
 
-    --card: 220 23% 11%;
+    --card: 220 23% 24%;
     --card-foreground: 210 40% 98%;
 
     --popover: 220 23% 11%;

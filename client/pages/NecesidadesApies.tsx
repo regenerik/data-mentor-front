@@ -52,7 +52,7 @@ export default function NecesidadesApies() {
     if (!isProcessing || !procesoId) return;
 
     const interval = setInterval(() => {
-      fetch(`https://repomatic-turbo.onrender.com/progreso/${procesoId}`)
+      fetch(`https://repomatic-turbo-meww.onrender.com/progreso/${procesoId}`)
         .then((res) => res.json())
         .then((data) => {
           setPorcentaje(data.porcentaje);
@@ -110,7 +110,7 @@ export default function NecesidadesApies() {
     setIsCompleted(false);
     setPorcentaje(0);
 
-    fetch("https://repomatic-turbo.onrender.com/comentarios_necesidades_final", {
+    fetch("https://repomatic-turbo-meww.onrender.com/comentarios_necesidades_final", {
       method: "POST",
       body: formData,
     })
@@ -144,7 +144,7 @@ export default function NecesidadesApies() {
     // }
 
     try {
-      const response = await fetch(`https://repomatic-turbo.onrender.com/comentarios_resultado/1`, {
+      const response = await fetch(`https://repomatic-turbo-meww.onrender.com/comentarios_resultado/1`, {
         method: "GET",
       });
 
