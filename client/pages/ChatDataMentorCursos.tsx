@@ -19,7 +19,9 @@ import {
   PlayCircle,
   FileText,
   Clock,
+  ArrowDownToLine,
 } from "lucide-react";
+import ReactMarkdown from 'react-markdown';
 
 interface Course {
   id: string;
@@ -28,7 +30,7 @@ interface Course {
   modules: number;
   lessons: number;
   duration: string;
-  level: "Principiante" | "Intermedio" | "Advanzado";
+  level: "Principiante" | "Intermedio" | "Avanzado";
   status: "Disponible" | "En Progreso" | "Completo";
 }
 
@@ -37,11 +39,6 @@ interface Message {
   type: "user" | "bot";
   content: string;
   timestamp: Date;
-  // courseContext?: {
-  //   title: string;
-  //   module: string;
-  //   lesson: string;
-  // };
 }
 
 const sampleCourses: Course[] = [
@@ -49,9 +46,9 @@ const sampleCourses: Course[] = [
     id: "1",
     title: "Fundamentos de seguridad Laboral",
     description: "Aprende lo básico en cuestiones de seguridad laboral",
-    modules: 6,
-    lessons: 24,
-    duration: "8 horas",
+    modules: 3,
+    lessons: 8,
+    duration: "45 minutos",
     level: "Principiante",
     status: "Disponible",
   },
@@ -59,9 +56,9 @@ const sampleCourses: Course[] = [
     id: "2",
     title: "Salud e Higiene en gastronomia Full",
     description: "Punto a punto los procesos necesarios para cumplir todas las normas de seguridad e higiene",
-    modules: 4,
-    lessons: 18,
-    duration: "6 horas",
+    modules: 2,
+    lessons: 6,
+    duration: "1 hora",
     level: "Intermedio",
     status: "En Progreso",
   },
@@ -69,10 +66,10 @@ const sampleCourses: Course[] = [
     id: "3",
     title: "Planes de acción para emergencias",
     description: "Respuestas proactivas y responsables frente a situaciones de emergencia",
-    modules: 8,
-    lessons: 32,
-    duration: "12 horas",
-    level: "Advanzado",
+    modules: 4,
+    lessons: 10,
+    duration: "1 hora y 15 minutos",
+    level: "Avanzado",
     status: "Disponible",
   },
 ];
@@ -93,29 +90,26 @@ export default function ChatDataMentorCursos() {
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Scroll to the bottom of the messages list
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-  // Effect to scroll to the bottom whenever a new message is added
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
 
-  // Handler for sending a message
-  const handleSendMessage = async () => {
-    if (!inputValue.trim()) return;
+  const handleSendMessage = async (prompt?: string) => {
+    const promptToSend = prompt || inputValue.trim();
+    if (!promptToSend) return;
 
     const userMessage: Message = {
       id: Date.now().toString(),
       type: "user",
-      content: inputValue,
+      content: promptToSend,
       timestamp: new Date(),
     };
 
     setMessages((prev) => [...prev, userMessage]);
-    const promptToSend = inputValue; // Save the input value before clearing
     setInputValue("");
     setIsTyping(true);
 
@@ -124,7 +118,7 @@ export default function ChatDataMentorCursos() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: "1803-1989-1803-1989", // Placeholder for your token
+          Authorization: "1803-1989-1803-1989",
         },
         body: JSON.stringify({
           prompt: promptToSend,
@@ -158,6 +152,46 @@ export default function ChatDataMentorCursos() {
     } finally {
       setIsTyping(false);
     }
+  };
+
+  const handleCourseSelection = (course: Course) => {
+    const prompt = `Crea un curso llamado "${course.title}" con la siguiente descripción: "${course.description}". El curso debe tener aproximadamente ${course.duration}, con un nivel de "${course.level}".`;
+    handleSendMessage(prompt);
+  };
+
+  const handleDownload = (content: string, timestamp: Date) => {
+    const dateStr = timestamp.toLocaleDateString('es-ES');
+    const timeStr = timestamp.toLocaleTimeString('es-ES').replace(/:/g, '-');
+    const fileName = `Respuesta_ChatMentor_${dateStr}_${timeStr}.doc`;
+
+    const htmlContent = `
+      <html>
+        <head>
+          <meta charset="UTF-8">
+          <title>${fileName}</title>
+          <style>
+            body { font-family: Arial, sans-serif; line-height: 1.6; }
+            h1, h2, h3, h4, h5, h6 { color: #2c3e50; margin-top: 1em; }
+            ul, ol { padding-left: 20px; }
+            li { margin-bottom: 0.5em; }
+            strong { font-weight: bold; }
+          </style>
+        </head>
+        <body>
+          ${content.replace(/\n/g, '<br/>')}
+        </body>
+      </html>
+    `;
+
+    const blob = new Blob([htmlContent], { type: "application/msword" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   };
 
   const getLevelColor = (level: string) => {
@@ -224,7 +258,7 @@ export default function ChatDataMentorCursos() {
                   Cursos pre-definidos
                 </CardTitle>
                 <CardDescription className="text-muted-foreground">
-                  Seleccionar un curso para ensamblar
+                  Selecciona un curso para crear
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -236,7 +270,7 @@ export default function ChatDataMentorCursos() {
                         ? "border-primary bg-primary/5"
                         : "border-border/50"
                     }`}
-                    onClick={() => setSelectedCourse(course)}
+                    onClick={() => handleCourseSelection(course)} // ⚠️ Llama a la nueva función
                   >
                     <CardContent className="p-4">
                       <div className="flex items-start justify-between mb-2">
@@ -335,11 +369,34 @@ export default function ChatDataMentorCursos() {
                           message.type === "user"
                             ? "bg-primary text-primary-foreground"
                             : "bg-muted text-muted-foreground"
-                        }`}
+                        } relative`}
                       >
-                        <p className="text-sm leading-relaxed">
-                          {message.content}
-                        </p>
+                        {message.type === "bot" && (
+                          <div 
+                            className="absolute -right-10 top-1/2 -translate-y-1/2" 
+                            title="Descargar respuesta" // ⚠️ Tooltip aquí
+                          >
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="p-1 text-muted-foreground hover:text-foreground"
+                              onClick={() => handleDownload(message.content, message.timestamp)}
+                              aria-label="Descargar respuesta"
+                            >
+                              <ArrowDownToLine className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        )}
+                        <div className="prose dark:prose-invert text-sm leading-relaxed">
+                          <ReactMarkdown
+                            components={{
+                              br: ({node, ...props}) => <br {...props} />,
+                              p: ({node, ...props}) => <p {...props} className="mt-4 mb-2" />,
+                            }}
+                          >
+                            {message.content}
+                          </ReactMarkdown>
+                        </div>
                         <span className="text-xs opacity-70 mt-2 block">
                           {message.timestamp.toLocaleTimeString()}
                         </span>
@@ -395,7 +452,7 @@ export default function ChatDataMentorCursos() {
                     onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
                   />
                   <Button
-                    onClick={handleSendMessage}
+                    onClick={() => handleSendMessage()}
                     disabled={!inputValue.trim() || isTyping}
                   >
                     <Send className="h-4 w-4" />
