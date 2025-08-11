@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, ChangeEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -20,8 +20,14 @@ import {
   FileText,
   Clock,
   ArrowDownToLine,
+  Minimize,
+  Expand,
+  Paperclip,
+  Check,
+  Link,
 } from "lucide-react";
 import ReactMarkdown from 'react-markdown';
+import mammoth from 'mammoth';
 
 interface Course {
   id: string;
@@ -74,6 +80,8 @@ const sampleCourses: Course[] = [
   },
 ];
 
+const MAX_CHARACTERS = 4000;
+
 export default function ChatDataMentorCursos() {
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -90,6 +98,9 @@ export default function ChatDataMentorCursos() {
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const isInitialLoad = useRef(true);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [fileAttached, setFileAttached] = useState(false);
+  const [attachedFileContent, setAttachedFileContent] = useState<string | null>(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -103,19 +114,21 @@ export default function ChatDataMentorCursos() {
     scrollToBottom();
   }, [messages]);
 
-  const handleSendMessage = async (prompt?: string) => {
-    const promptToSend = prompt || inputValue.trim();
+  const handleSendMessage = async (promptToSend: string, userMessageContent?: string) => {
     if (!promptToSend) return;
 
+    const messageToDisplay = userMessageContent || promptToSend;
     const userMessage: Message = {
       id: Date.now().toString(),
       type: "user",
-      content: promptToSend,
+      content: messageToDisplay,
       timestamp: new Date(),
     };
 
     setMessages((prev) => [...prev, userMessage]);
     setInputValue("");
+    setAttachedFileContent(null);
+    setFileAttached(false);
     setIsTyping(true);
 
     try {
@@ -159,6 +172,30 @@ export default function ChatDataMentorCursos() {
     }
   };
 
+  const handleActionButtonClick = (action: 'specify' | 'simplify' | 'sources') => {
+    let apiPrompt = '';
+    let userMessageContent = '';
+    
+    switch (action) {
+      case 'specify':
+        apiPrompt = "El contenido anterior es una excelente base para un curso. Ahora necesito que elabores y desarrolles cada uno de los puntos en profundidad. Genera un contenido más específico y detallado, expandiendo la información de cada sección.";
+        userMessageContent = 'Expandiendo contenido...';
+        break;
+      case 'simplify':
+        apiPrompt = "La estructura del curso es muy extensa. Por favor, resume los contenidos y la información para que sea una versión más simple, concisa y con menos puntos a tratar, manteniendo los conceptos clave.";
+        userMessageContent = 'Simplificando contenido...';
+        break;
+      case 'sources':
+        apiPrompt = "Por favor, proporciona las fuentes exactas de información utilizadas para generar la respuesta anterior. Incluye el nombre del documento, número de página, sección o cualquier otra referencia precisa que me permita verificar el origen de cada punto relevante. Responde con un listado claro y detallado para cada fuente.";
+        userMessageContent = 'Recuperando fuentes...';
+        break;
+    }
+
+    if (apiPrompt) {
+      handleSendMessage(apiPrompt, userMessageContent);
+    }
+  };
+
   const handleCourseSelection = (course: Course) => {
     const prompt = `Crea un curso llamado "${course.title}" con la siguiente descripción: "${course.description}". El curso debe tener aproximadamente ${course.duration}, con un nivel de "${course.level}".`;
     handleSendMessage(prompt);
@@ -197,6 +234,60 @@ export default function ChatDataMentorCursos() {
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
+  };
+
+  const handleFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    setFileAttached(false);
+
+    try {
+      const fileText = await readFileContent(file);
+      if (fileText.length > MAX_CHARACTERS) {
+        alert("El archivo excede el límite recomendado. Por favor, adjunte un archivo más corto.");
+        setFileAttached(false);
+        return;
+      }
+      
+      setAttachedFileContent(fileText);
+      setFileAttached(true);
+    } catch (error) {
+      console.error("Error reading file:", error);
+      alert("No se pudo leer el archivo. Asegúrate de que el formato sea .txt o .docx.");
+      setFileAttached(false);
+    } finally {
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    }
+  };
+
+  const readFileContent = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+
+      reader.onload = async (event) => {
+        const arrayBuffer = event.target?.result as ArrayBuffer;
+        
+        if (file.name.endsWith(".txt")) {
+          const text = new TextDecoder().decode(arrayBuffer);
+          resolve(text);
+        } else if (file.name.endsWith(".docx")) {
+          try {
+            const { value } = await mammoth.extractRawText({ arrayBuffer });
+            resolve(value);
+          } catch (error) {
+            reject(error);
+          }
+        } else {
+          reject(new Error("Tipo de archivo no soportado. Por favor, usa .txt o .docx."));
+        }
+      };
+
+      reader.onerror = (error) => reject(error);
+      reader.readAsArrayBuffer(file);
+    });
   };
 
   const getLevelColor = (level: string) => {
@@ -388,20 +479,62 @@ export default function ChatDataMentorCursos() {
                         </div>
                         
                         {message.type === "bot" && (
-                          <div className="flex justify-end items-center mt-2">
-                            <span className="text-xs opacity-70">
-                              {message.timestamp.toLocaleTimeString()}
-                            </span>
-                            <div className="ml-2" title="Descargar respuesta">
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="p-1 text-muted-foreground hover:text-foreground"
-                                onClick={() => handleDownload(message.content, message.timestamp)}
-                                aria-label="Descargar respuesta"
-                              >
-                                <ArrowDownToLine className="h-4 w-4" />
-                              </Button>
+                          <div className="flex justify-between items-center mt-2">
+                            <div className="flex items-center space-x-2">
+                              {message.id !== "1" && (
+                                <>
+                                  <div title="Elaborar más el contenido">
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      className="p-1 text-muted-foreground hover:text-foreground"
+                                      onClick={() => handleActionButtonClick('specify')}
+                                      aria-label="Elaborar más el contenido"
+                                    >
+                                      <Expand className="h-4 w-4" />
+                                    </Button>
+                                  </div>
+                                  <div title="Hacer el contenido más simple">
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      className="p-1 text-muted-foreground hover:text-foreground"
+                                      onClick={() => handleActionButtonClick('simplify')}
+                                      aria-label="Hacer el contenido más simple"
+                                    >
+                                      <Minimize className="h-4 w-4" />
+                                    </Button>
+                                  </div>
+                                  <div title="Pedir fuentes de información">
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      className="p-1 text-muted-foreground hover:text-foreground"
+                                      onClick={() => handleActionButtonClick('sources')}
+                                      aria-label="Pedir fuentes de información"
+                                    >
+                                      <Link className="h-4 w-4" />
+                                    </Button>
+                                  </div>
+                                </>
+                              )}
+                            </div>
+                            
+                            <div className="flex items-center space-x-2">
+                              <span className="text-xs opacity-70">
+                                {message.timestamp.toLocaleTimeString()}
+                              </span>
+                              <div title="Descargar respuesta">
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="p-1 text-muted-foreground hover:text-foreground"
+                                  onClick={() => handleDownload(message.content, message.timestamp)}
+                                  aria-label="Descargar respuesta"
+                                >
+                                  <ArrowDownToLine className="h-4 w-4" />
+                                </Button>
+                              </div>
                             </div>
                           </div>
                         )}
@@ -452,6 +585,32 @@ export default function ChatDataMentorCursos() {
               {/* Input */}
               <div className="border-t border-border p-4 bg-card/50">
                 <div className="flex gap-2">
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={handleFileChange}
+                    accept=".txt,.docx"
+                    className="hidden"
+                  />
+                  <div className="relative">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => {
+                        const tokenAlert = `Se recomienda que el archivo no supere los ${MAX_CHARACTERS} caracteres para evitar problemas con la cantidad de tokens.`;
+                        alert(tokenAlert);
+                        fileInputRef.current?.click();
+                      }}
+                      title="Adjuntar archivo (.txt, .docx)"
+                      className="flex-shrink-0"
+                    >
+                      <Paperclip className="h-4 w-4" />
+                    </Button>
+                    {fileAttached && (
+                      <Check className="absolute bottom-0 right-0 h-4 w-4 text-green-500 bg-white rounded-full p-0.5" />
+                    )}
+                  </div>
+
                   <Input
                     value={inputValue}
                     onChange={(e) => setInputValue(e.target.value)}
@@ -461,11 +620,11 @@ export default function ChatDataMentorCursos() {
                         : "Contame que tipo de curso te gustaria crear..."
                     }
                     className="flex-1 bg-background"
-                    onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
+                    onKeyPress={(e) => e.key === "Enter" && handleSendMessage(inputValue.trim())}
                   />
                   <Button
-                    onClick={() => handleSendMessage()}
-                    disabled={!inputValue.trim() || isTyping}
+                    onClick={() => handleSendMessage(inputValue.trim())} // ⚠️ Llama a handleSendMessage con el input vacío
+                    disabled={(!inputValue.trim() && !attachedFileContent) || isTyping}
                   >
                     <Send className="h-4 w-4" />
                   </Button>
