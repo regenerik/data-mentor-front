@@ -30,7 +30,7 @@ interface Course {
   modules: number;
   lessons: number;
   duration: string;
-  level: "Principiante" | "Intermedio" | "Avanzado";
+  level: "Principiante" | "Intermedio" | "Advanzado";
   status: "Disponible" | "En Progreso" | "Completo";
 }
 
@@ -69,7 +69,7 @@ const sampleCourses: Course[] = [
     modules: 4,
     lessons: 10,
     duration: "1 hora y 15 minutos",
-    level: "Avanzado",
+    level: "Advanzado",
     status: "Disponible",
   },
 ];
@@ -89,12 +89,17 @@ export default function ChatDataMentorCursos() {
   const [threadId, setThreadId] = useState<string | null>(null);
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const isInitialLoad = useRef(true);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
-
+  
   useEffect(() => {
+    if (isInitialLoad.current) {
+      isInitialLoad.current = false;
+      return;
+    }
     scrollToBottom();
   }, [messages]);
 
@@ -221,7 +226,7 @@ export default function ChatDataMentorCursos() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background flex flex-col">
       {/* Header */}
       <div className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-10">
         <div className="container mx-auto px-4 py-4 flex items-center gap-4">
@@ -247,11 +252,11 @@ export default function ChatDataMentorCursos() {
         </div>
       </div>
 
-      <div className="container mx-auto px-4 py-6 max-w-7xl">
-        <div className="grid lg:grid-cols-3 gap-6">
+      <div className="container mx-auto px-4 py-6 max-w-7xl flex-1">
+        <div className="grid lg:grid-cols-3 gap-6 h-full">
           {/* Courses Sidebar */}
-          <div className="lg:col-span-1">
-            <Card className="border-border shadow-xl h-fit">
+          <div className="lg:col-span-1 h-full">
+            <Card className="border-border shadow-xl h-full">
               <CardHeader>
                 <CardTitle className="text-foreground flex items-center gap-2">
                   <BookOpen className="h-5 w-5 text-primary" />
@@ -270,7 +275,7 @@ export default function ChatDataMentorCursos() {
                         ? "border-primary bg-primary/5"
                         : "border-border/50"
                     }`}
-                    onClick={() => handleCourseSelection(course)} // ⚠️ Llama a la nueva función
+                    onClick={() => handleCourseSelection(course)}
                   >
                     <CardContent className="p-4">
                       <div className="flex items-start justify-between mb-2">
@@ -321,8 +326,8 @@ export default function ChatDataMentorCursos() {
           </div>
 
           {/* Chat Interface */}
-          <div className="lg:col-span-2">
-            <Card className="border-border shadow-2xl h-[700px] flex flex-col">
+          <div className="lg:col-span-2 h-full">
+            <Card className="border-border shadow-2xl h-full flex flex-col">
               {/* Selected Course Context */}
               {selectedCourse && (
                 <div className="border-b border-border p-4 bg-primary/5">
@@ -369,25 +374,9 @@ export default function ChatDataMentorCursos() {
                           message.type === "user"
                             ? "bg-primary text-primary-foreground"
                             : "bg-muted text-muted-foreground"
-                        } relative`}
+                        } flex flex-col`}
                       >
-                        {message.type === "bot" && (
-                          <div 
-                            className="absolute -right-10 top-1/2 -translate-y-1/2" 
-                            title="Descargar respuesta" // ⚠️ Tooltip aquí
-                          >
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="p-1 text-muted-foreground hover:text-foreground"
-                              onClick={() => handleDownload(message.content, message.timestamp)}
-                              aria-label="Descargar respuesta"
-                            >
-                              <ArrowDownToLine className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        )}
-                        <div className="prose dark:prose-invert text-sm leading-relaxed">
+                        <div className="prose dark:prose-invert text-sm leading-relaxed mb-2">
                           <ReactMarkdown
                             components={{
                               br: ({node, ...props}) => <br {...props} />,
@@ -397,9 +386,32 @@ export default function ChatDataMentorCursos() {
                             {message.content}
                           </ReactMarkdown>
                         </div>
-                        <span className="text-xs opacity-70 mt-2 block">
-                          {message.timestamp.toLocaleTimeString()}
-                        </span>
+                        
+                        {message.type === "bot" && (
+                          <div className="flex justify-end items-center mt-2">
+                            <span className="text-xs opacity-70">
+                              {message.timestamp.toLocaleTimeString()}
+                            </span>
+                            <div className="ml-2" title="Descargar respuesta">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="p-1 text-muted-foreground hover:text-foreground"
+                                onClick={() => handleDownload(message.content, message.timestamp)}
+                                aria-label="Descargar respuesta"
+                              >
+                                <ArrowDownToLine className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </div>
+                        )}
+                        {message.type === "user" && (
+                          <div className="flex justify-end items-center mt-2">
+                            <span className="text-xs opacity-70">
+                              {message.timestamp.toLocaleTimeString()}
+                            </span>
+                          </div>
+                        )}
                       </div>
 
                       {message.type === "user" && (
