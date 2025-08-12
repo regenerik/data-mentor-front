@@ -25,6 +25,7 @@ import {
   Paperclip,
   Check,
   Link,
+  Eraser, // ⚠️ Importamos el ícono de la escoba
 } from "lucide-react";
 import ReactMarkdown from 'react-markdown';
 import mammoth from 'mammoth';
@@ -117,7 +118,14 @@ export default function ChatDataMentorCursos() {
   const handleSendMessage = async (promptToSend: string, userMessageContent?: string) => {
     if (!promptToSend) return;
 
-    const messageToDisplay = userMessageContent || promptToSend;
+    const apiPrompt = attachedFileContent
+      ? `${promptToSend}\n\nEl siguiente texto es adjunto por el usuario:\n\n'${attachedFileContent}'`
+      : promptToSend;
+
+    const messageToDisplay = userMessageContent || (attachedFileContent
+      ? `${promptToSend} (Archivo adjunto)`
+      : promptToSend);
+
     const userMessage: Message = {
       id: Date.now().toString(),
       type: "user",
@@ -139,7 +147,7 @@ export default function ChatDataMentorCursos() {
           Authorization: "1803-1989-1803-1989",
         },
         body: JSON.stringify({
-          prompt: promptToSend,
+          prompt: apiPrompt,
           ...(threadId && { thread_id: threadId }),
           ...(selectedCourse && { course_context: selectedCourse }),
         }),
@@ -198,7 +206,22 @@ export default function ChatDataMentorCursos() {
 
   const handleCourseSelection = (course: Course) => {
     const prompt = `Crea un curso llamado "${course.title}" con la siguiente descripción: "${course.description}". El curso debe tener aproximadamente ${course.duration}, con un nivel de "${course.level}".`;
-    handleSendMessage(prompt);
+    handleSendMessage(prompt, prompt);
+  };
+
+  const handleClearChat = () => {
+    setMessages([
+      {
+        id: "1",
+        type: "bot",
+        content:
+          "Bienvenido a los cursos de data mentor! Soy tu asistente de creación. Puedo ayudarte a crear cursos a partir de datos actuales y proveer un resultado personalizado. Que te gustaria crear el dia de hoy?",
+        timestamp: new Date(),
+      },
+    ]);
+    setThreadId(null);
+    setFileAttached(false);
+    setAttachedFileContent(null);
   };
 
   const handleDownload = (content: string, timestamp: Date) => {
@@ -585,6 +608,18 @@ export default function ChatDataMentorCursos() {
               {/* Input */}
               <div className="border-t border-border p-4 bg-card/50">
                 <div className="flex gap-2">
+                  {/* ⚠️ Botón de limpiar chat */}
+                  {messages.length > 1 && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={handleClearChat}
+                      title="Limpiar chat"
+                      className="flex-shrink-0"
+                    >
+                      <Eraser className="h-4 w-4" />
+                    </Button>
+                  )}
                   <input
                     type="file"
                     ref={fileInputRef}
@@ -623,7 +658,7 @@ export default function ChatDataMentorCursos() {
                     onKeyPress={(e) => e.key === "Enter" && handleSendMessage(inputValue.trim())}
                   />
                   <Button
-                    onClick={() => handleSendMessage(inputValue.trim())} // ⚠️ Llama a handleSendMessage con el input vacío
+                    onClick={() => handleSendMessage(inputValue.trim())}
                     disabled={(!inputValue.trim() && !attachedFileContent) || isTyping}
                   >
                     <Send className="h-4 w-4" />
