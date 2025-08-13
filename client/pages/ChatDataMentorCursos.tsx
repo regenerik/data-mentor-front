@@ -427,8 +427,8 @@ export default function ChatDataMentorCursos() {
 
     setIsSaving(true);
     const email = localStorage.getItem('email') || 'anonimo@example.com';
-    const title = saveTitle;
-    const chatText = messages.map(msg => `${msg.type}: ${msg.content}`).join('\n');
+    const titulo = saveTitle; // ⚠️ Propiedad corregida
+    const texto = messages.map(msg => `${msg.type}: ${msg.content}`).join('\n'); // ⚠️ Propiedad corregida
 
     try {
       const response = await fetch("https://repomatic-turbo-meww.onrender.com/history-user-add", {
@@ -437,7 +437,7 @@ export default function ChatDataMentorCursos() {
           "Content-Type": "application/json",
           Authorization: "1803-1989-1803-1989",
         },
-        body: JSON.stringify({ email, title, text: chatText }),
+        body: JSON.stringify({ email, titulo, texto }), // ⚠️ Propiedades corregidas
       });
       const data = await response.json();
       if (data.resultado === 'guardado') {
