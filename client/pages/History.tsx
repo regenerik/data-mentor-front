@@ -359,10 +359,10 @@ function ConversationView({
   onDownloadItem,
 }: ConversationViewProps) {
   const formatConversationText = (text: string) => {
-    // Reemplaza "user:" con un formato más visible
-    let formattedText = text.replace(/user:/g, '\n\n**user:**');
-    // Reemplaza "bot:" con un formato más visible
-    formattedText = formattedText.replace(/bot:/g, '\n\n**bot:**');
+    // Reemplaza "user:" con un formato más visible (más saltos de línea y una línea separadora)
+    let formattedText = text.replace(/user:/g, '\n\n---\n\n**USER:**\n\n');
+    // Reemplaza "bot:" con un formato más visible (más saltos de línea y una línea separadora)
+    formattedText = formattedText.replace(/bot:/g, '\n\n---\n\n**BOT:**\n\n');
     return formattedText.trim();
   };
   
