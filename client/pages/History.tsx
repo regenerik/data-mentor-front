@@ -359,8 +359,11 @@ function ConversationView({
   onDownloadItem,
 }: ConversationViewProps) {
   const formatConversationText = (text: string) => {
-    // ⚠️ La expresión regular ahora es insensible a mayúsculas y minúsculas y el reemplazo es dinámico
-    return text.replace(/(user:|bot:)/gi, '\n\n***\n\n**$1**\n\n').trim();
+    // Reemplaza "user:" con un formato más visible (más saltos de línea y una línea separadora)
+    let formattedText = text.replace(/user:/g, '\n\n---\n\n**USER:**\n\n');
+    // Reemplaza "bot:" con un formato más visible (más saltos de línea y una línea separadora)
+    formattedText = formattedText.replace(/bot:/g, '\n\n---\n\n**BOT:**\n\n');
+    return formattedText.trim();
   };
   
   return (
