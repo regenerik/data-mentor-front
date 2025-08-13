@@ -427,8 +427,8 @@ export default function ChatDataMentorCursos() {
 
     setIsSaving(true);
     const email = localStorage.getItem('email') || 'anonimo@example.com';
-    const titulo = saveTitle; // ⚠️ Propiedad corregida
-    const texto = messages.map(msg => `${msg.type}: ${msg.content}`).join('\n'); // ⚠️ Propiedad corregida
+    const titulo = saveTitle;
+    const texto = messages.map(msg => `${msg.type}: ${msg.content}`).join('\n');
 
     try {
       const response = await fetch("https://repomatic-turbo-meww.onrender.com/history-user-add", {
@@ -787,7 +787,7 @@ export default function ChatDataMentorCursos() {
                                       <Mic className="h-4 w-4" />
                                     </Button>
                                   </div>
-                                   <div title="Generar preguntas de alumnos">
+                                  <div title="Generar preguntas de alumnos">
                                     <Button
                                       variant="ghost"
                                       size="icon"
@@ -919,7 +919,6 @@ export default function ChatDataMentorCursos() {
                       <Eraser className="h-4 w-4" />
                     </Button>
                   )}
-                  {/* ⚠️ Botón de Guardar interacción */}
                   <Button
                     variant="ghost"
                     size="icon"
@@ -957,7 +956,6 @@ export default function ChatDataMentorCursos() {
                       </button>
                     )}
                   </div>
-
                   <div className="flex-1 relative">
                     <Input
                       value={inputValue}
@@ -1003,7 +1001,6 @@ export default function ChatDataMentorCursos() {
           </div>
         </div>
       </div>
-
       {showSaveModal && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
           <Card className="w-full max-w-md">
