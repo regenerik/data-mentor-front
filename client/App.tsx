@@ -14,6 +14,7 @@ import ChatDataMentor from "./pages/ChatDataMentor";
 import NecesidadesApies from "./pages/NecesidadesApies";
 import ChatDataMentorCursos from "./pages/ChatDataMentorCursos";
 import AjustesAdministrador from "./pages/AjustesAdministrador";
+import History from "./pages/History";
 import { authStore } from "./store";
 
 const queryClient = new QueryClient();
@@ -87,6 +88,14 @@ const App = () => (
             element={
               <ProtectedRoute>
                 <AjustesAdministrador />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/history"
+            element={
+              <ProtectedRoute>
+                <History />
               </ProtectedRoute>
             }
           />
