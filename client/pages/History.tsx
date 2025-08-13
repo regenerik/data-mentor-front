@@ -359,10 +359,8 @@ function ConversationView({
   onDownloadItem,
 }: ConversationViewProps) {
   const formatConversationText = (text: string) => {
-    // ⚠️ Modificado para agregar una línea horizontal y más saltos de línea
-    let formattedText = text.replace(/USER:/g, '\n\n***\n\n**USER:**\n\n');
-    formattedText = formattedText.replace(/BOT:/g, '\n\n***\n\n**BOT:**\n\n');
-    return formattedText.trim();
+    // ⚠️ La expresión regular ahora es insensible a mayúsculas y minúsculas y el reemplazo es dinámico
+    return text.replace(/(user:|bot:)/gi, '\n\n***\n\n**$1**\n\n').trim();
   };
   
   return (
