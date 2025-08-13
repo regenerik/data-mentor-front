@@ -47,6 +47,10 @@ export default function History() {
   const [isLeftPanelOpen, setIsLeftPanelOpen] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [deletingItemId, setDeletingItemId] = useState<string | null>(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteConfirmationId, setDeleteConfirmationId] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     const fetchHistory = async () => {
@@ -90,11 +94,30 @@ export default function History() {
   };
 
   const handleDownloadItem = (content: string, filename: string) => {
-    const blob = new Blob([content], { type: "text/plain" });
+    const htmlContent = `
+      <html>
+        <head>
+          <meta charset="UTF-8">
+          <title>${filename}</title>
+          <style>
+            body { font-family: Arial, sans-serif; line-height: 1.6; }
+            h1, h2, h3, h4, h5, h6 { color: #2c3e50; margin-top: 1em; }
+            ul, ol { padding-left: 20px; }
+            li { margin-bottom: 0.5em; }
+            strong { font-weight: bold; }
+          </style>
+        </head>
+        <body>
+          ${content.replace(/(user:|bot:)/gi, '<br/><br/>---<br/><br/><strong>$1</strong><br/><br/>')}
+        </body>
+      </html>
+    `;
+
+    const blob = new Blob([htmlContent], { type: "application/msword" });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = filename;
+    a.download = `${filename.replace('.txt', '.doc')}`;
     document.body.appendChild(a);
     a.click();
     window.URL.revokeObjectURL(url);
@@ -108,12 +131,34 @@ export default function History() {
     );
   };
   
-  const handleDeleteConversation = (historyId: string) => {
-    // Aquí puedes agregar la lógica para llamar a la API de eliminación
-    setHistoryItems((prevItems) => prevItems.filter((item) => item.id !== historyId));
+  const handleDeleteConversation = async (historyId: string) => {
+    setIsDeleting(true);
+    setDeletingItemId(historyId);
+    try {
+      const response = await fetch("https://repomatic-turbo-meww.onrender.com/delete-individual-chat", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: "1803-1989-1803-1989",
+        },
+        body: JSON.stringify({ id: historyId }),
+      });
+      
+      if (!response.ok) {
+        throw new Error("Error al eliminar la conversación.");
+      }
 
-    if (selectedHistory?.id === historyId) {
-      setSelectedHistory(null);
+      setHistoryItems((prevItems) => prevItems.filter((item) => item.id !== historyId));
+      if (selectedHistory?.id === historyId) {
+        setSelectedHistory(null);
+      }
+    } catch (e: any) {
+      console.error("Error deleting conversation:", e);
+    } finally {
+      setIsDeleting(false);
+      setDeletingItemId(null);
+      setShowDeleteModal(false);
+      setDeleteConfirmationId(null);
     }
   };
 
@@ -177,9 +222,13 @@ export default function History() {
                     selectedHistory={selectedHistory}
                     onSelectHistory={setSelectedHistory}
                     onDownloadAll={handleDownloadAllHistory}
-                    onDeleteConversation={handleDeleteConversation}
+                    onDeleteConversation={(id) => {
+                      setDeleteConfirmationId(id);
+                      setShowDeleteModal(true);
+                    }}
                     isLoading={isLoading}
                     error={error}
+                    deletingItemId={deletingItemId}
                   />
                 </div>
               </CollapsibleContent>
@@ -192,9 +241,13 @@ export default function History() {
                 selectedHistory={selectedHistory}
                 onSelectHistory={setSelectedHistory}
                 onDownloadAll={handleDownloadAllHistory}
-                onDeleteConversation={handleDeleteConversation}
+                onDeleteConversation={(id) => {
+                  setDeleteConfirmationId(id);
+                  setShowDeleteModal(true);
+                }}
                 isLoading={isLoading}
                 error={error}
+                deletingItemId={deletingItemId}
               />
             </div>
           </div>
@@ -213,6 +266,32 @@ export default function History() {
           </div>
         </div>
       </div>
+      
+      {showDeleteModal && deleteConfirmationId && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <Card className="w-full max-w-md">
+            <CardHeader>
+              <CardTitle className="text-destructive">Confirmar Eliminación</CardTitle>
+              <CardDescription>
+                ¿Estás seguro de que quieres eliminar esta conversación?
+                Esta acción no se puede deshacer.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="flex justify-end gap-2">
+              <Button variant="ghost" onClick={() => setShowDeleteModal(false)} disabled={isDeleting}>
+                Cancelar
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={() => handleDeleteConversation(deleteConfirmationId)}
+                disabled={isDeleting}
+              >
+                {isDeleting ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Eliminar'}
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </div>
   );
 }
@@ -225,6 +304,7 @@ interface HistoryListProps {
   onDeleteConversation: (historyId: string) => void;
   isLoading: boolean;
   error: string | null;
+  deletingItemId: string | null;
 }
 
 function HistoryList({
@@ -234,7 +314,8 @@ function HistoryList({
   onDownloadAll,
   onDeleteConversation,
   isLoading,
-  error
+  error,
+  deletingItemId,
 }: HistoryListProps) {
 
   if (isLoading) {
@@ -325,13 +406,16 @@ function HistoryList({
                             size="sm"
                             onClick={(e) => {
                               e.stopPropagation();
-                              if (confirm(`¿Estás seguro de que quieres eliminar "${item.titulo}"? Esta acción no se puede deshacer.`)) {
-                                onDeleteConversation(item.id);
-                              }
+                              onDeleteConversation(item.id);
                             }}
                             className="h-7 px-2 text-destructive hover:text-destructive hover:bg-destructive/10"
+                            disabled={deletingItemId === item.id}
                           >
-                            <Trash2 className="h-3 w-3" />
+                            {deletingItemId === item.id ? (
+                              <Loader2 className="h-3 w-3 animate-spin" />
+                            ) : (
+                              <Trash2 className="h-3 w-3" />
+                            )}
                           </Button>
                         </div>
                       </div>
@@ -359,11 +443,8 @@ function ConversationView({
   onDownloadItem,
 }: ConversationViewProps) {
   const formatConversationText = (text: string) => {
-    // Reemplaza "user:" con un formato más visible (más saltos de línea y una línea separadora)
-    let formattedText = text.replace(/user:/g, '\n\n---\n\n**USER:**\n\n');
-    // Reemplaza "bot:" con un formato más visible (más saltos de línea y una línea separadora)
-    formattedText = formattedText.replace(/bot:/g, '\n\n---\n\n**BOT:**\n\n');
-    return formattedText.trim();
+    // ⚠️ La expresión regular ahora es insensible a mayúsculas y minúsculas y el reemplazo es dinámico
+    return text.replace(/(user:|bot:)/gi, '\n\n***\n\n**$1**\n\n').trim();
   };
   
   return (
@@ -391,7 +472,7 @@ function ConversationView({
               size="sm"
               onClick={() => onDownloadItem(
                 historyItem.texto,
-                `${historyItem.titulo.replace(/\s+/g, "_")}_${new Date(historyItem.created_at).toLocaleDateString()}.txt`
+                `${historyItem.titulo.replace(/\s+/g, "_")}_${new Date(historyItem.created_at).toLocaleDateString()}.doc`
               )}
               className="h-8 px-2"
             >
