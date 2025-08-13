@@ -306,7 +306,7 @@ function HistoryList({
                           className="text-xs bg-primary/10 text-primary border-primary/20"
                         >
                           <MessageCircle className="h-3 w-3 mr-1" />
-                          {item.texto.length > 0 ? "Conversación" : "No Content"}
+                          {item.texto.split("user:").length + item.texto.split("bot:").length - 2} interacciones
                         </Badge>
                         <div className="flex gap-1">
                           <Button
@@ -358,6 +358,14 @@ function ConversationView({
   onCopyContent,
   onDownloadItem,
 }: ConversationViewProps) {
+  const formatConversationText = (text: string) => {
+    // Reemplaza "user:" con un formato más visible
+    let formattedText = text.replace(/user:/g, '\n\n**user:**');
+    // Reemplaza "bot:" con un formato más visible
+    formattedText = formattedText.replace(/bot:/g, '\n\n**bot:**');
+    return formattedText.trim();
+  };
+  
   return (
     <Card className="border-border shadow-xl h-full flex flex-col">
       <CardHeader className="border-b border-border">
@@ -398,7 +406,7 @@ function ConversationView({
         <ScrollArea className="h-full p-6">
           <div className="prose dark:prose-invert text-muted-foreground text-sm leading-relaxed">
             <ReactMarkdown>
-              {historyItem.texto}
+              {formatConversationText(historyItem.texto)}
             </ReactMarkdown>
           </div>
         </ScrollArea>
