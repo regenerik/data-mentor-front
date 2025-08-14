@@ -15,6 +15,7 @@ import NecesidadesApies from "./pages/NecesidadesApies";
 import ChatDataMentorCursos from "./pages/ChatDataMentorCursos";
 import AjustesAdministrador from "./pages/AjustesAdministrador";
 import History from "./pages/History";
+import MyProfile from "./pages/MyProfile";
 import { authStore } from "./store";
 
 const queryClient = new QueryClient();
@@ -96,6 +97,14 @@ const App = () => (
             element={
               <ProtectedRoute>
                 <History />
+              </ProtectedRoute>
+            }
+          />
+                    <Route
+            path="/mi-perfil"
+            element={
+              <ProtectedRoute>
+                <MyProfile />
               </ProtectedRoute>
             }
           />
