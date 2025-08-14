@@ -3,6 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
+import { useNavigate } from "react-router-dom";
+import { authActions } from "../store";
 import {
   Card,
   CardContent,
@@ -149,6 +151,7 @@ type PredefinedSelections = {
 };
 
 export default function ChatDataMentorCursos() {
+  const navigate = useNavigate();
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "1",
@@ -176,6 +179,7 @@ export default function ChatDataMentorCursos() {
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
+
 
   useEffect(() => {
     if (isInitialLoad.current) {
@@ -266,6 +270,44 @@ export default function ChatDataMentorCursos() {
       setIsTyping(false);
     }
   };
+
+  const handlerLogOut = () => {
+    authActions.logout();
+    navigate("/");
+  };
+
+
+  // Lógica para verificar el token de sesión al cargar el componente
+  useEffect(() => {
+    const checkTokenValidity = async () => {
+      const token = localStorage.getItem("token");
+
+      if (!token) {
+        console.warn("No se encontró un token. Redirigiendo a login.");
+        handlerLogOut();
+        return;
+      }
+
+      try {
+        const response = await fetch('https://repomatic-turbo-meww.onrender.com/check_token', {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+
+        if (!response.ok) {
+          console.warn("Token expirado o inválido. Cerrando sesión automáticamente.");
+          handlerLogOut();
+        }
+      } catch (error) {
+        console.error("Error al verificar el token:", error);
+        handlerLogOut();
+      }
+    };
+
+    checkTokenValidity();
+  }, [navigate]);
 
   const handleActionButtonClick = (action: 'specify' | 'simplify' | 'sources' | 'optimize' | 'multipleChoice' | 'narrative' | 'studentQuestions') => {
     let apiPrompt = '';

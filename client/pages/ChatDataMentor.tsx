@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate  } from "react-router-dom";
+import { authActions } from "../store";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -13,6 +14,7 @@ interface Message {
 }
 
 export default function ChatDataMentor() {
+  const navigate = useNavigate();
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "1",
@@ -48,7 +50,7 @@ export default function ChatDataMentor() {
     setMessages((prev) => [...prev, userMessage]);
     setInputValue("");
     setIsTyping(true);
-//https://repomatic-turbo-meww.onrender.com/chat_mentor
+
     try {
       const response = await fetch("https://repomatic-turbo-meww.onrender.com/chat_mentor", {
         method: "POST",
@@ -92,6 +94,46 @@ export default function ChatDataMentor() {
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "auto" });
   }, []);
+
+  
+        const handlerLogOut = () => {
+          authActions.logout();
+          navigate("/");
+      };
+  
+  
+   // Lógica para verificar el token de sesión al cargar el componente
+      useEffect(() => {
+          const checkTokenValidity = async () => {
+              const token = localStorage.getItem("token");
+  
+              if (!token) {
+                  console.warn("No se encontró un token. Redirigiendo a login.");
+                  handlerLogOut();
+                  return;
+              }
+  
+              try {
+                  const response = await fetch('https://repomatic-turbo-meww.onrender.com/check_token', {
+                      method: 'GET',
+                      headers: {
+                          'Authorization': `Bearer ${token}`,
+                      },
+                  });
+  
+                  if (!response.ok) {
+                      console.warn("Token expirado o inválido. Cerrando sesión automáticamente.");
+                      handlerLogOut();
+                  }
+              } catch (error) {
+                  console.error("Error al verificar el token:", error);
+                  handlerLogOut();
+              }
+          };
+  
+          checkTokenValidity();
+      }, [navigate]);
+  
 
   return (
     <div className="min-h-screen bg-background">

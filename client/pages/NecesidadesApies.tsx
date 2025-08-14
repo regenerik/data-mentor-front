@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate  } from "react-router-dom";
+import { authActions } from "../store";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -31,6 +32,7 @@ interface FilterState {
 }
 
 export default function NecesidadesApies() {
+  const navigate = useNavigate();
   const [filters, setFilters] = useState<FilterState>({
     fecha_desde: "",
     fecha_hasta: "",
@@ -177,6 +179,45 @@ export default function NecesidadesApies() {
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "auto" });
   }, []);
+
+
+    const handlerLogOut = () => {
+      authActions.logout();
+      navigate("/");
+    };
+  
+  
+    // Lógica para verificar el token de sesión al cargar el componente
+    useEffect(() => {
+      const checkTokenValidity = async () => {
+        const token = localStorage.getItem("token");
+  
+        if (!token) {
+          console.warn("No se encontró un token. Redirigiendo a login.");
+          handlerLogOut();
+          return;
+        }
+  
+        try {
+          const response = await fetch('https://repomatic-turbo-meww.onrender.com/check_token', {
+            method: 'GET',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+            },
+          });
+  
+          if (!response.ok) {
+            console.warn("Token expirado o inválido. Cerrando sesión automáticamente.");
+            handlerLogOut();
+          }
+        } catch (error) {
+          console.error("Error al verificar el token:", error);
+          handlerLogOut();
+        }
+      };
+  
+      checkTokenValidity();
+    }, [navigate]);
 
   return (
     <div className="min-h-screen bg-background">

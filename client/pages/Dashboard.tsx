@@ -1,4 +1,5 @@
-import { Link } from "react-router-dom";
+import { useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import {
     Card,
     CardContent,
@@ -21,11 +22,46 @@ import { authActions } from "../store";
 
 export default function Dashboard() {
 
-    const handlerLogOut = () => {
-        authActions.logout()
-    }
+    const navigate = useNavigate();
 
-    // Leer el valor de "admin" desde localStorage
+    const handlerLogOut = () => {
+        authActions.logout();
+        navigate("/");
+    };
+
+    // Lógica para verificar el token de sesión al cargar el componente
+    useEffect(() => {
+        const checkTokenValidity = async () => {
+            const token = localStorage.getItem("token");
+
+            if (!token) {
+                console.warn("No se encontró un token. Redirigiendo a login.");
+                handlerLogOut();
+                return;
+            }
+
+            try {
+                const response = await fetch('https://repomatic-turbo-meww.onrender.com/check_token', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                    },
+                });
+
+                if (!response.ok) {
+                    console.warn("Token expirado o inválido. Cerrando sesión automáticamente.");
+                    handlerLogOut();
+                }
+            } catch (error) {
+                console.error("Error al verificar el token:", error);
+                handlerLogOut();
+            }
+        };
+
+        checkTokenValidity();
+    }, [navigate]);
+
+    // Leer el valor de "admin" desde localStorage para el renderizado condicional
     const isAdmin = JSON.parse(localStorage.getItem("admin"));
 
     return (
@@ -67,7 +103,7 @@ export default function Dashboard() {
 
                     {/* Grid de herramientas */}
                     <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-                         {/* Chat Data Mentor Cursos Card */}
+                        {/* Chat Data Mentor Cursos Card */}
                         <Card className="group relative overflow-hidden border-border/50 bg-card/80 backdrop-blur-sm hover:border-primary/50 transition-all duration-300 hover:shadow-2xl hover:shadow-primary/10">
                             {/* Glow Effect */}
                             <div className="absolute inset-0 bg-gradient-to-r from-neon-purple/5 to-neon-pink/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
@@ -104,7 +140,7 @@ export default function Dashboard() {
                                 </Link>
                             </CardContent>
                         </Card>
-                         {/* Tarjeta Necesidades APIES */}
+                        {/* Tarjeta Necesidades APIES */}
                         <Card className="group relative overflow-hidden border-border/50 bg-card/80 backdrop-blur-sm hover:border-primary/50 transition-all duration-300 hover:shadow-2xl hover:shadow-primary/10">
                             {/* Efecto Glow */}
                             <div className="absolute inset-0 bg-gradient-to-r from-neon-green/5 to-neon-pink/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
@@ -186,9 +222,6 @@ export default function Dashboard() {
                                 </Link>
                             </CardContent>
                         </Card>
-
-                       
-                       
 
                         {/* Tarjeta Ajustes de Administrador (condicional) */}
                         {isAdmin && (
