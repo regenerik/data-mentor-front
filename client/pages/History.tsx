@@ -345,7 +345,7 @@ function HistoryList({
       <CardHeader>
         <CardTitle className="text-foreground flex items-center gap-2">
           <HistoryIcon className="h-5 w-5 text-primary" />
-          Histórico de guardados
+          Histórico de chats
         </CardTitle>
         <CardDescription className="text-muted-foreground">
           {history.length} cursos encontrados

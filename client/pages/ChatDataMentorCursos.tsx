@@ -95,7 +95,7 @@ const sampleCourses: Course[] = [
 ];
 
 const predefinedOptions = {
-  objectivo: [
+  objetivo: [
     "Competencia a desarrollar",
     "Conocimientos específicos de producto",
     "Lograr un mindset centrado en el cliente",
@@ -176,7 +176,7 @@ export default function ChatDataMentorCursos() {
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
-  
+
   useEffect(() => {
     if (isInitialLoad.current) {
       isInitialLoad.current = false;
@@ -190,20 +190,20 @@ export default function ChatDataMentorCursos() {
     const selections = Object.entries(selectedPredefined)
       .filter(([, value]) => value)
       .map(([key, value]) => `${key}: ${value}`);
-    
+
     let apiPrompt = promptToSend;
     if (selections.length > 0) {
       apiPrompt += `\n\n**Parámetros predefinidos:**\n- ${selections.join('\n- ')}`;
     }
     apiPrompt += combinedContent;
-    
+
     if (!promptToSend && !combinedContent && selections.length === 0) return;
-    
+
     const predefinedCount = selections.length;
     const fileCount = attachedFiles.length;
 
     let displayMessage = userMessageContent || promptToSend;
-    
+
     if (predefinedCount > 0 || fileCount > 0) {
       const parts = [];
       if (promptToSend) parts.push(promptToSend);
@@ -211,7 +211,7 @@ export default function ChatDataMentorCursos() {
       if (fileCount > 0) parts.push(`(+${fileCount} adjuntos)`);
       displayMessage = parts.join(' ');
     }
-    
+
     const userMessage: Message = {
       id: Date.now().toString(),
       type: "user",
@@ -270,7 +270,7 @@ export default function ChatDataMentorCursos() {
   const handleActionButtonClick = (action: 'specify' | 'simplify' | 'sources' | 'optimize' | 'multipleChoice' | 'narrative' | 'studentQuestions') => {
     let apiPrompt = '';
     let userMessageContent = '';
-    
+
     switch (action) {
       case 'specify':
         apiPrompt = "El contenido anterior es una excelente base para un curso. Ahora necesito que elabores y desarrolles cada uno de los puntos en profundidad. Genera un contenido más específico y detallado, expandiendo la información de cada sección.";
@@ -331,7 +331,7 @@ export default function ChatDataMentorCursos() {
   const handleClearPredefined = () => {
     setSelectedPredefined({});
   };
-  
+
   const handleCopyResponse = (content: string) => {
     navigator.clipboard.writeText(content);
   };
@@ -464,7 +464,7 @@ export default function ChatDataMentorCursos() {
 
       reader.onload = async (event) => {
         const arrayBuffer = event.target?.result as ArrayBuffer;
-        
+
         if (file.name.endsWith(".txt")) {
           const text = new TextDecoder().decode(arrayBuffer);
           resolve(text);
@@ -579,11 +579,10 @@ export default function ChatDataMentorCursos() {
                       {sampleCourses.map((course) => (
                         <Card
                           key={course.id}
-                          className={`cursor-pointer transition-all duration-200 hover:border-primary/50 ${
-                            selectedCourse?.id === course.id
-                              ? "border-primary bg-primary/5"
-                              : "border-border/50"
-                          }`}
+                          className={`cursor-pointer transition-all duration-200 hover:border-primary/50 ${selectedCourse?.id === course.id
+                            ? "border-primary bg-primary/5"
+                            : "border-border/50"
+                            }`}
                           onClick={() => handleCourseSelection(course)}
                         >
                           <CardContent className="p-4">
@@ -666,6 +665,50 @@ export default function ChatDataMentorCursos() {
                     </CardContent>
                   </AccordionContent>
                 </AccordionItem>
+                <AccordionItem value="item-4">
+                  <AccordionTrigger className="p-4 border-b border-border">
+                    <div className="flex items-center gap-2">
+                      <PlayCircle className="h-5 w-5 text-primary" />
+                      <CardTitle className="text-foreground">
+                        Tutorial
+                      </CardTitle>
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent>
+                    <CardDescription className="p-4 text-muted-foreground">
+                      El siguiente video explica rápidamente como utilizar todas las herramientas de Cursos Data Mentor.
+                    </CardDescription>
+                    <CardContent className="px-4 pb-4">
+                      {/* Contenedor responsive 16:9, sin depender de plugin aspect-video */}
+                      <div
+                        className="relative w-full overflow-hidden rounded-md border border-border"
+                        style={{ paddingTop: "56.25%" }} // 16:9
+                      >
+                        <iframe
+                          className="absolute inset-0 w-full h-full"
+                          src="https://www.youtube-nocookie.com/embed/AhtCC6o2Lt4?rel=0&modestbranding=1"
+                          title="Tutorial Cursos Data Mentor"
+                          frameBorder={0}
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                          referrerPolicy="strict-origin-when-cross-origin"
+                          allowFullScreen
+                          loading="lazy"
+                        />
+                      </div>
+
+                      <div className="mt-2 text-right">
+                        <a
+                          href="https://www.youtube.com/watch?v=AhtCC6o2Lt4"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-sm text-primary hover:underline"
+                        >
+                          Ver en YouTube
+                        </a>
+                      </div>
+                    </CardContent>
+                  </AccordionContent>
+                </AccordionItem>
               </Accordion>
             </Card>
           </div>
@@ -697,7 +740,7 @@ export default function ChatDataMentorCursos() {
                   </div>
                 </div>
               )}
-              
+
               <ScrollArea className="flex-1 p-6">
                 <div className="space-y-6">
                   {messages.map((message) => (
@@ -711,17 +754,16 @@ export default function ChatDataMentorCursos() {
                         </div>
                       )}
                       <div
-                        className={`max-w-[80%] rounded-xl px-4 py-3 ${
-                          message.type === "user"
-                            ? "bg-primary text-primary-foreground"
-                            : "bg-muted text-muted-foreground"
-                        } flex flex-col`}
+                        className={`max-w-[80%] rounded-xl px-4 py-3 ${message.type === "user"
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-muted text-muted-foreground"
+                          } flex flex-col`}
                       >
                         <div className="prose dark:prose-invert text-sm leading-relaxed mb-2">
                           <ReactMarkdown
                             components={{
-                              br: ({node, ...props}) => <br {...props} />,
-                              p: ({node, ...props}) => <p {...props} className="mt-4 mb-2" />,
+                              br: ({ node, ...props }) => <br {...props} />,
+                              p: ({ node, ...props }) => <p {...props} className="mt-4 mb-2" />,
                             }}
                           >
                             {message.content}
@@ -890,8 +932,8 @@ export default function ChatDataMentorCursos() {
                     {Object.entries(selectedPredefined).map(([category, value]) => (
                       <Badge key={category} className="h-6">
                         <span>{value}</span>
-                        <X 
-                          className="h-3 w-3 ml-1 cursor-pointer" 
+                        <X
+                          className="h-3 w-3 ml-1 cursor-pointer"
                           onClick={() => handleRemovePredefined(category)}
                         />
                       </Badge>
@@ -972,7 +1014,7 @@ export default function ChatDataMentorCursos() {
                         }
                       }}
                     />
-                    <div 
+                    <div
                       className="absolute right-1 top-1/2 -translate-y-1/2"
                       title="Optimizar prompt"
                     >
@@ -988,7 +1030,7 @@ export default function ChatDataMentorCursos() {
                       </Button>
                     </div>
                   </div>
-                  
+
                   <Button
                     onClick={() => handleSendMessage(inputValue.trim())}
                     disabled={(!inputValue.trim() && attachedFiles.length === 0) || isSaving || isTyping}
