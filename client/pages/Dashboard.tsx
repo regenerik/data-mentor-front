@@ -25,6 +25,9 @@ export default function Dashboard() {
         authActions.logout()
     }
 
+    // Leer el valor de "admin" desde localStorage
+    const isAdmin = JSON.parse(localStorage.getItem("admin"));
+
     return (
         <div className="min-h-screen bg-background">
             {/* Sección principal */}
@@ -64,47 +67,44 @@ export default function Dashboard() {
 
                     {/* Grid de herramientas */}
                     <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-                        {/* Tarjeta Chat Data Mentor */}
+                         {/* Chat Data Mentor Cursos Card */}
                         <Card className="group relative overflow-hidden border-border/50 bg-card/80 backdrop-blur-sm hover:border-primary/50 transition-all duration-300 hover:shadow-2xl hover:shadow-primary/10">
-                            {/* Efecto Glow */}
-                            <div className="absolute inset-0 bg-gradient-to-r from-neon-blue/5 to-neon-purple/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                            {/* Glow Effect */}
+                            <div className="absolute inset-0 bg-gradient-to-r from-neon-purple/5 to-neon-pink/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
 
                             <CardHeader className="relative z-10">
                                 <div className="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center mb-4 group-hover:bg-primary/30 transition-colors">
-                                    <MessageCircle className="h-6 w-6 text-primary" />
+                                    <GraduationCap className="h-6 w-6 text-primary" />
                                 </div>
                                 <CardTitle className="text-xl font-semibold text-foreground group-hover:text-primary transition-colors">
-                                    Chat Data Mentor
+                                    Creador de cursos con I.A.
                                 </CardTitle>
                                 <CardDescription className="text-muted-foreground">
-                                    Asistente conversacional inteligente para análisis de datos en tiempo real,
-                                    generación de insights y resolución de consultas mediante procesamiento
-                                    de lenguaje natural avanzado.
+                                    Asistente de creación interactivo para cursos de la empresa. Recibí ayuda contextual al crearlo, mejorá el material del curso y obtené orientación personalizada para tu contenido.
                                 </CardDescription>
                             </CardHeader>
 
                             <CardContent className="relative z-10">
                                 <div className="flex items-center gap-4 mb-6">
                                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                        <Zap className="h-4 w-4 text-neon-green" />
-                                        Análisis en tiempo real
+                                        <Brain className="h-4 w-4 text-neon-purple" />
+                                        Contextos
                                     </div>
                                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                        <Brain className="h-4 w-4 text-neon-purple" />
-                                        Potenciado con IA
+                                        <GraduationCap className="h-4 w-4 text-neon-pink" />
+                                        Asistencia de uso
                                     </div>
                                 </div>
 
-                                <Link to="/chat-data-mentor">
+                                <Link to="/chat-data-mentor-cursos">
                                     <Button className="w-full group/btn bg-primary/90 hover:bg-primary text-primary-foreground">
-                                        Iniciar conversación
+                                        Crea tu curso
                                         <ArrowRight className="ml-2 h-4 w-4 group-hover/btn:translate-x-1 transition-transform" />
                                     </Button>
                                 </Link>
                             </CardContent>
                         </Card>
-
-                        {/* Tarjeta Necesidades APIES */}
+                         {/* Tarjeta Necesidades APIES */}
                         <Card className="group relative overflow-hidden border-border/50 bg-card/80 backdrop-blur-sm hover:border-primary/50 transition-all duration-300 hover:shadow-2xl hover:shadow-primary/10">
                             {/* Efecto Glow */}
                             <div className="absolute inset-0 bg-gradient-to-r from-neon-green/5 to-neon-pink/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
@@ -147,85 +147,92 @@ export default function Dashboard() {
                                 </Link>
                             </CardContent>
                         </Card>
-                        {/* Chat Data Mentor Cursos Card */}
+                        {/* Tarjeta Chat Data Mentor */}
                         <Card className="group relative overflow-hidden border-border/50 bg-card/80 backdrop-blur-sm hover:border-primary/50 transition-all duration-300 hover:shadow-2xl hover:shadow-primary/10">
-                            {/* Glow Effect */}
-                            <div className="absolute inset-0 bg-gradient-to-r from-neon-purple/5 to-neon-pink/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                            {/* Efecto Glow */}
+                            <div className="absolute inset-0 bg-gradient-to-r from-neon-blue/5 to-neon-purple/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
 
                             <CardHeader className="relative z-10">
                                 <div className="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center mb-4 group-hover:bg-primary/30 transition-colors">
-                                    <GraduationCap className="h-6 w-6 text-primary" />
+                                    <MessageCircle className="h-6 w-6 text-primary" />
                                 </div>
                                 <CardTitle className="text-xl font-semibold text-foreground group-hover:text-primary transition-colors">
-                                    Chat DM Creación de Cursos
+                                    Chat Data Mentor
                                 </CardTitle>
                                 <CardDescription className="text-muted-foreground">
-                                    Asistente de creación interactivo para cursos de la empresa. Recibí ayuda contextual al crearlo, mejorá el material del curso y obtené orientación personalizada para tu contenido.
+                                    Asistente conversacional inteligente para análisis de datos en tiempo real,
+                                    generación de insights y resolución de consultas mediante procesamiento
+                                    de lenguaje natural avanzado.
                                 </CardDescription>
                             </CardHeader>
 
                             <CardContent className="relative z-10">
                                 <div className="flex items-center gap-4 mb-6">
                                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                        <Zap className="h-4 w-4 text-neon-green" />
+                                        Análisis en tiempo real
+                                    </div>
+                                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
                                         <Brain className="h-4 w-4 text-neon-purple" />
-                                        Contextos
-                                    </div>
-                                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                        <GraduationCap className="h-4 w-4 text-neon-pink" />
-                                        Asistencia de uso
+                                        Potenciado con IA
                                     </div>
                                 </div>
 
-                                <Link to="/chat-data-mentor-cursos">
+                                <Link to="/chat-data-mentor">
                                     <Button className="w-full group/btn bg-primary/90 hover:bg-primary text-primary-foreground">
-                                        Crea tu curso
+                                        (en construccion)
                                         <ArrowRight className="ml-2 h-4 w-4 group-hover/btn:translate-x-1 transition-transform" />
                                     </Button>
                                 </Link>
                             </CardContent>
                         </Card>
 
-                        {/* Ajustes de Administrador Card */}
-                        <Card className="group relative overflow-hidden border-border/50 bg-card/80 backdrop-blur-sm hover:border-primary/50 transition-all duration-300 hover:shadow-2xl hover:shadow-primary/10">
-                            {/* Glow Effect */}
-                            <div className="absolute inset-0 bg-gradient-to-r from-neon-blue/5 to-neon-green/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                       
+                       
 
-                            <CardHeader className="relative z-10">
-                                <div className="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center mb-4 group-hover:bg-primary/30 transition-colors">
-                                    <Settings className="h-6 w-6 text-primary" />
-                                </div>
-                                <CardTitle className="text-xl font-semibold text-foreground group-hover:text-primary transition-colors">
-                                    Ajustes de Administrador
-                                </CardTitle>
-                                <CardDescription className="text-muted-foreground">
-                                    Panel de administración del sistema completo para gestionar usuarios, configurar ajustes de seguridad, monitorear el estado de la base de datos y controlar las preferencias del sistema.
-                                </CardDescription>
-                            </CardHeader>
+                        {/* Tarjeta Ajustes de Administrador (condicional) */}
+                        {isAdmin && (
+                            <Card className="group relative overflow-hidden border-border/50 bg-card/80 backdrop-blur-sm hover:border-primary/50 transition-all duration-300 hover:shadow-2xl hover:shadow-primary/10">
+                                {/* Glow Effect */}
+                                <div className="absolute inset-0 bg-gradient-to-r from-neon-blue/5 to-neon-green/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
 
-                            <CardContent className="relative z-10">
-                                <div className="space-y-3 mb-6">
-                                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                        <div className="w-1.5 h-1.5 bg-neon-blue rounded-full"></div>
-                                        Permisos de usuario
+                                <CardHeader className="relative z-10">
+                                    <div className="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center mb-4 group-hover:bg-primary/30 transition-colors">
+                                        <Settings className="h-6 w-6 text-primary" />
                                     </div>
-                                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                        <div className="w-1.5 h-1.5 bg-neon-green rounded-full"></div>
-                                        Configuraciones de sistema
-                                    </div>
-                                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                        <div className="w-1.5 h-1.5 bg-neon-purple rounded-full"></div>
-                                        Seguridad y bases de datos
-                                    </div>
-                                </div>
+                                    <CardTitle className="text-xl font-semibold text-foreground group-hover:text-primary transition-colors">
+                                        Ajustes de Administrador
+                                    </CardTitle>
+                                    <CardDescription className="text-muted-foreground">
+                                        Panel de administración del sistema completo para gestionar usuarios, configurar ajustes de seguridad, monitorear el estado de la base de datos y controlar las preferencias del sistema.
+                                    </CardDescription>
+                                </CardHeader>
 
-                                <Link to="/ajustes-administrador">
-                                    <Button className="w-full group/btn bg-primary/90 hover:bg-primary text-primary-foreground">
-                                        Abrir Configuraciones
-                                        <ArrowRight className="ml-2 h-4 w-4 group-hover/btn:translate-x-1 transition-transform" />
-                                    </Button>
-                                </Link>
-                            </CardContent>
-                        </Card>
+                                <CardContent className="relative z-10">
+                                    <div className="space-y-3 mb-6">
+                                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                            <div className="w-1.5 h-1.5 bg-neon-blue rounded-full"></div>
+                                            Permisos de usuario
+                                        </div>
+                                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                            <div className="w-1.5 h-1.5 bg-neon-green rounded-full"></div>
+                                            Configuraciones de sistema
+                                        </div>
+                                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                            <div className="w-1.5 h-1.5 bg-neon-purple rounded-full"></div>
+                                            Seguridad y bases de datos
+                                        </div>
+                                    </div>
+
+                                    <Link to="/ajustes-administrador">
+                                        <Button className="w-full group/btn bg-primary/90 hover:bg-primary text-primary-foreground">
+                                            Abrir Configuraciones
+                                            <ArrowRight className="ml-2 h-4 w-4 group-hover/btn:translate-x-1 transition-transform" />
+                                        </Button>
+                                    </Link>
+                                </CardContent>
+                            </Card>
+                        )}
                     </div>
 
                     {/* Sección de features */}

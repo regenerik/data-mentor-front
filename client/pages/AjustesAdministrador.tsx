@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useState, useEffect } from "react"; // Importamos useEffect
+import { Link, useNavigate } from "react-router-dom"; // Importamos useNavigate
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -98,6 +98,17 @@ export default function AjustesAdministrador() {
     email: "",
     role: "User" as User["role"],
   });
+
+  // 👇 Nueva lógica para la redirección
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const isAdmin = JSON.parse(localStorage.getItem("admin"));
+    if (!isAdmin) {
+      navigate("/dashboard");
+    }
+  }, [navigate]);
+  // 👆 Fin de la nueva lógica
 
   const handleSystemSettingChange = (
     key: keyof SystemSettings,
