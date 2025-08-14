@@ -6,661 +6,775 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import {
-    ArrowLeft,
-    Settings,
-    Users,
-    Shield,
-    Database,
-    Bell,
-    Eye,
-    Trash2,
-    Save,
-    Plus,
-    Edit,
+  ArrowLeft,
+  Settings,
+  Users,
+  Shield,
+  Database,
+  Bell,
+  Eye,
+  Trash2,
+  Save,
+  Plus,
+  Loader2,
+  CheckCircle2,
+  XCircle,
 } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { authActions } from "../store";
 
 interface User {
-    id: string;
-    name: string;
-    email: string;
-    role: "Admin" | "User" | "Viewer";
-    status: "Active" | "Inactive";
-    lastLogin: string;
+  dni: string;
+  name: string;
+  email: string;
+  admin: boolean;
+  url_image: string;
+  // Añadimos un estado local para la vista del componente
+  status?: "Active" | "Inactive"; 
+  lastLogin?: string;
 }
 
 interface SystemSettings {
-    siteName: string;
-    maxFileSize: string;
-    sessionTimeout: string;
-    enableNotifications: boolean;
-    enableAnalytics: boolean;
-    maintenanceMode: boolean;
-    allowRegistration: boolean;
+  siteName: string;
+  maxFileSize: string;
+  sessionTimeout: string;
+  enableNotifications: boolean;
+  enableAnalytics: boolean;
+  maintenanceMode: boolean;
+  allowRegistration: boolean;
 }
 
-const sampleUsers: User[] = [
-    {
-        id: "1",
-        name: "Admin User",
-        email: "admin@datamentor.com",
-        role: "Admin",
-        status: "Active",
-        lastLogin: "2024-01-15 10:30",
-    },
-    {
-        id: "2",
-        name: "John Doe",
-        email: "john@example.com",
-        role: "User",
-        status: "Active",
-        lastLogin: "2024-01-14 15:45",
-    },
-    {
-        id: "3",
-        name: "Jane Smith",
-        email: "jane@example.com",
-        role: "Viewer",
-        status: "Inactive",
-        lastLogin: "2024-01-10 09:15",
-    },
-];
+const BASE_URL = "https://repomatic-turbo-meww.onrender.com";
 
 export default function AjustesAdministrador() {
+  const [users, setUsers] = useState<User[]>([]);
+  const [systemSettings, setSystemSettings] = useState<SystemSettings>({
+    siteName: "Data Mentor Tools",
+    maxFileSize: "50",
+    sessionTimeout: "30",
+    enableNotifications: true,
+    enableAnalytics: true,
+    maintenanceMode: false,
+    allowRegistration: true,
+  });
 
-    const [users, setUsers] = useState<User[]>(sampleUsers);
-    const [systemSettings, setSystemSettings] = useState<SystemSettings>({
-        siteName: "Data Mentor Tools",
-        maxFileSize: "50",
-        sessionTimeout: "30",
-        enableNotifications: true,
-        enableAnalytics: true,
-        maintenanceMode: false,
-        allowRegistration: true,
-    });
+  const [newUser, setNewUser] = useState({
+    name: "",
+    email: "",
+    password: "",
+    dni: "",
+    role: "User" as "User" | "Admin",
+  });
 
-    const [newUser, setNewUser] = useState({
-        name: "",
-        email: "",
-        role: "User" as User["role"],
-    });
+  const [loading, setLoading] = useState(false);
+  const [loadingUsers, setLoadingUsers] = useState(true);
+  const [formError, setFormError] = useState("");
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [showErrorModal, setShowErrorModal] = useState(false);
+  const [modalMessage, setModalMessage] = useState("");
 
-    const navigate = useNavigate();
+  const navigate = useNavigate();
 
-    // Lógica para verificar el token de sesión al cargar el componente
-    useEffect(() => {
-        const checkTokenValidity = async () => {
-            const token = localStorage.getItem("token");
-            const isAdmin = JSON.parse(localStorage.getItem("admin"));
-            
-            if (!token || !isAdmin) {
-                console.warn("Acceso denegado. Redirigiendo a dashboard.");
-                navigate("/dashboard");
-                return;
-            }
+  // Función para obtener los usuarios de la API
+  const fetchUsers = async () => {
+    setLoadingUsers(true);
+    const token = localStorage.getItem("token");
+    if (!token) {
+      setLoadingUsers(false);
+      return;
+    }
 
-            try {
-                const response = await fetch('https://repomatic-turbo-meww.onrender.com/check_token', {
-                    method: 'GET',
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                    },
-                });
+    try {
+      const response = await fetch(`${BASE_URL}/users`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
-                if (!response.ok) {
-                    console.warn("Token expirado o inválido. Cerrando sesión automáticamente.");
-                    authActions.logout();
-                    navigate("/");
-                }
-            } catch (error) {
-                console.error("Error al verificar el token:", error);
-                authActions.logout();
-                navigate("/");
-            }
-        };
+      if (!response.ok) {
+        throw new Error("Failed to fetch users");
+      }
 
-        checkTokenValidity();
-    }, [navigate]);
+      const data = await response.json();
+      // Mapeamos los datos de la API al formato local, añadiendo campos por defecto
+      const fetchedUsers: User[] = data.lista_usuarios.map((user: any) => ({
+        dni: user.dni,
+        id: user.dni, // Usamos el DNI como ID temporal
+        name: user.name,
+        email: user.email,
+        admin: user.admin,
+        url_image: user.url_image,
+        role: user.admin ? "Admin" : "User",
+        status: "Active", // Asumimos activos por defecto
+        lastLogin: "N/A", // Asumimos N/A por defecto
+      }));
+      setUsers(fetchedUsers);
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      setModalMessage("Error al cargar la lista de usuarios.");
+      setShowErrorModal(true);
+    } finally {
+      setLoadingUsers(false);
+    }
+  };
 
-    const handleSystemSettingChange = (
-        key: keyof SystemSettings,
-        value: string | boolean,
-    ) => {
-        setSystemSettings((prev) => ({
-            ...prev,
-            [key]: value,
-        }));
-    };
+  // Lógica de validación de token y carga de usuarios al montar el componente
+  useEffect(() => {
+    const checkTokenAndFetchUsers = async () => {
+      const token = localStorage.getItem("token");
+      const isAdmin = JSON.parse(localStorage.getItem("admin") || "false");
 
-    const handleSaveSettings = () => {
-        // In real implementation, this would save to backend
-        alert("Settings saved successfully!");
-    };
+      if (!token || !isAdmin) {
+        console.warn("Acceso denegado. Redirigiendo a dashboard.");
+        navigate("/dashboard");
+        return;
+      }
 
-    const handleAddUser = () => {
-        if (!newUser.name || !newUser.email) return;
+      try {
+        const response = await fetch(`${BASE_URL}/check_token`, {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
 
-        const user: User = {
-            id: Date.now().toString(),
-            name: newUser.name,
-            email: newUser.email,
-            role: newUser.role,
-            status: "Active",
-            lastLogin: "Never",
-        };
-
-        setUsers((prev) => [...prev, user]);
-        setNewUser({ name: "", email: "", role: "User" });
-    };
-
-    const handleDeleteUser = (userId: string) => {
-        setUsers((prev) => prev.filter((user) => user.id !== userId));
-    };
-
-    const toggleUserStatus = (userId: string) => {
-        setUsers((prev) =>
-            prev.map((user) =>
-                user.id === userId
-                    ? {
-                        ...user,
-                        status: user.status === "Active" ? "Inactive" : "Active",
-                    }
-                    : user,
-            ),
-        );
-    };
-
-    const getRoleColor = (role: string) => {
-        switch (role) {
-            case "Admin":
-                return "bg-destructive/20 text-destructive border-destructive/30";
-            case "User":
-                return "bg-primary/20 text-primary border-primary/30";
-            case "Viewer":
-                return "bg-muted text-muted-foreground border-muted";
-            default:
-                return "bg-muted text-muted-foreground";
+        if (!response.ok) {
+          console.warn("Token expirado o inválido. Cerrando sesión automáticamente.");
+          authActions.logout();
+          navigate("/");
+          return;
         }
+        fetchUsers();
+      } catch (error) {
+        console.error("Error al verificar el token:", error);
+        authActions.logout();
+        navigate("/");
+      }
     };
 
-    const getStatusColor = (status: string) => {
-        switch (status) {
-            case "Active":
-                return "bg-neon-green/20 text-neon-green border-neon-green/30";
-            case "Inactive":
-                return "bg-muted text-muted-foreground border-muted";
-            default:
-                return "bg-muted text-muted-foreground";
-        }
-    };
+    checkTokenAndFetchUsers();
+  }, [navigate]);
 
-    return (
-        <div className="min-h-screen bg-background">
-            {/* Header */}
-            <div className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-10">
-                <div className="container mx-auto px-4 py-4 flex items-center gap-4">
-                    <Link
-                        to="/dashboard"
-                        className="text-muted-foreground hover:text-foreground transition-colors"
-                    >
-                        <ArrowLeft className="h-5 w-5" />
-                    </Link>
-                    <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center">
-                            <Settings className="h-5 w-5 text-primary" />
-                        </div>
-                        <div>
-                            <h1 className="text-xl font-semibold text-foreground">
-                                Ajustes de Administrador
-                            </h1>
-                            <p className="text-sm text-muted-foreground">
-                                Configuración de sistema y administración de usuarios.
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </div>
+  const handleSystemSettingChange = (
+    key: keyof SystemSettings,
+    value: string | boolean
+  ) => {
+    setSystemSettings((prev) => ({
+      ...prev,
+      [key]: value,
+    }));
+  };
 
-            {/* Main Content */}
-            <div className="container mx-auto px-4 py-6 max-w-6xl">
-                <Tabs defaultValue="users" className="space-y-6">
-                    <TabsList className="grid w-full grid-cols-4">
-                        <TabsTrigger value="users" className="flex items-center gap-2">
-                            <Users className="h-4 w-4" />
-                            Usuarios
-                        </TabsTrigger>
-                        <TabsTrigger value="system" className="flex items-center gap-2">
-                            <Settings className="h-4 w-4" />
-                            Sistema
-                        </TabsTrigger>
-                        <TabsTrigger value="security" className="flex items-center gap-2">
-                            <Shield className="h-4 w-4" />
-                            Seguridad
-                        </TabsTrigger>
-                        <TabsTrigger value="database" className="flex items-center gap-2">
-                            <Database className="h-4 w-4" />
-                            Base de datos
-                        </TabsTrigger>
-                    </TabsList>
+  const handleSaveSettings = () => {
+    // In a real implementation, this would save to a backend API
+    alert("Settings saved successfully!");
+  };
 
-                    {/* Users Management */}
-                    <TabsContent value="users" className="space-y-6">
-                        <div className="grid lg:grid-cols-3 gap-6">
-                            {/* Add New User */}
-                            <Card className="border-border shadow-xl">
-                                <CardHeader>
-                                    <CardTitle className="text-foreground flex items-center gap-2">
-                                        <Plus className="h-5 w-5 text-primary" />
-                                        Agregar nuevo usuario
-                                    </CardTitle>
-                                    <CardDescription>
-                                        Crear una nueva cuenta de usuario para el sistema
-                                    </CardDescription>
-                                </CardHeader>
-                                <CardContent className="space-y-4">
-                                    <div className="space-y-2">
-                                        <Label htmlFor="user-name">Nombre Completo</Label>
-                                        <Input
-                                            id="user-name"
-                                            placeholder="Enter full name"
-                                            value={newUser.name}
-                                            onChange={(e) =>
-                                                setNewUser((prev) => ({ ...prev, name: e.target.value }))
-                                            }
-                                        />
-                                    </div>
+  const handleCreateUser = async () => {
+    if (!newUser.name || !newUser.email || !newUser.dni || !newUser.password) {
+      setFormError("Todos los campos son obligatorios.");
+      return;
+    }
 
-                                    <div className="space-y-2">
-                                        <Label htmlFor="user-email">Dirección de email</Label>
-                                        <Input
-                                            id="user-email"
-                                            type="email"
-                                            placeholder="Enter email"
-                                            value={newUser.email}
-                                            onChange={(e) =>
-                                                setNewUser((prev) => ({
-                                                    ...prev,
-                                                    email: e.target.value,
-                                                }))
-                                            }
-                                        />
-                                    </div>
+    setLoading(true);
+    setFormError("");
 
-                                    <div className="space-y-2">
-                                        <Label>Rol</Label>
-                                        <Select
-                                            value={newUser.role}
-                                            onValueChange={(value: User["role"]) =>
-                                                setNewUser((prev) => ({ ...prev, role: value }))
-                                            }
-                                        >
-                                            <SelectTrigger>
-                                                <SelectValue />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="Viewer">Solo visualización</SelectItem>
-                                                <SelectItem value="User">Usuario</SelectItem>
-                                                <SelectItem value="Admin">Administrador</SelectItem>
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
+    try {
+      const payload = {
+        name: newUser.name,
+        email: newUser.email,
+        dni: newUser.dni,
+        password: newUser.password,
+        admin: newUser.role === "Admin",
+      };
 
-                                    <Button onClick={handleAddUser} className="w-full">
-                                        <Plus className="h-4 w-4 mr-2" />
-                                        Agregar Usuario
-                                    </Button>
-                                </CardContent>
-                            </Card>
+      const response = await fetch(`${BASE_URL}/create_user`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
 
-                            {/* Users List */}
-                            <div className="lg:col-span-2">
-                                <Card className="border-border shadow-xl">
-                                    <CardHeader>
-                                        <CardTitle className="text-foreground">
-                                            Administración de Usuarios
-                                        </CardTitle>
-                                        <CardDescription>
-                                            Administrar usuarios existentes y sus permisos
-                                        </CardDescription>
-                                    </CardHeader>
-                                    <CardContent>
-                                        <div className="space-y-4">
-                                            {users.map((user) => (
-                                                <div
-                                                    key={user.id}
-                                                    className="flex items-center justify-between p-4 border border-border rounded-lg"
-                                                >
-                                                    <div className="flex items-center gap-4">
-                                                        <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
-                                                            <Users className="h-5 w-5 text-primary" />
-                                                        </div>
-                                                        <div>
-                                                            <h3 className="font-medium text-foreground">
-                                                                {user.name}
-                                                            </h3>
-                                                            <p className="text-sm text-muted-foreground">
-                                                                {user.email}
-                                                            </p>
-                                                            <p className="text-xs text-muted-foreground">
-                                                                Ultimo log-in: {user.lastLogin}
-                                                            </p>
-                                                        </div>
-                                                    </div>
+      const result = await response.json();
+      if (!response.ok) {
+        throw new Error(result.error || "Error al crear el usuario.");
+      }
 
-                                                    <div className="flex items-center gap-2">
-                                                        <Badge
-                                                            variant="outline"
-                                                            className={getRoleColor(user.role)}
-                                                        >
-                                                            {user.role}
-                                                        </Badge>
-                                                        <Badge
-                                                            variant="outline"
-                                                            className={getStatusColor(user.status)}
-                                                        >
-                                                            {user.status}
-                                                        </Badge>
+      setModalMessage("Usuario creado exitosamente.");
+      setShowSuccessModal(true);
+      setNewUser({ name: "", email: "", password: "", dni: "", role: "User" });
+      fetchUsers(); // Actualizamos la lista de usuarios
+    } catch (error) {
+      console.error("Error creating user:", error);
+      setModalMessage(error.message || "Ocurrió un error al crear el usuario.");
+      setShowErrorModal(true);
+    } finally {
+      setLoading(false);
+      setTimeout(() => {
+        setShowSuccessModal(false);
+        setShowErrorModal(false);
+      }, 3000);
+    }
+  };
 
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="sm"
-                                                            onClick={() => toggleUserStatus(user.id)}
-                                                        >
-                                                            <Eye className="h-4 w-4" />
-                                                        </Button>
+  const handleDeleteUser = (userId: string) => {
+    // Lógica para eliminar usuario
+    setUsers((prev) => prev.filter((user) => user.dni !== userId));
+  };
 
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="sm"
-                                                            onClick={() => handleDeleteUser(user.id)}
-                                                            className="text-destructive hover:text-destructive"
-                                                        >
-                                                            <Trash2 className="h-4 w-4" />
-                                                        </Button>
-                                                    </div>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </CardContent>
-                                </Card>
-                            </div>
-                        </div>
-                    </TabsContent>
-
-                    {/* System Settings */}
-                    <TabsContent value="system" className="space-y-6">
-                        <Card className="border-border shadow-xl">
-                            <CardHeader>
-                                <CardTitle className="text-foreground">
-                                    Configuración del sistema
-                                </CardTitle>
-                                <CardDescription>
-                                    Configuración general de sistema y preferencias
-                                </CardDescription>
-                            </CardHeader>
-                            <CardContent className="space-y-6">
-                                <div className="grid md:grid-cols-2 gap-6">
-                                    <div className="space-y-2">
-                                        <Label htmlFor="site-name">Nombre del sitio</Label>
-                                        <Input
-                                            id="site-name"
-                                            value={systemSettings.siteName}
-                                            onChange={(e) =>
-                                                handleSystemSettingChange("siteName", e.target.value)
-                                            }
-                                        />
-                                    </div>
-
-                                    <div className="space-y-2">
-                                        <Label htmlFor="max-file-size">
-                                            Max File Size (MB)
-                                        </Label>
-                                        <Input
-                                            id="max-file-size"
-                                            type="number"
-                                            value={systemSettings.maxFileSize}
-                                            onChange={(e) =>
-                                                handleSystemSettingChange("maxFileSize", e.target.value)
-                                            }
-                                        />
-                                    </div>
-
-                                    <div className="space-y-2">
-                                        <Label htmlFor="session-timeout">
-                                            Session Timeout (minutes)
-                                        </Label>
-                                        <Input
-                                            id="session-timeout"
-                                            type="number"
-                                            value={systemSettings.sessionTimeout}
-                                            onChange={(e) =>
-                                                handleSystemSettingChange(
-                                                    "sessionTimeout",
-                                                    e.target.value,
-                                                )
-                                            }
-                                        />
-                                    </div>
-                                </div>
-
-                                <div className="space-y-4">
-                                    <div className="flex items-center justify-between">
-                                        <div>
-                                            <Label htmlFor="notifications">Habilitar Notificaciones</Label>
-                                            <p className="text-sm text-muted-foreground">
-                                                Enviar notificacione de sistema a los usuarios
-                                            </p>
-                                        </div>
-                                        <Switch
-                                            id="notifications"
-                                            checked={systemSettings.enableNotifications}
-                                            onCheckedChange={(checked) =>
-                                                handleSystemSettingChange("enableNotifications", checked)
-                                            }
-                                        />
-                                    </div>
-
-                                    <div className="flex items-center justify-between">
-                                        <div>
-                                            <Label htmlFor="analytics">Habilitar Analytics</Label>
-                                            <p className="text-sm text-muted-foreground">
-                                                Recolectar análisis de datos usados
-                                            </p>
-                                        </div>
-                                        <Switch
-                                            id="analytics"
-                                            checked={systemSettings.enableAnalytics}
-                                            onCheckedChange={(checked) =>
-                                                handleSystemSettingChange("enableAnalytics", checked)
-                                            }
-                                        />
-                                    </div>
-
-                                    <div className="flex items-center justify-between">
-                                        <div>
-                                            <Label htmlFor="maintenance">Modo Mantenimiento</Label>
-                                            <p className="text-sm text-muted-foreground">
-                                                Habilitar modo de mantenimiento para actualizaciones de sistema
-                                            </p>
-                                        </div>
-                                        <Switch
-                                            id="maintenance"
-                                            checked={systemSettings.maintenanceMode}
-                                            onCheckedChange={(checked) =>
-                                                handleSystemSettingChange("maintenanceMode", checked)
-                                            }
-                                        />
-                                    </div>
-
-                                    <div className="flex items-center justify-between">
-                                        <div>
-                                            <Label htmlFor="registration">Permitir Registros</Label>
-                                            <p className="text-sm text-muted-foreground">
-                                                Permitir a nuevos usuarios registrar cuentas.
-                                            </p>
-                                        </div>
-                                        <Switch
-                                            id="registration"
-                                            checked={systemSettings.allowRegistration}
-                                            onCheckedChange={(checked) =>
-                                                handleSystemSettingChange("allowRegistration", checked)
-                                            }
-                                        />
-                                    </div>
-                                </div>
-
-                                <Button onClick={handleSaveSettings} className="w-full">
-                                    <Save className="h-4 w-4 mr-2" />
-                                    Guardar cambios
-                                </Button>
-                            </CardContent>
-                        </Card>
-                    </TabsContent>
-
-                    {/* Security Settings */}
-                    <TabsContent value="security" className="space-y-6">
-                        <Card className="border-border shadow-xl">
-                            <CardHeader>
-                                <CardTitle className="text-foreground">
-                                    Configuración de seguridad
-                                </CardTitle>
-                                <CardDescription>
-                                    Administrar políticas de seguridad y accesos
-                                </CardDescription>
-                            </CardHeader>
-                            <CardContent className="space-y-6">
-                                <div className="grid gap-6">
-                                    <div className="space-y-4">
-                                        <h3 className="text-lg font-semibold text-foreground">
-                                            Políticas de password
-                                        </h3>
-                                        <div className="grid md:grid-cols-2 gap-4">
-                                            <div className="space-y-2">
-                                                <Label>Longitud mínima del password</Label>
-                                                <Input type="number" defaultValue="8" />
-                                            </div>
-                                            <div className="space-y-2">
-                                                <Label>Vencimiento de password (dias)</Label>
-                                                <Input type="number" defaultValue="90" />
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div className="space-y-4">
-                                        <h3 className="text-lg font-semibold text-foreground">
-                                            Control de Acceso
-                                        </h3>
-                                        <div className="space-y-4">
-                                            <div className="flex items-center justify-between">
-                                                <div>
-                                                    <Label>Autenticación de dos factores</Label>
-                                                    <p className="text-sm text-muted-foreground">
-                                                        Requerir autenticación de 2 factores para todos los Admin
-                                                    </p>
-                                                </div>
-                                                <Switch defaultChecked />
-                                            </div>
-
-                                            <div className="flex items-center justify-between">
-                                                <div>
-                                                    <Label>IP Whitelist</Label>
-                                                    <p className="text-sm text-muted-foreground">
-                                                        Restringir acceso solo a IP's específicas
-                                                    </p>
-                                                </div>
-                                                <Switch />
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    </TabsContent>
-
-                    {/* Database Settings */}
-                    <TabsContent value="database" className="space-y-6">
-                        <Card className="border-border shadow-xl">
-                            <CardHeader>
-                                <CardTitle className="text-foreground">
-                                    Control General de base de datos
-                                </CardTitle>
-                                <CardDescription>
-                                    Monitor y mantenimiento de salud de base de datos
-                                </CardDescription>
-                            </CardHeader>
-                            <CardContent className="space-y-6">
-                                <div className="grid md:grid-cols-2 gap-6">
-                                    <div className="space-y-4">
-                                        <h3 className="text-lg font-semibold text-foreground">
-                                            Configuraciones de buck-up
-                                        </h3>
-                                        <div className="space-y-2">
-                                            <Label>Frecuencia de buck-up's</Label>
-                                            <Select defaultValue="daily">
-                                                <SelectTrigger>
-                                                    <SelectValue />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    <SelectItem value="hourly">Por hora</SelectItem>
-                                                    <SelectItem value="daily">Por dia</SelectItem>
-                                                    <SelectItem value="weekly">Por semana</SelectItem>
-                                                </SelectContent>
-                                            </Select>
-                                        </div>
-                                        <Button variant="outline" className="w-full">
-                                            Abrir manual de buck-up
-                                        </Button>
-                                    </div>
-
-                                    <div className="space-y-4">
-                                        <h3 className="text-lg font-semibold text-foreground">
-                                            Estado de base de datos
-                                        </h3>
-                                        <div className="space-y-2">
-                                            <div className="flex justify-between">
-                                                <span className="text-sm text-muted-foreground">
-                                                    Estado de conección:
-                                                </span>
-                                                <Badge className="bg-neon-green/20 text-neon-green">
-                                                    Conectado
-                                                </Badge>
-                                            </div>
-                                            <div className="flex justify-between">
-                                                <span className="text-sm text-muted-foreground">
-                                                    Ultimo buck-up:
-                                                </span>
-                                                <span className="text-sm">2024-01-15 08:00</span>
-                                            </div>
-                                            <div className="flex justify-between">
-                                                <span className="text-sm text-muted-foreground">
-                                                    Tamaño de base de datos:
-                                                </span>
-                                                <span className="text-sm">245 MB</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    </TabsContent>
-                </Tabs>
-            </div>
-        </div>
+  const toggleUserStatus = (userId: string) => {
+    setUsers((prev) =>
+      prev.map((user) =>
+        user.dni === userId
+          ? {
+              ...user,
+              status: user.status === "Active" ? "Inactive" : "Active",
+            }
+          : user
+      )
     );
+  };
+
+  const getRoleColor = (role: string) => {
+    switch (role) {
+      case "Admin":
+        return "bg-destructive/20 text-destructive border-destructive/30";
+      case "User":
+        return "bg-primary/20 text-primary border-primary/30";
+      default:
+        return "bg-muted text-muted-foreground";
+    }
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "Active":
+        return "bg-neon-green/20 text-neon-green border-neon-green/30";
+      case "Inactive":
+        return "bg-muted text-muted-foreground border-muted";
+      default:
+        return "bg-muted text-muted-foreground";
+    }
+  };
+
+  const getInitials = (name: string) => {
+    if (!name) return "";
+    return name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2);
+  };
+
+  return (
+    <div className="min-h-screen bg-background">
+      {/* Header */}
+      <div className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-10">
+        <div className="container mx-auto px-4 py-4 flex items-center gap-4">
+          <Link
+            to="/dashboard"
+            className="text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </Link>
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center">
+              <Settings className="h-5 w-5 text-primary" />
+            </div>
+            <div>
+              <h1 className="text-xl font-semibold text-foreground">
+                Ajustes de Administrador
+              </h1>
+              <p className="text-sm text-muted-foreground">
+                Configuración de sistema y administración de usuarios.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Pop-up de éxito */}
+      {showSuccessModal && (
+        <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 p-6 rounded-lg bg-green-500/90 text-white shadow-xl flex flex-col items-center gap-3 animate-fade-in">
+          <CheckCircle2 className="h-8 w-8 text-white" />
+          <p className="font-semibold text-lg">{modalMessage}</p>
+        </div>
+      )}
+
+      {/* Pop-up de error */}
+      {showErrorModal && (
+        <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 p-6 rounded-lg bg-red-500/90 text-white shadow-xl flex flex-col items-center gap-3 animate-fade-in">
+          <XCircle className="h-8 w-8 text-white" />
+          <p className="font-semibold text-lg">{modalMessage}</p>
+        </div>
+      )}
+
+      {/* Main Content */}
+      <div className="container mx-auto px-4 py-6 max-w-6xl">
+        <Tabs defaultValue="users" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="users" className="flex items-center gap-2">
+              <Users className="h-4 w-4" />
+              Usuarios
+            </TabsTrigger>
+            <TabsTrigger value="system" className="flex items-center gap-2">
+              <Settings className="h-4 w-4" />
+              Sistema
+            </TabsTrigger>
+            <TabsTrigger value="security" className="flex items-center gap-2">
+              <Shield className="h-4 w-4" />
+              Seguridad
+            </TabsTrigger>
+            <TabsTrigger value="database" className="flex items-center gap-2">
+              <Database className="h-4 w-4" />
+              Base de datos
+            </TabsTrigger>
+          </TabsList>
+
+          {/* Users Management */}
+          <TabsContent value="users" className="space-y-6">
+            <div className="grid lg:grid-cols-3 gap-6">
+              {/* Add New User */}
+              <Card className="border-border shadow-xl">
+                <CardHeader>
+                  <CardTitle className="text-foreground flex items-center gap-2">
+                    <Plus className="h-5 w-5 text-primary" />
+                    Agregar nuevo usuario
+                  </CardTitle>
+                  <CardDescription>
+                    Crear una nueva cuenta de usuario para el sistema
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="user-name">Nombre Completo</Label>
+                    <Input
+                      id="user-name"
+                      placeholder="Ingresar nombre completo"
+                      value={newUser.name}
+                      onChange={(e) =>
+                        setNewUser((prev) => ({ ...prev, name: e.target.value }))
+                      }
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="user-email">Dirección de email</Label>
+                    <Input
+                      id="user-email"
+                      type="email"
+                      placeholder="Ingresar email"
+                      value={newUser.email}
+                      onChange={(e) =>
+                        setNewUser((prev) => ({
+                          ...prev,
+                          email: e.target.value,
+                        }))
+                      }
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="user-dni">DNI</Label>
+                    <Input
+                      id="user-dni"
+                      placeholder="Ingresar DNI"
+                      value={newUser.dni}
+                      onChange={(e) =>
+                        setNewUser((prev) => ({ ...prev, dni: e.target.value }))
+                      }
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="user-password">Contraseña</Label>
+                    <Input
+                      id="user-password"
+                      type="password"
+                      placeholder="Ingresar contraseña"
+                      value={newUser.password}
+                      onChange={(e) =>
+                        setNewUser((prev) => ({ ...prev, password: e.target.value }))
+                      }
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Rol</Label>
+                    <Select
+                      value={newUser.role}
+                      onValueChange={(value: "User" | "Admin") =>
+                        setNewUser((prev) => ({ ...prev, role: value }))
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="User">Usuario</SelectItem>
+                        <SelectItem value="Admin">Administrador</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  {formError && <p className="text-sm text-destructive">{formError}</p>}
+                  <Button onClick={handleCreateUser} className="w-full" disabled={loading}>
+                    {loading ? (
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    ) : (
+                      <Plus className="h-4 w-4 mr-2" />
+                    )}
+                    Agregar Usuario
+                  </Button>
+                </CardContent>
+              </Card>
+
+              {/* Users List */}
+              <div className="lg:col-span-2">
+                <Card className="border-border shadow-xl">
+                  <CardHeader>
+                    <CardTitle className="text-foreground">
+                      Administración de Usuarios
+                    </CardTitle>
+                    <CardDescription>
+                      Administrar usuarios existentes y sus permisos
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    {loadingUsers ? (
+                      <div className="flex justify-center items-center h-48">
+                        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                      </div>
+                    ) : (
+                      <div className="space-y-4 max-h-[500px] overflow-y-auto">
+                        {users.length > 0 ? (
+                          users.map((user) => (
+                            <div
+                              key={user.dni}
+                              className="flex items-center justify-between p-4 border border-border rounded-lg"
+                            >
+                              <div className="flex items-center gap-4">
+                                <Avatar className="w-10 h-10 border-2 border-primary/20">
+                                  <AvatarImage src={user.url_image} alt={user.name} />
+                                  <AvatarFallback className="bg-primary/10 text-primary text-sm font-semibold">
+                                    {getInitials(user.name)}
+                                  </AvatarFallback>
+                                </Avatar>
+                                <div>
+                                  <h3 className="font-medium text-foreground">
+                                    {user.name}
+                                  </h3>
+                                  <p className="text-sm text-muted-foreground">
+                                    {user.email}
+                                  </p>
+                                </div>
+                              </div>
+
+                              <div className="flex items-center gap-2">
+                                <Badge
+                                  variant="outline"
+                                  className={getRoleColor(user.admin ? "Admin" : "User")}
+                                >
+                                  {user.admin ? "Admin" : "User"}
+                                </Badge>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => handleDeleteUser(user.dni)}
+                                  className="text-destructive hover:text-destructive"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </div>
+                          ))
+                        ) : (
+                          <p className="text-center text-muted-foreground">No hay usuarios para mostrar.</p>
+                        )}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          </TabsContent>
+
+          {/* System Settings */}
+          <TabsContent value="system" className="space-y-6">
+            <Card className="border-border shadow-xl">
+              <CardHeader>
+                <CardTitle className="text-foreground">
+                  Configuración del sistema
+                </CardTitle>
+                <CardDescription>
+                  Configuración general de sistema y preferencias
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <Label htmlFor="site-name">Nombre del sitio</Label>
+                    <Input
+                      id="site-name"
+                      value={systemSettings.siteName}
+                      onChange={(e) =>
+                        handleSystemSettingChange("siteName", e.target.value)
+                      }
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="max-file-size">
+                      Max File Size (MB)
+                    </Label>
+                    <Input
+                      id="max-file-size"
+                      type="number"
+                      value={systemSettings.maxFileSize}
+                      onChange={(e) =>
+                        handleSystemSettingChange("maxFileSize", e.target.value)
+                      }
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="session-timeout">
+                      Session Timeout (minutes)
+                    </Label>
+                    <Input
+                      id="session-timeout"
+                      type="number"
+                      value={systemSettings.sessionTimeout}
+                      onChange={(e) =>
+                        handleSystemSettingChange(
+                          "sessionTimeout",
+                          e.target.value
+                        )
+                      }
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <Label htmlFor="notifications">Habilitar Notificaciones</Label>
+                      <p className="text-sm text-muted-foreground">
+                        Enviar notificacione de sistema a los usuarios
+                      </p>
+                    </div>
+                    <Switch
+                      id="notifications"
+                      checked={systemSettings.enableNotifications}
+                      onCheckedChange={(checked) =>
+                        handleSystemSettingChange("enableNotifications", checked)
+                      }
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <Label htmlFor="analytics">Habilitar Analytics</Label>
+                      <p className="text-sm text-muted-foreground">
+                        Recolectar análisis de datos usados
+                      </p>
+                    </div>
+                    <Switch
+                      id="analytics"
+                      checked={systemSettings.enableAnalytics}
+                      onCheckedChange={(checked) =>
+                        handleSystemSettingChange("enableAnalytics", checked)
+                      }
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <Label htmlFor="maintenance">Modo Mantenimiento</Label>
+                      <p className="text-sm text-muted-foreground">
+                        Habilitar modo de mantenimiento para actualizaciones de sistema
+                      </p>
+                    </div>
+                    <Switch
+                      id="maintenance"
+                      checked={systemSettings.maintenanceMode}
+                      onCheckedChange={(checked) =>
+                        handleSystemSettingChange("maintenanceMode", checked)
+                      }
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <Label htmlFor="registration">Permitir Registros</Label>
+                      <p className="text-sm text-muted-foreground">
+                        Permitir a nuevos usuarios registrar cuentas.
+                      </p>
+                    </div>
+                    <Switch
+                      id="registration"
+                      checked={systemSettings.allowRegistration}
+                      onCheckedChange={(checked) =>
+                        handleSystemSettingChange("allowRegistration", checked)
+                      }
+                    />
+                  </div>
+                </div>
+
+                <Button onClick={handleSaveSettings} className="w-full">
+                  <Save className="h-4 w-4 mr-2" />
+                  Guardar cambios
+                </Button>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Security Settings */}
+          <TabsContent value="security" className="space-y-6">
+            <Card className="border-border shadow-xl">
+              <CardHeader>
+                <CardTitle className="text-foreground">
+                  Configuración de seguridad
+                </CardTitle>
+                <CardDescription>
+                  Administrar políticas de seguridad y accesos
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="grid gap-6">
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold text-foreground">
+                      Políticas de password
+                    </h3>
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label>Longitud mínima del password</Label>
+                        <Input type="number" defaultValue="8" />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Vencimiento de password (dias)</Label>
+                        <Input type="number" defaultValue="90" />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold text-foreground">
+                      Control de Acceso
+                    </h3>
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <Label>Autenticación de dos factores</Label>
+                          <p className="text-sm text-muted-foreground">
+                            Requerir autenticación de 2 factores para todos los Admin
+                          </p>
+                        </div>
+                        <Switch defaultChecked />
+                      </div>
+
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <Label>IP Whitelist</Label>
+                          <p className="text-sm text-muted-foreground">
+                            Restringir acceso solo a IP's específicas
+                          </p>
+                        </div>
+                        <Switch />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Database Settings */}
+          <TabsContent value="database" className="space-y-6">
+            <Card className="border-border shadow-xl">
+              <CardHeader>
+                <CardTitle className="text-foreground">
+                  Control General de base de datos
+                </CardTitle>
+                <CardDescription>
+                  Monitor y mantenimiento de salud de base de datos
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold text-foreground">
+                      Configuraciones de buck-up
+                    </h3>
+                    <div className="space-y-2">
+                      <Label>Frecuencia de buck-up's</Label>
+                      <Select defaultValue="daily">
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="hourly">Por hora</SelectItem>
+                          <SelectItem value="daily">Por dia</SelectItem>
+                          <SelectItem value="weekly">Por semana</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <Button variant="outline" className="w-full">
+                      Abrir manual de buck-up
+                    </Button>
+                  </div>
+
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold text-foreground">
+                      Estado de base de datos
+                    </h3>
+                    <div className="space-y-2">
+                      <div className="flex justify-between">
+                        <span className="text-sm text-muted-foreground">
+                          Estado de conección:
+                        </span>
+                        <Badge className="bg-neon-green/20 text-neon-green">
+                          Conectado
+                        </Badge>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-sm text-muted-foreground">
+                          Ultimo buck-up:
+                        </span>
+                        <span className="text-sm">2024-01-15 08:00</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-sm text-muted-foreground">
+                          Tamaño de base de datos:
+                        </span>
+                        <span className="text-sm">245 MB</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+      </div>
+    </div>
+  );
 }
