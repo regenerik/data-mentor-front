@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
+import { authActions } from "../store";
 import {
   Card,
   CardContent,
@@ -25,10 +26,19 @@ import {
   Edit,
   Settings,
   Eye,
-  EyeOff,
   Crown,
   Check,
+  Loader2,
+  AlertTriangle,
 } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 
 interface UserProfile {
   name: string;
@@ -38,7 +48,12 @@ interface UserProfile {
   url_image: string;
 }
 
+const BASE_URL = "https://repomatic-turbo-meww.onrender.com";
+const CLOUDINARY_UPLOAD_PRESET = "yu1h90st";
+const CLOUDINARY_CLOUD_NAME = "drlqmol4c";
+
 export default function MyProfile() {
+  let navigate = useNavigate()
   const [profile, setProfile] = useState<UserProfile>({
     name: "",
     email: "",
@@ -50,6 +65,13 @@ export default function MyProfile() {
   const [editedProfile, setEditedProfile] = useState<UserProfile>(profile);
   const [isSaved, setIsSaved] = useState(false);
   const [showAdminBadge, setShowAdminBadge] = useState(true);
+  const [loadingProfile, setLoadingProfile] = useState(false);
+  const [loadingImage, setLoadingImage] = useState(false);
+  const [imageSaved, setImageSaved] = useState(false);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [passwordInput, setPasswordInput] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+  const [showAdminWarningModal, setShowAdminWarningModal] = useState(false);
 
   // Load data from localStorage on component mount
   useEffect(() => {
@@ -64,34 +86,6 @@ export default function MyProfile() {
     setEditedProfile(loadedProfile);
   }, []);
 
-  const handleSave = () => {
-    // Save to localStorage
-    localStorage.setItem("name", editedProfile.name);
-    localStorage.setItem("email", editedProfile.email);
-    localStorage.setItem("admin", JSON.stringify(editedProfile.admin));
-    localStorage.setItem("dni", editedProfile.dni);
-    localStorage.setItem("url_image", editedProfile.url_image);
-
-    setProfile(editedProfile);
-    setIsEditing(false);
-    setIsSaved(true);
-
-    // Reset saved indicator after 3 seconds
-    setTimeout(() => setIsSaved(false), 3000);
-  };
-
-  const handleCancel = () => {
-    setEditedProfile(profile);
-    setIsEditing(false);
-  };
-
-  const handleInputChange = (field: keyof UserProfile, value: string | boolean) => {
-    setEditedProfile((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
-  };
-
   const getInitials = (name: string) => {
     return name
       .split(" ")
@@ -101,6 +95,238 @@ export default function MyProfile() {
       .slice(0, 2);
   };
 
+  const uploadImage = async (file: File) => {
+    setLoadingImage(true);
+    const data = new FormData();
+    data.append("file", file);
+    data.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
+
+    try {
+      const response = await fetch(
+        `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`,
+        {
+          method: "POST",
+          body: data,
+        }
+      );
+      const uploadedFile = await response.json();
+      setLoadingImage(false);
+      return uploadedFile.secure_url;
+    } catch (error) {
+      console.error("Error uploading image:", error);
+      setLoadingImage(false);
+      throw error;
+    }
+  };
+
+  const handleUpdateProfile = async (data: UserProfile, password?: string) => {
+    setLoadingProfile(true);
+    try {
+      const payload = { ...data, password };
+      const response = await fetch(`${BASE_URL}/update_profile`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to update profile");
+      }
+
+      const result = await response.json();
+      console.log(result.message);
+      setLoadingProfile(false);
+      return true;
+    } catch (error) {
+      console.error("Error updating profile:", error);
+      setPasswordError(error.message);
+      setLoadingProfile(false);
+      return false;
+    }
+  };
+
+  const handleUpdateImage = async (email: string, imageUrl: string) => {
+    try {
+      const response = await fetch(`${BASE_URL}/update_profile_image`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, url_image: imageUrl }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to update profile image");
+      }
+
+      const result = await response.json();
+      console.log(result.message);
+      return true;
+    } catch (error) {
+      console.error("Error updating profile image:", error);
+      return false;
+    }
+  };
+
+  const handleUpdateAdminStatus = async (email: string, adminStatus: boolean) => {
+    try {
+      const response = await fetch(`${BASE_URL}/update_admin`, {
+        method: 'PUT',
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email: email, admin: adminStatus }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to update admin status");
+      }
+
+      const result = await response.json();
+      console.log(result.message);
+      return true;
+    } catch (error) {
+      console.error("Error updating admin status:", error);
+      return false;
+    }
+  };
+
+  const handleSaveProfile = () => {
+    setShowPasswordModal(true);
+  };
+
+  const handleConfirmSave = async () => {
+    if (!passwordInput) {
+      setPasswordError("La contraseña es obligatoria.");
+      return;
+    }
+
+    const success = await handleUpdateProfile(editedProfile, passwordInput);
+
+    if (success) {
+      // Save to localStorage
+      localStorage.setItem("name", editedProfile.name);
+      localStorage.setItem("email", editedProfile.email);
+      localStorage.setItem("admin", JSON.stringify(editedProfile.admin));
+      localStorage.setItem("dni", editedProfile.dni);
+      localStorage.setItem("url_image", editedProfile.url_image);
+
+      setProfile(editedProfile);
+      setIsEditing(false);
+      setIsSaved(true);
+      setShowPasswordModal(false);
+      setPasswordInput("");
+      setPasswordError("");
+
+      // Reset saved indicator after 3 seconds
+      setTimeout(() => setIsSaved(false), 3000);
+    } else {
+      // Keep modal open on error
+    }
+  };
+
+  const handleCancel = () => {
+    setEditedProfile(profile);
+    setIsEditing(false);
+    setShowPasswordModal(false);
+    setPasswordInput("");
+    setPasswordError("");
+  };
+
+  const handleInputChange = (field: keyof UserProfile, value: string | boolean) => {
+    // Show warning modal if an admin user is trying to demote themselves
+    if (field === "admin" && profile.admin && !value) {
+      setShowAdminWarningModal(true);
+    } else {
+      setEditedProfile((prev) => ({
+        ...prev,
+        [field]: value,
+      }));
+    }
+  };
+
+  const handleConfirmDemote = async () => {
+    // Call the backend route to update admin status
+    const success = await handleUpdateAdminStatus(profile.email, false);
+
+    if (success) {
+      // Update local state and localStorage on success
+      setProfile((prev) => ({ ...prev, admin: false }));
+      setEditedProfile((prev) => ({ ...prev, admin: false }));
+      localStorage.setItem("admin", JSON.stringify(false));
+      setShowAdminWarningModal(false);
+    } else {
+      // Close the modal and don't change state on failure
+      setShowAdminWarningModal(false);
+      setEditedProfile(profile); // Revert the switch state visually
+    }
+  };
+
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const localUrl = URL.createObjectURL(file);
+      setEditedProfile(prev => ({ ...prev, url_image: localUrl }));
+      setProfile(prev => ({ ...prev, url_image: localUrl }));
+
+      try {
+        const newImageUrl = await uploadImage(file);
+        const success = await handleUpdateImage(profile.email, newImageUrl);
+
+        if (success) {
+          setProfile(prev => ({ ...prev, url_image: newImageUrl }));
+          localStorage.setItem("url_image", newImageUrl);
+
+          setImageSaved(true);
+          setTimeout(() => setImageSaved(false), 3000);
+        }
+
+      } catch (error) {
+        console.error("Failed to update image after upload:", error);
+        setProfile(prev => ({ ...prev, url_image: localStorage.getItem("url_image") || "" }));
+      }
+    }
+  };
+
+  const handlerLogOut = () => {
+    authActions.logout();
+    navigate("/");
+  };
+
+  // Lógica para verificar el token de sesión al cargar el componente
+  useEffect(() => {
+    const checkTokenValidity = async () => {
+      const token = localStorage.getItem("token");
+
+      if (!token) {
+        console.warn("No se encontró un token. Redirigiendo a login.");
+        handlerLogOut();
+        return;
+      }
+
+      try {
+        const response = await fetch('https://repomatic-turbo-meww.onrender.com/check_token', {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+
+        if (!response.ok) {
+          console.warn("Token expirado o inválido. Cerrando sesión automáticamente.");
+          handlerLogOut();
+        }
+      } catch (error) {
+        console.error("Error al verificar el token:", error);
+        handlerLogOut();
+      }
+    };
+
+    checkTokenValidity();
+  }, [navigate]);
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -131,6 +357,75 @@ export default function MyProfile() {
           )}
         </div>
       </div>
+
+      {/* Pop-up de Confirmación de Imagen */}
+      {imageSaved && (
+        <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 p-6 rounded-lg bg-green-500/90 text-white shadow-xl flex flex-col items-center gap-3 animate-fade-in">
+          <Check className="h-8 w-8 text-white" />
+          <p className="font-semibold text-lg">¡Imagen actualizada!</p>
+        </div>
+      )}
+
+      {/* Modal de Contraseña */}
+      <Dialog open={showPasswordModal} onOpenChange={setShowPasswordModal}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirmar cambios</DialogTitle>
+            <DialogDescription>
+              Para realizar los cambios en tu perfil, por favor escribe tu contraseña.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2">
+            <Label htmlFor="password">Contraseña</Label>
+            <Input
+              id="password"
+              type="password"
+              value={passwordInput}
+              onChange={(e) => setPasswordInput(e.target.value)}
+              placeholder="Ingresa tu contraseña"
+            />
+            {passwordError && (
+              <p className="text-sm text-red-500">{passwordError}</p>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={handleCancel}>
+              Cancelar
+            </Button>
+            <Button onClick={handleConfirmSave} disabled={loadingProfile}>
+              {loadingProfile ? (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              ) : (
+                "Continuar"
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal de Advertencia de Administrador */}
+      <Dialog open={showAdminWarningModal} onOpenChange={setShowAdminWarningModal}>
+        <DialogContent>
+          <DialogHeader className="flex flex-col items-center text-center">
+            <AlertTriangle className="h-12 w-12 text-red-500 mb-2" />
+            <DialogTitle className="text-2xl font-bold">Advertencia</DialogTitle>
+            <DialogDescription className="text-lg">
+              Esta acción eliminará tus privilegios de administrador.
+            </DialogDescription>
+            <DialogDescription className="text-sm text-muted-foreground">
+              Esta acción no se puede deshacer por tu cuenta. Si cambias de opinión, deberás contactar a otro administrador para recuperar tu estatus.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowAdminWarningModal(false)}>
+              Cancelar
+            </Button>
+            <Button variant="destructive" onClick={handleConfirmDemote}>
+              Continuar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Background Effects */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -167,9 +462,22 @@ export default function MyProfile() {
                           {getInitials(profile.name)}
                         </AvatarFallback>
                       </Avatar>
-                      <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-primary/20 rounded-full flex items-center justify-center border-2 border-card">
-                        <Camera className="h-3 w-3 text-primary" />
-                      </div>
+                      {loadingImage ? (
+                        <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-primary/20 rounded-full flex items-center justify-center border-2 border-card">
+                          <Loader2 className="h-4 w-4 text-primary animate-spin" />
+                        </div>
+                      ) : (
+                        <Label htmlFor="profile-image-upload" className="absolute -bottom-1 -right-1 w-6 h-6 bg-primary/20 rounded-full flex items-center justify-center border-2 border-card cursor-pointer">
+                          <Camera className="h-3 w-3 text-primary" />
+                        </Label>
+                      )}
+                      <Input
+                        id="profile-image-upload"
+                        type="file"
+                        className="hidden"
+                        onChange={handleImageChange}
+                        disabled={loadingImage}
+                      />
                     </div>
                   </div>
                   <CardTitle className="text-foreground">{profile.name}</CardTitle>
@@ -219,11 +527,16 @@ export default function MyProfile() {
                           variant="outline"
                           onClick={handleCancel}
                           className="border-border"
+                          disabled={loadingProfile}
                         >
                           Cancelar
                         </Button>
-                        <Button onClick={handleSave} className="bg-primary/90 hover:bg-primary">
-                          <Save className="h-4 w-4 mr-2" />
+                        <Button onClick={handleSaveProfile} className="bg-primary/90 hover:bg-primary" disabled={loadingProfile}>
+                          {loadingProfile ? (
+                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          ) : (
+                            <Save className="h-4 w-4 mr-2" />
+                          )}
                           Guardar
                         </Button>
                       </div>
@@ -244,13 +557,12 @@ export default function MyProfile() {
                           value={isEditing ? editedProfile.name : profile.name}
                           onChange={(e) => handleInputChange("name", e.target.value)}
                           disabled={!isEditing}
-                          className={`bg-background/50 ${
-                            isEditing ? "border-primary/50" : "border-border/30"
-                          }`}
+                          className={`bg-background/50 ${isEditing ? "border-primary/50" : "border-border/30"
+                            }`}
                         />
                       </div>
 
-                      {/* Email */}
+                      {/* Email - Disabled */}
                       <div className="space-y-2">
                         <Label htmlFor="email" className="text-foreground flex items-center gap-2">
                           <Mail className="h-4 w-4 text-primary" />
@@ -259,12 +571,9 @@ export default function MyProfile() {
                         <Input
                           id="email"
                           type="email"
-                          value={isEditing ? editedProfile.email : profile.email}
-                          onChange={(e) => handleInputChange("email", e.target.value)}
-                          disabled={!isEditing}
-                          className={`bg-background/50 ${
-                            isEditing ? "border-primary/50" : "border-border/30"
-                          }`}
+                          value={profile.email}
+                          disabled={true}
+                          className="bg-muted text-muted-foreground border-border/30 cursor-not-allowed"
                         />
                       </div>
 
@@ -280,9 +589,8 @@ export default function MyProfile() {
                           value={isEditing ? editedProfile.dni : profile.dni}
                           onChange={(e) => handleInputChange("dni", e.target.value)}
                           disabled={!isEditing}
-                          className={`bg-background/50 ${
-                            isEditing ? "border-primary/50" : "border-border/30"
-                          }`}
+                          className={`bg-background/50 ${isEditing ? "border-primary/50" : "border-border/30"
+                            }`}
                         />
                       </div>
 
@@ -299,36 +607,35 @@ export default function MyProfile() {
                           value={isEditing ? editedProfile.url_image : profile.url_image}
                           onChange={(e) => handleInputChange("url_image", e.target.value)}
                           disabled={!isEditing}
-                          className={`bg-background/50 ${
-                            isEditing ? "border-primary/50" : "border-border/30"
-                          }`}
+                          className={`bg-background/50 ${isEditing ? "border-primary/50" : "border-border/30"
+                            }`}
                         />
                       </div>
                     </div>
 
                     {/* Admin Status */}
-                    <div className="space-y-4">
-                      <div className="flex items-center justify-between p-4 rounded-lg bg-primary/5 border border-primary/20">
-                        <div className="flex items-center gap-3">
-                          <Shield className="h-5 w-5 text-primary" />
-                          <div>
-                            <Label className="text-foreground font-medium">
-                              Privilegios de Administrador
-                            </Label>
-                            <p className="text-sm text-muted-foreground">
-                              {profile.admin
-                                ? "Tienes acceso completo al sistema"
-                                : "Acceso estándar de usuario"}
-                            </p>
+                    {profile.admin && (
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between p-4 rounded-lg bg-primary/5 border border-primary/20">
+                          <div className="flex items-center gap-3">
+                            <Shield className="h-5 w-5 text-primary" />
+                            <div>
+                              <Label className="text-foreground font-medium">
+                                Privilegios de Administrador
+                              </Label>
+                              <p className="text-sm text-muted-foreground">
+                                {isEditing ? "Activo" : "Tienes acceso completo al sistema"}
+                              </p>
+                            </div>
                           </div>
+                          <Switch
+                            checked={isEditing ? editedProfile.admin : profile.admin}
+                            onCheckedChange={(checked) => handleInputChange("admin", checked)}
+                            disabled={!isEditing}
+                          />
                         </div>
-                        <Switch
-                          checked={isEditing ? editedProfile.admin : profile.admin}
-                          onCheckedChange={(checked) => handleInputChange("admin", checked)}
-                          disabled={!isEditing}
-                        />
                       </div>
-                    </div>
+                    )}
                   </CardContent>
                 </Card>
               </div>
