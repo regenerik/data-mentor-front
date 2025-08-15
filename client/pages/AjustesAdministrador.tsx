@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -27,7 +26,6 @@ import {
   Users,
   Shield,
   Database,
-  Bell,
   Eye,
   Trash2,
   Save,
@@ -35,8 +33,17 @@ import {
   Loader2,
   CheckCircle2,
   XCircle,
+  AlertTriangle,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { authActions } from "../store";
 
 interface User {
@@ -45,8 +52,7 @@ interface User {
   email: string;
   admin: boolean;
   url_image: string;
-  // Añadimos un estado local para la vista del componente
-  status?: "Active" | "Inactive"; 
+  status: boolean; // Ahora solo acepta un booleano
   lastLogin?: string;
 }
 
@@ -88,10 +94,15 @@ export default function AjustesAdministrador() {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [modalMessage, setModalMessage] = useState("");
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [userToDelete, setUserToDelete] = useState<User | null>(null);
+  const [showStatusModal, setShowStatusModal] = useState(false);
+  const [userToToggleStatus, setUserToToggleStatus] = useState<User | null>(null);
+  const [showAdminRoleModal, setShowAdminRoleModal] = useState(false);
+  const [userToToggleAdmin, setUserToToggleAdmin] = useState<User | null>(null);
 
   const navigate = useNavigate();
 
-  // Función para obtener los usuarios de la API
   const fetchUsers = async () => {
     setLoadingUsers(true);
     const token = localStorage.getItem("token");
@@ -113,17 +124,15 @@ export default function AjustesAdministrador() {
       }
 
       const data = await response.json();
-      // Mapeamos los datos de la API al formato local, añadiendo campos por defecto
       const fetchedUsers: User[] = data.lista_usuarios.map((user: any) => ({
         dni: user.dni,
-        id: user.dni, // Usamos el DNI como ID temporal
         name: user.name,
         email: user.email,
         admin: user.admin,
         url_image: user.url_image,
-        role: user.admin ? "Admin" : "User",
-        status: "Active", // Asumimos activos por defecto
-        lastLogin: "N/A", // Asumimos N/A por defecto
+        // Convertir el status a booleano de forma segura
+        status: user.status === true || user.status === "true", 
+        lastLogin: "N/A",
       }));
       setUsers(fetchedUsers);
     } catch (error) {
@@ -135,7 +144,6 @@ export default function AjustesAdministrador() {
     }
   };
 
-  // Lógica de validación de token y carga de usuarios al montar el componente
   useEffect(() => {
     const checkTokenAndFetchUsers = async () => {
       const token = localStorage.getItem("token");
@@ -183,7 +191,6 @@ export default function AjustesAdministrador() {
   };
 
   const handleSaveSettings = () => {
-    // In a real implementation, this would save to a backend API
     alert("Settings saved successfully!");
   };
 
@@ -221,7 +228,7 @@ export default function AjustesAdministrador() {
       setModalMessage("Usuario creado exitosamente.");
       setShowSuccessModal(true);
       setNewUser({ name: "", email: "", password: "", dni: "", role: "User" });
-      fetchUsers(); // Actualizamos la lista de usuarios
+      fetchUsers();
     } catch (error) {
       console.error("Error creating user:", error);
       setModalMessage(error.message || "Ocurrió un error al crear el usuario.");
@@ -235,44 +242,123 @@ export default function AjustesAdministrador() {
     }
   };
 
-  const handleDeleteUser = (userId: string) => {
-    // Lógica para eliminar usuario
-    setUsers((prev) => prev.filter((user) => user.dni !== userId));
-  };
+  const handleDeleteUser = async (user: User) => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
 
-  const toggleUserStatus = (userId: string) => {
-    setUsers((prev) =>
-      prev.map((user) =>
-        user.dni === userId
-          ? {
-              ...user,
-              status: user.status === "Active" ? "Inactive" : "Active",
-            }
-          : user
-      )
-    );
-  };
+    try {
+      const response = await fetch(`${BASE_URL}/delete_user`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ dni: user.dni }),
+      });
 
-  const getRoleColor = (role: string) => {
-    switch (role) {
-      case "Admin":
-        return "bg-destructive/20 text-destructive border-destructive/30";
-      case "User":
-        return "bg-primary/20 text-primary border-primary/30";
-      default:
-        return "bg-muted text-muted-foreground";
+      const result = await response.json();
+      if (!response.ok) {
+        throw new Error(result.error || "Error al eliminar el usuario.");
+      }
+      
+      setModalMessage(result.message);
+      setShowSuccessModal(true);
+      fetchUsers();
+    } catch (error) {
+      console.error("Error deleting user:", error);
+      setModalMessage(error.message || "Ocurrió un error al eliminar el usuario.");
+      setShowErrorModal(true);
+    } finally {
+      setShowDeleteModal(false);
+      setUserToDelete(null);
+      setTimeout(() => {
+        setShowSuccessModal(false);
+        setShowErrorModal(false);
+      }, 3000);
     }
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "Active":
-        return "bg-neon-green/20 text-neon-green border-neon-green/30";
-      case "Inactive":
-        return "bg-muted text-muted-foreground border-muted";
-      default:
-        return "bg-muted text-muted-foreground";
+  const handleToggleStatus = async (user: User) => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    try {
+      const response = await fetch(`${BASE_URL}/toggle_user_status`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ dni: user.dni }),
+      });
+
+      const result = await response.json();
+      if (!response.ok) {
+        throw new Error(result.error || "Error al cambiar el estado del usuario.");
+      }
+
+      setModalMessage(result.message);
+      setShowSuccessModal(true);
+      fetchUsers();
+    } catch (error) {
+      console.error("Error toggling user status:", error);
+      setModalMessage(error.message || "Ocurrió un error al cambiar el estado del usuario.");
+      setShowErrorModal(true);
+    } finally {
+      setShowStatusModal(false);
+      setUserToToggleStatus(null);
+      setTimeout(() => {
+        setShowSuccessModal(false);
+        setShowErrorModal(false);
+      }, 3000);
     }
+  };
+
+  const handleToggleAdminRole = async (user: User) => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    try {
+      const response = await fetch(`${BASE_URL}/update_admin`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email: user.email, admin: !user.admin }),
+      });
+
+      const result = await response.json();
+      if (!response.ok) {
+        throw new Error(result.error || "Error al cambiar el rol del usuario.");
+      }
+
+      setModalMessage(result.message);
+      setShowSuccessModal(true);
+      fetchUsers();
+    } catch (error) {
+      console.error("Error toggling admin role:", error);
+      setModalMessage(error.message || "Ocurrió un error al cambiar el rol del usuario.");
+      setShowErrorModal(true);
+    } finally {
+      setShowAdminRoleModal(false);
+      setUserToToggleAdmin(null);
+      setTimeout(() => {
+        setShowSuccessModal(false);
+        setShowErrorModal(false);
+      }, 3000);
+    }
+  };
+
+  const getRoleColor = (isAdmin: boolean) => {
+    return isAdmin
+      ? "bg-destructive/20 text-destructive border-destructive/30"
+      : "bg-primary/20 text-primary border-primary/30";
+  };
+
+  const getStatusColor = (isActive: boolean) => {
+    return isActive
+      ? "bg-neon-green/20 text-neon-green border-neon-green/30"
+      : "bg-muted text-muted-foreground border-muted";
   };
 
   const getInitials = (name: string) => {
@@ -327,6 +413,88 @@ export default function AjustesAdministrador() {
           <p className="font-semibold text-lg">{modalMessage}</p>
         </div>
       )}
+
+      {/* Modal de confirmación de eliminación */}
+      <Dialog open={showDeleteModal} onOpenChange={setShowDeleteModal}>
+        <DialogContent>
+          <DialogHeader className="flex flex-col items-center text-center">
+            <AlertTriangle className="h-12 w-12 text-destructive mb-2" />
+            <DialogTitle className="text-2xl font-bold text-destructive">Advertencia</DialogTitle>
+            <DialogDescription className="text-lg">
+              Estás a punto de eliminar a **{userToDelete?.name}**.
+            </DialogDescription>
+            <DialogDescription className="text-sm text-muted-foreground">
+              Esta acción es irreversible. ¿Estás seguro de que quieres continuar?
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowDeleteModal(false)}>
+              Cancelar
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => userToDelete && handleDeleteUser(userToDelete)}
+            >
+              Confirmar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal de confirmación de cambio de estado */}
+      <Dialog open={showStatusModal} onOpenChange={setShowStatusModal}>
+        <DialogContent>
+          <DialogHeader className="flex flex-col items-center text-center">
+            <AlertTriangle className="h-12 w-12 text-orange-500 mb-2" />
+            <DialogTitle className="text-2xl font-bold text-orange-500">Advertencia</DialogTitle>
+            <DialogDescription className="text-lg">
+              Estás a punto de **{userToToggleStatus?.status ? "desactivar" : "activar"}** a **{userToToggleStatus?.name}**.
+            </DialogDescription>
+            <DialogDescription className="text-sm text-muted-foreground">
+              Esto afectará su capacidad para acceder al sistema. ¿Quieres continuar?
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowStatusModal(false)}>
+              Cancelar
+            </Button>
+            <Button
+              variant="default"
+              onClick={() => userToToggleStatus && handleToggleStatus(userToToggleStatus)}
+            >
+              Confirmar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal de confirmación de cambio de rol de admin */}
+      <Dialog open={showAdminRoleModal} onOpenChange={setShowAdminRoleModal}>
+        <DialogContent>
+          <DialogHeader className="flex flex-col items-center text-center">
+            <AlertTriangle className="h-12 w-12 text-yellow-500 mb-2" />
+            <DialogTitle className="text-2xl font-bold text-yellow-500">Advertencia</DialogTitle>
+            <DialogDescription className="text-lg">
+              Estás a punto de **{userToToggleAdmin?.admin ? "eliminar los permisos de administrador" : "otorgar permisos de administrador"}** a **{userToToggleAdmin?.name}**.
+            </DialogDescription>
+            <DialogDescription className="text-sm text-muted-foreground">
+              Esta acción es sensible y afecta los privilegios de acceso del usuario. ¿Quieres continuar?
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowAdminRoleModal(false)}>
+              Cancelar
+            </Button>
+            <Button
+              variant="default"
+              onClick={() => userToToggleAdmin && handleToggleAdminRole(userToToggleAdmin)}
+            >
+              Confirmar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
 
       {/* Main Content */}
       <div className="container mx-auto px-4 py-6 max-w-6xl">
@@ -491,14 +659,31 @@ export default function AjustesAdministrador() {
                               <div className="flex items-center gap-2">
                                 <Badge
                                   variant="outline"
-                                  className={getRoleColor(user.admin ? "Admin" : "User")}
+                                  className={`cursor-pointer ${getRoleColor(user.admin)}`}
+                                  onClick={() => {
+                                    setShowAdminRoleModal(true);
+                                    setUserToToggleAdmin(user);
+                                  }}
                                 >
                                   {user.admin ? "Admin" : "User"}
+                                </Badge>
+                                <Badge
+                                  variant="outline"
+                                  className={`cursor-pointer ${getStatusColor(user.status)}`}
+                                  onClick={() => {
+                                    setShowStatusModal(true);
+                                    setUserToToggleStatus(user);
+                                  }}
+                                >
+                                  {user.status ? "Activo" : "Inactivo"}
                                 </Badge>
                                 <Button
                                   variant="ghost"
                                   size="sm"
-                                  onClick={() => handleDeleteUser(user.dni)}
+                                  onClick={() => {
+                                    setShowDeleteModal(true);
+                                    setUserToDelete(user);
+                                  }}
                                   className="text-destructive hover:text-destructive"
                                 >
                                   <Trash2 className="h-4 w-4" />
