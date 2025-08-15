@@ -128,7 +128,7 @@ export default function CourseEditor() {
     const buildJsPdf = async (): Promise<jsPDF> => {
         // === mismos parámetros y lógica que hoy en exportAsPDF ===
         const MARGIN_MM = 15;
-        const SCALE = 2;
+        const SCALE = 1.5;
 
         const tempDiv = document.createElement("div");
         tempDiv.style.position = "absolute";
@@ -174,10 +174,10 @@ export default function CourseEditor() {
             pageCanvas.height = pageHeightCanvasPx;
             const ctx = pageCanvas.getContext("2d")!;
             ctx.drawImage(bigCanvas, 0, srcY, cW, pageHeightCanvasPx, 0, 0, cW, pageHeightCanvasPx);
-            const img = pageCanvas.toDataURL("image/png");
+            const img = pageCanvas.toDataURL("image/jpeg", 0.82);
 
             if (page > 0) pdf.addPage();
-            pdf.addImage(img, "PNG", 0, 0, pdfW, pdfH);
+            pdf.addImage(img, "JPEG", 0, 0, pdfW, pdfH);
 
             linkPositionsDOM
                 .map(lp => ({ href: lp.href, x: lp.x * SCALE, y: lp.y * SCALE, w: lp.w * SCALE, h: lp.h * SCALE }))

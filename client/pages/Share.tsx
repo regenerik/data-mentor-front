@@ -27,11 +27,21 @@ import {
 import courseStore from "../store/stores/courseStore";
 import { courseActions } from "../store";
 
+// 👇 shadcn/ui toast
+import { useToast } from "@/components/ui/use-toast";
+
+const EMAIL_API_URL = "https://repomatic-turbo-meww.onrender.com/send-course-pdf";
+const AUTH_TOKEN = "1803-1989-1803-1989";
+
 export default function Share() {
+  const { toast } = useToast();
+
   const [emails, setEmails] = useState<string[]>([]);
   const [currentEmail, setCurrentEmail] = useState("");
   const [isEmailValid, setIsEmailValid] = useState(false);
   const [isSending, setIsSending] = useState(false);
+  const [serverMsg, setServerMsg] = useState<string | null>(null);
+
   const [pdfData, setPdfData] = useState<{
     blob: Blob | null;
     fileName: string;
@@ -45,8 +55,6 @@ export default function Share() {
   useEffect(() => {
     const { blob, fileName, objectUrl } = courseStore.getSharePdf();
     setPdfData({ blob, fileName, objectUrl });
-    // ✅ blob: para FormData -> fd.append("file", blob, fileName)
-    // ✅ objectUrl: para preview <iframe src={objectUrl} />
   }, []);
 
   // Email validation
@@ -59,11 +67,21 @@ export default function Share() {
     if (isEmailValid && currentEmail && !emails.includes(currentEmail)) {
       setEmails((prev) => [...prev, currentEmail]);
       setCurrentEmail("");
+      toast({
+        title: "Email agregado",
+        description: `${currentEmail} sumado a la lista 👌`,
+        duration: 2500,
+      });
     }
   };
 
   const handleRemoveEmail = (emailToRemove: string) => {
     setEmails((prev) => prev.filter((email) => email !== emailToRemove));
+    toast({
+      title: "Email eliminado",
+      description: `${emailToRemove} fue quitado de la lista.`,
+      duration: 2000,
+    });
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -73,8 +91,26 @@ export default function Share() {
   };
 
   const handleSendPDF = async () => {
+    setServerMsg(null);
+
     if (!pdfData.blob || emails.length === 0) {
-      alert("Please ensure you have a PDF file and at least one email address.");
+      toast({
+        title: "Falta info",
+        description: "Necesitás un PDF y al menos un email.",
+        variant: "destructive",
+        duration: 3000,
+      });
+      return;
+    }
+
+    // límite por Mailjet ~15MB (binario; base64 crece ~33%)
+    if (pdfData.blob.size > 15 * 1024 * 1024) {
+      toast({
+        title: "PDF demasiado grande",
+        description: "Supera 15MB. Bajá la calidad o dividilo.",
+        variant: "destructive",
+        duration: 3500,
+      });
       return;
     }
 
@@ -84,35 +120,59 @@ export default function Share() {
       const formData = new FormData();
       formData.append("file", pdfData.blob, pdfData.fileName);
       formData.append("emails", JSON.stringify(emails));
+      // formData.append("subject", "Tu curso listo ✨");
+      // formData.append("html", "<p>Adjunto el curso en PDF.</p>");
 
-      // Console log for debugging as requested
-      console.log("📧 Sending PDF to emails:", {
+      console.log("📧 Sending PDF", {
+        endpoint: EMAIL_API_URL,
         fileName: pdfData.fileName,
-        emailCount: emails.length,
-        emails: emails,
-        blobSize: pdfData.blob.size,
-        formData: formData,
+        sizeMB: (pdfData.blob.size / 1024 / 1024).toFixed(2),
+        emails,
       });
 
-      // Backend endpoint (placeholder as requested)
-      const response = await fetch("https://your-backend-api.com/send-pdf", {
+      const response = await fetch(EMAIL_API_URL, {
         method: "POST",
         body: formData,
+        headers: { Authorization: AUTH_TOKEN },
       });
 
-      if (response.ok) {
-        alert(`PDF sent successfully to ${emails.length} recipients!`);
-        // Clear emails after successful send
-        setEmails([]);
-        // Clear PDF data as requested
-        courseActions.clearSharePdf();
-        setPdfData({ blob: null, fileName: "", objectUrl: "" });
-      } else {
-        throw new Error("Failed to send PDF");
+      let payload: any = null;
+      try {
+        payload = await response.json();
+      } catch {
+        /* noop */
       }
-    } catch (error) {
+
+      if (!response.ok || payload?.ok === false) {
+        const mjErr =
+          payload?.error ||
+          payload?.results?.[0]?.payload?.Messages?.[0]?.Errors?.[0]?.ErrorMessage ||
+          payload?.results?.[0]?.payload?.non_json_body ||
+          `Failed to send PDF (status ${response.status})`;
+        throw new Error(mjErr);
+      }
+
+      setServerMsg(`PDF enviado a ${emails.length} destinatario(s).`);
+      toast({
+        title: "PDF enviado 🎉",
+        description: `Salió para ${emails.length} destinatario(s).`,
+        duration: 3500,
+      });
+
+      // limpiar UI y store
+      setEmails([]);
+      courseActions.clearSharePdf();
+      setPdfData({ blob: null, fileName: "", objectUrl: "" });
+    } catch (error: any) {
       console.error("Error sending PDF:", error);
-      alert("Failed to send PDF. Please try again.");
+      const msg = error?.message || "Failed to send PDF. Please try again.";
+      setServerMsg(msg);
+      toast({
+        title: "No se pudo enviar",
+        description: msg,
+        variant: "destructive",
+        duration: 4500,
+      });
     } finally {
       setIsSending(false);
     }
@@ -193,6 +253,9 @@ export default function Share() {
                       </p>
                     </div>
                   </div>
+                )}
+                {serverMsg && (
+                  <p className="mt-3 text-sm text-muted-foreground">{serverMsg}</p>
                 )}
               </CardContent>
             </Card>
