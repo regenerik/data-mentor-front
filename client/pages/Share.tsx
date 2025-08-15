@@ -195,10 +195,10 @@ export default function Share() {
             </div>
             <div>
               <h1 className="text-xl font-semibold text-foreground">
-                Share Content
+                Compartir contenido
               </h1>
               <p className="text-sm text-muted-foreground">
-                Send PDF content via email to multiple recipients
+                Enviar el PDF a múltiples emails
               </p>
             </div>
           </div>
@@ -237,7 +237,7 @@ export default function Share() {
                         {pdfData.fileName}
                       </p>
                       <p className="text-sm text-muted-foreground">
-                        Size: {(pdfData.blob.size / 1024 / 1024).toFixed(2)} MB
+                        Tamaño: {(pdfData.blob.size / 1024 / 1024).toFixed(2)} MB
                       </p>
                     </div>
                   </div>
@@ -246,10 +246,10 @@ export default function Share() {
                     <FileText className="h-8 w-8 text-destructive" />
                     <div>
                       <p className="font-medium text-destructive">
-                        No PDF file available
+                        No hay un PDF disponible
                       </p>
                       <p className="text-sm text-muted-foreground">
-                        Please generate a PDF first from the Course Editor
+                        Por favor primero generá un PDF en el editor de cursos
                       </p>
                     </div>
                   </div>
@@ -265,10 +265,10 @@ export default function Share() {
               <CardHeader>
                 <CardTitle className="text-foreground flex items-center gap-2">
                   <Users className="h-5 w-5 text-primary" />
-                  Email Recipients ({emails.length})
+                  Emails ({emails.length})
                 </CardTitle>
                 <CardDescription>
-                  Add email addresses to send the PDF content
+                  Agregá una dirección de email para enviar el PDF
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -306,14 +306,14 @@ export default function Share() {
                   </div>
                   {currentEmail && !isEmailValid && (
                     <p className="text-sm text-destructive">
-                      Please enter a valid email address
+                      Por favor ingrese un email válido
                     </p>
                   )}
                 </div>
 
                 {/* Email List */}
                 <div className="space-y-2">
-                  <Label className="text-foreground">Recipients List</Label>
+                  <Label className="text-foreground">Lista de emails</Label>
                   {emails.length > 0 ? (
                     <div className="space-y-2 max-h-48 overflow-y-auto">
                       {emails.map((email, index) => (
@@ -342,7 +342,7 @@ export default function Share() {
                     <div className="text-center p-6 rounded-lg bg-muted/50 border border-border/50">
                       <Users className="h-12 w-12 mx-auto mb-2 text-muted-foreground" />
                       <p className="text-sm text-muted-foreground">
-                        No recipients added yet
+                        No hay emails agregados todavia
                       </p>
                     </div>
                   )}
@@ -357,12 +357,12 @@ export default function Share() {
                   {isSending ? (
                     <>
                       <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin mr-2" />
-                      Sending...
+                      Enviando...
                     </>
                   ) : (
                     <>
                       <Send className="h-4 w-4 mr-2" />
-                      Send PDF to {emails.length} Recipients
+                      Enviar PDF a {emails.length} Emails
                     </>
                   )}
                 </Button>
@@ -375,7 +375,7 @@ export default function Share() {
                     className="w-full border-destructive/30 text-destructive hover:bg-destructive/10"
                   >
                     <Trash2 className="h-4 w-4 mr-2" />
-                    Clear All Recipients
+                    Limpiar todos los emails
                   </Button>
                 )}
               </CardContent>
@@ -388,10 +388,10 @@ export default function Share() {
               <CardHeader>
                 <CardTitle className="text-foreground flex items-center gap-2">
                   <Eye className="h-5 w-5 text-primary" />
-                  PDF Preview
+                  PDF Vista previa
                 </CardTitle>
                 <CardDescription>
-                  Preview of the content that will be sent
+                  Vista previa del contenido que será enviado
                 </CardDescription>
               </CardHeader>
               <CardContent className="p-0 flex-1">
@@ -406,15 +406,15 @@ export default function Share() {
                     <div>
                       <FileText className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
                       <h3 className="text-lg font-semibold text-foreground mb-2">
-                        No PDF Available
+                        PDF no disponible
                       </h3>
                       <p className="text-muted-foreground max-w-sm mx-auto">
-                        Generate a PDF from the Course Editor first to preview
-                        and share your content.
+                        Primero hay que generar un PDF en el editor de curso
+                        y click en compartir para poder visualizarlo.
                       </p>
                       <Link to="/course-editor">
                         <Button className="mt-4" variant="outline">
-                          Go to Course Editor
+                          Ir a Editor de Curso
                         </Button>
                       </Link>
                     </div>

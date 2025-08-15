@@ -375,7 +375,7 @@ export default function CourseEditor() {
                                 placeholder="Course Title"
                             />
                             <p className="text-sm text-muted-foreground">
-                                Rich content editor for course creation
+                                Editor de contenido enriquecido para la creación de cursos.
                             </p>
                         </div>
                     </div>
@@ -387,7 +387,7 @@ export default function CourseEditor() {
                             className={isPreviewMode ? "bg-primary/10" : ""}
                         >
                             <Eye className="h-4 w-4 mr-2" />
-                            {isPreviewMode ? "Edit" : "Preview"}
+                            {isPreviewMode ? "Edición" : "Visualización"}
                         </Button>
 
                         {/* Export Options */}
@@ -416,7 +416,7 @@ export default function CourseEditor() {
                         {/* Share Button */}
                         <Button variant="outline" onClick={shareContent}>
                             <Share className="h-4 w-4 mr-2" />
-                            Share
+                            Compartir
                         </Button>
                     </div>
                 </div>
@@ -450,7 +450,7 @@ export default function CourseEditor() {
                             <TabsContent value="formatting" className="space-y-4">
                                 <Card className="border-border shadow-xl">
                                     <CardHeader>
-                                        <CardTitle className="text-sm">Text Formatting</CardTitle>
+                                        <CardTitle className="text-sm">Formateador de Texto</CardTitle>
                                     </CardHeader>
                                     <CardContent className="space-y-4">
                                         {/* Apply to All Toggle */}
@@ -459,11 +459,11 @@ export default function CourseEditor() {
                                             : "bg-destructive/5 border-destructive/20"
                                             }`}>
                                             <div>
-                                                <Label className="text-foreground font-medium">Apply to All</Label>
+                                                <Label className="text-foreground font-medium">Aplicar a todo</Label>
                                                 <p className="text-xs text-muted-foreground">
                                                     {applyToAll
-                                                        ? "✓ Changes apply to entire text"
-                                                        : "⚠ Select text first, then apply formatting"}
+                                                        ? "✓ Los cambios se aplican a todo el texto"
+                                                        : "⚠ Primero selecciona el texto, después aplicá el formato"}
                                                 </p>
                                             </div>
                                             <Switch
@@ -564,7 +564,7 @@ export default function CourseEditor() {
 
                                         {/* Font Family (aplica a todo el documento) */}
                                         <div className="space-y-2">
-                                            <Label>Font Family</Label>
+                                            <Label>Fuentes Disponibles</Label>
                                             <Select
                                                 value={editorState.fontFamily}
                                                 onValueChange={(value) =>
@@ -586,7 +586,7 @@ export default function CourseEditor() {
 
                                         {/* Font Size (aplica a todo el documento) */}
                                         <div className="space-y-2">
-                                            <Label>Font Size: {editorState.fontSize}px</Label>
+                                            <Label>Tamaño de fuente: {editorState.fontSize}px</Label>
                                             <Slider
                                                 value={[editorState.fontSize]}
                                                 onValueChange={([value]) =>
@@ -600,7 +600,7 @@ export default function CourseEditor() {
 
                                         {/* Line Height (aplica a todo el documento) */}
                                         <div className="space-y-2">
-                                            <Label>Line Height: {editorState.lineHeight}</Label>
+                                            <Label>Separación entre lineas: {editorState.lineHeight}</Label>
                                             <Slider
                                                 value={[editorState.lineHeight]}
                                                 onValueChange={([value]) =>
@@ -619,12 +619,12 @@ export default function CourseEditor() {
                             <TabsContent value="design" className="space-y-4">
                                 <Card className="border-border shadow-xl">
                                     <CardHeader>
-                                        <CardTitle className="text-sm">Colors & Background</CardTitle>
+                                        <CardTitle className="text-sm">Colores y fondo</CardTitle>
                                     </CardHeader>
                                     <CardContent className="space-y-4">
                                         {/* Text Color */}
                                         <div className="space-y-2">
-                                            <Label>Text Color</Label>
+                                            <Label>Color de texto</Label>
                                             <div className="flex items-center gap-2">
                                                 <Input
                                                     type="color"
@@ -639,13 +639,13 @@ export default function CourseEditor() {
                                                 />
                                             </div>
                                             <p className="text-xs text-muted-foreground">
-                                                {applyToAll ? "Will apply to all text" : "Will apply to selected text only"}
+                                                {applyToAll ? "Se aplicará a todo el texto" : "Se aplicará solo al texto seleccionado"}
                                             </p>
                                         </div>
 
                                         {/* Background Color */}
                                         <div className="space-y-2">
-                                            <Label>Background Color</Label>
+                                            <Label>Color de fondo</Label>
                                             <div className="flex items-center gap-2">
                                                 <Input
                                                     type="color"
@@ -667,7 +667,7 @@ export default function CourseEditor() {
 
                                         {/* Gradient Presets */}
                                         <div className="space-y-2">
-                                            <Label>Gradient Presets</Label>
+                                            <Label>Fondos Preseteados</Label>
                                             <div className="grid grid-cols-2 gap-2">
                                                 {backgroundGradients.map((gradient, index) => (
                                                     <Button
@@ -690,7 +690,7 @@ export default function CourseEditor() {
                             <TabsContent value="media" className="space-y-4">
                                 <Card className="border-border shadow-xl">
                                     <CardHeader>
-                                        <CardTitle className="text-sm">Media & Assets</CardTitle>
+                                        <CardTitle className="text-sm">Subir imágenes</CardTitle>
                                     </CardHeader>
                                     <CardContent className="space-y-4">
                                         <Button
@@ -698,7 +698,7 @@ export default function CourseEditor() {
                                             className="w-full"
                                         >
                                             <Upload className="h-4 w-4 mr-2" />
-                                            Upload Image
+                                            Subir imagen
                                         </Button>
                                         <input
                                             ref={fileInputRef}
@@ -711,7 +711,7 @@ export default function CourseEditor() {
                                         <Separator />
 
                                         <div className="space-y-2">
-                                            <Label>History</Label>
+                                            <Label>Histórico</Label>
                                             <div className="flex gap-2">
                                                 <Button
                                                     variant="outline"
