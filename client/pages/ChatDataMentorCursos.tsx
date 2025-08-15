@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
-import { authActions } from "../store";
+import { authActions, courseActions } from "../store";
 import {
   Card,
   CardContent,
@@ -36,6 +36,7 @@ import {
   Save,
   Loader2,
 } from "lucide-react";
+import { Pencil } from "lucide-react";
 import {
   Accordion,
   AccordionContent,
@@ -188,6 +189,15 @@ export default function ChatDataMentorCursos() {
     }
     scrollToBottom();
   }, [messages]);
+
+  const handleEditInEditor = (content: string) => {
+    // tratar de sacar un título del primer heading de markdown; si no, fallback
+    const firstHeading = content.match(/^#\s+(.+)$/m);
+    const title = firstHeading ? firstHeading[1].trim() : `Curso ${new Date().toLocaleDateString('es-ES')}`;
+
+    courseActions.setEditorContent(content, title);
+    navigate("/course-editor");
+  };
 
   const handleSendMessage = async (promptToSend: string, userMessageContent?: string) => {
     const combinedContent = attachedFiles.length > 0 ? `\n\nEl siguiente texto es adjunto por el usuario:\n\n'${attachedFileContent}'` : '';
@@ -909,6 +919,17 @@ export default function ChatDataMentorCursos() {
                                   aria-label="Descargar respuesta"
                                 >
                                   <ArrowDownToLine className="h-4 w-4" />
+                                </Button>
+                              </div>
+                              <div title="Editar en Course Editor">
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="p-1 text-muted-foreground hover:text-foreground"
+                                  onClick={() => handleEditInEditor(message.content)}
+                                  aria-label="Editar en Course Editor"
+                                >
+                                  <Pencil className="h-4 w-4" />
                                 </Button>
                               </div>
                             </div>

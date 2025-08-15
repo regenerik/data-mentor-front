@@ -21,9 +21,12 @@
     "typecheck": "tsc"
   },
   "dependencies": {
+    "dompurify": "^3.2.6",
     "express": "^4.18.2",
     "flux": "^4.0.4",
     "html-to-docx": "^1.8.0",
+    "html2canvas": "^1.4.1",
+    "jspdf": "^3.0.1",
     "mammoth": "^1.10.0",
     "marked": "^16.1.2",
     "react-markdown": "^10.1.0",

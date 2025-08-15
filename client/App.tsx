@@ -16,6 +16,8 @@ import ChatDataMentorCursos from "./pages/ChatDataMentorCursos";
 import AjustesAdministrador from "./pages/AjustesAdministrador";
 import History from "./pages/History";
 import MyProfile from "./pages/MyProfile";
+import CourseEditor from "./pages/CourseEditor";
+import Share from "./pages/Share";
 import { authStore } from "./store";
 
 const queryClient = new QueryClient();
@@ -100,11 +102,27 @@ const App = () => (
               </ProtectedRoute>
             }
           />
-                    <Route
+          <Route
             path="/mi-perfil"
             element={
               <ProtectedRoute>
                 <MyProfile />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/course-editor"
+            element={
+              <ProtectedRoute>
+                <CourseEditor />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/share"
+            element={
+              <ProtectedRoute>
+                <Share />
               </ProtectedRoute>
             }
           />
