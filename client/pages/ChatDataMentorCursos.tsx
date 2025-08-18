@@ -424,26 +424,47 @@ export default function ChatDataMentorCursos() {
   };
 
   const handleFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files || files.length === 0) return;
+  const files = e.target.files;
+  if (!files || files.length === 0) return;
 
-    const filesArray = Array.from(files);
+  const filesArray = Array.from(files);
 
-    const allContentPromises = filesArray.map(file => readFileContent(file));
-    const contents = await Promise.all(allContentPromises);
+  // 👉 Mostramos al toque los adjuntos para que salgan las badges
+  setAttachedFiles(filesArray);
 
-    const totalContentLength = contents.reduce((acc, curr) => acc + curr.length, 0);
+  // Leemos contenido pero sin tirar todo si un archivo falla
+  const results = await Promise.allSettled(filesArray.map((f) => readFileContent(f)));
 
-    if (totalContentLength > MAX_CHARACTERS) {
-      console.warn("La suma de los archivos excede el límite recomendado. Por favor, adjunte archivos más cortos.");
-      setAttachedFiles([]);
-      setAttachedFileContent(null);
-      return;
+  const okTexts: string[] = [];
+  const failedNames: string[] = [];
+
+  results.forEach((res, idx) => {
+    if (res.status === "fulfilled") {
+      okTexts.push(res.value);
+    } else {
+      failedNames.push(filesArray[idx].name);
     }
+  });
 
-    setAttachedFiles(filesArray);
-    setAttachedFileContent(contents.join("\n\n"));
-  };
+  const totalContentLength = okTexts.reduce((acc, curr) => acc + curr.length, 0);
+
+  if (totalContentLength > MAX_CHARACTERS) {
+    console.warn("La suma de los archivos excede el límite recomendado. Por favor, adjunta archivos más cortos.");
+    // Si querés mantener visibles las badges aunque no mandes el contenido, dejá attachedFiles como está
+    setAttachedFileContent(null);
+    return;
+  }
+
+  setAttachedFileContent(okTexts.join("\n\n"));
+
+  if (failedNames.length) {
+    console.warn(`No pude leer: ${failedNames.join(", ")}`);
+    // Si querés, podés marcar estas badges con un tooltip o un color distinto.
+  }
+
+  // Permite volver a adjuntar los mismos archivos seguidos
+  if (fileInputRef.current) fileInputRef.current.value = "";
+};
 
   const handleRemoveFiles = () => {
     setAttachedFiles([]);
@@ -527,8 +548,60 @@ export default function ChatDataMentorCursos() {
           } catch (error) {
             reject(error);
           }
-        } else {
-          reject(new Error("Tipo de archivo no soportado. Por favor, usa .txt o .docx."));
+        } else if (file.name.toLowerCase().endsWith(".pptx")) {
+          try {
+            const JSZip = (await import("jszip")).default;
+            const zip = await JSZip.loadAsync(arrayBuffer);
+            // Buscamos slides: ppt/slides/slideN.xml
+            const slidePaths = Object.keys(zip.files)
+              .filter((k) => /^ppt\/slides\/slide\d+\.xml$/.test(k))
+              .sort((a, b) => {
+                const na = parseInt(a.match(/slide(\d+)\.xml/)?.[1] ?? "0", 10);
+                const nb = parseInt(b.match(/slide(\d+)\.xml/)?.[1] ?? "0", 10);
+                return na - nb;
+              });
+
+            const slidesText: string[] = [];
+            for (const p of slidePaths) {
+              const xml = await zip.file(p)!.async("text");
+              const doc = new DOMParser().parseFromString(xml, "application/xml");
+              // Extraemos todos los nodos de texto (a:t) sin pelearnos con namespaces
+              const texts = Array.from(doc.getElementsByTagName("*"))
+                .filter((n) => n.localName === "t")
+                .map((n) => (n.textContent ?? "").trim())
+                .filter(Boolean)
+                .join(" ");
+              const idx = parseInt(p.match(/slide(\d+)\.xml/)?.[1] ?? "0", 10);
+              slidesText.push(`Slide ${idx}: ${texts}`);
+            }
+            resolve(slidesText.join("\n\n"));
+          } catch (err) {
+            reject(new Error("No se pudo leer el PPTX (pptx)."));
+          }
+        } else if (
+          file.name.toLowerCase().endsWith(".xlsx")
+        ) {
+          try {
+            const XLSX = await import("xlsx"); // SheetJS
+            const wb = XLSX.read(arrayBuffer, { type: "array" });
+            const chunks: string[] = [];
+            for (const name of wb.SheetNames) {
+              const ws = wb.Sheets[name];
+              if (!ws) continue;
+              // Pasamos a CSV (legible); si preferís tabulado: { FS: "\t" }
+              const csv = XLSX.utils.sheet_to_csv(ws);
+              chunks.push(`=== Hoja: ${name} ===\n${csv}`);
+            }
+            resolve(chunks.join("\n\n"));
+          } catch (err) {
+            reject(new Error("No se pudo leer el Excel (xlsx)."));
+          }
+        } else if (file.name.toLowerCase().endsWith(".csv")) {
+          // Bonus: soporte CSV simple
+          const text = new TextDecoder().decode(arrayBuffer);
+          resolve(text);
+        }else {
+          reject(new Error("Tipo de archivo no soportado. Por favor, usa .txt,.docx,.pptx,.xlsx, o .csv"));
         }
       };
 
@@ -1070,7 +1143,7 @@ export default function ChatDataMentorCursos() {
                     type="file"
                     ref={fileInputRef}
                     onChange={handleFileChange}
-                    accept=".txt,.docx"
+                    accept=".txt,.docx,.pptx,.xlsx,.csv"
                     className="hidden"
                     multiple
                   />
@@ -1079,7 +1152,7 @@ export default function ChatDataMentorCursos() {
                       variant="ghost"
                       size="icon"
                       onClick={() => fileInputRef.current?.click()}
-                      title="Adjuntar archivo (.txt, .docx)"
+                      title="Adjuntar archivo (.txt,.docx,.pptx,.xlsx,.csv)"
                       className="flex-shrink-0"
                     >
                       <Paperclip className="h-4 w-4" />
