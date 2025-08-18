@@ -566,15 +566,19 @@ export default function ChatDataMentorCursos() {
   // ADD: ref para el textarea auto-ajustable
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
+  const MAX_COMPOSER_HEIGHT = 320;
+
   // ADD: función para auto-ajustar la altura del textarea
   const autoGrow = () => {
     const el = textareaRef.current;
     if (!el) return;
     el.style.height = "auto";
-    // límite de altura (ajustable). 320px ~ max-h-80
-    el.style.height = `${Math.min(el.scrollHeight, 320)}px`;
+    const scroll = el.scrollHeight;
+    const capped = Math.min(scroll, MAX_COMPOSER_HEIGHT);
+    el.style.height = `${capped}px`;
+    // 👉 sin scroll mientras haya margen para crecer; con scroll cuando toca el tope
+    el.style.overflowY = scroll > MAX_COMPOSER_HEIGHT ? "auto" : "hidden";
   };
-
   // Ajustar altura cada vez que cambia el texto
   useEffect(() => {
     autoGrow();
@@ -1099,11 +1103,11 @@ export default function ChatDataMentorCursos() {
                       placeholder={
                         selectedCourse
                           ? `Ask about ${selectedCourse.title}...`
-                          : "Contame que tipo de curso te gustaria crear..."
+                          : `Contame ${localStorage.getItem("name") || ""}, que tipo de curso te gustaria crear...`
                       }
                       rows={1}
-                      // clases inspiradas en shadcn input para que no cambie el look&feel
-                      className="flex-1 w-full bg-background pr-12 resize-none rounded-md border border-input px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 max-h-80 overflow-y-auto"
+                      className="flex-1 w-full bg-background pr-12 resize-none rounded-md border border-input px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                      style={{ maxHeight: MAX_COMPOSER_HEIGHT }} // opcional, solo como doc/seguridad
                       aria-label="Escribir mensaje"
                       aria-multiline="true"
                     />
