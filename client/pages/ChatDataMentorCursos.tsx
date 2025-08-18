@@ -563,6 +563,35 @@ export default function ChatDataMentorCursos() {
     }
   };
 
+  // ADD: ref para el textarea auto-ajustable
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // ADD: función para auto-ajustar la altura del textarea
+  const autoGrow = () => {
+    const el = textareaRef.current;
+    if (!el) return;
+    el.style.height = "auto";
+    // límite de altura (ajustable). 320px ~ max-h-80
+    el.style.height = `${Math.min(el.scrollHeight, 320)}px`;
+  };
+
+  // Ajustar altura cada vez que cambia el texto
+  useEffect(() => {
+    autoGrow();
+  }, [inputValue]);
+
+  // ADD: handler de teclado para Enter vs Shift+Enter
+  const handleComposerKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      const text = inputValue.trim();
+      if (text || attachedFiles.length > 0) {
+        handleSendMessage(text);
+      }
+    }
+    // si es Shift+Enter, dejamos pasar y el textarea mete newline
+  };
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <div className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-10">
@@ -1062,23 +1091,24 @@ export default function ChatDataMentorCursos() {
                     )}
                   </div>
                   <div className="flex-1 relative">
-                    <Input
+                    <textarea
+                      ref={textareaRef}
                       value={inputValue}
                       onChange={(e) => setInputValue(e.target.value)}
+                      onKeyDown={handleComposerKeyDown}
                       placeholder={
                         selectedCourse
                           ? `Ask about ${selectedCourse.title}...`
                           : "Contame que tipo de curso te gustaria crear..."
                       }
-                      className="flex-1 bg-background pr-10"
-                      onKeyPress={(e) => {
-                        if (e.key === "Enter") {
-                          handleSendMessage(inputValue.trim());
-                        }
-                      }}
+                      rows={1}
+                      // clases inspiradas en shadcn input para que no cambie el look&feel
+                      className="flex-1 w-full bg-background pr-12 resize-none rounded-md border border-input px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 max-h-80 overflow-y-auto"
+                      aria-label="Escribir mensaje"
+                      aria-multiline="true"
                     />
                     <div
-                      className="absolute right-1 top-1/2 -translate-y-1/2"
+                      className="absolute right-1 top-1/2 -translate-y-1/2 pr-4 pb-1"
                       title="Optimizar prompt"
                     >
                       <Button
@@ -1093,6 +1123,7 @@ export default function ChatDataMentorCursos() {
                       </Button>
                     </div>
                   </div>
+
 
                   <Button
                     onClick={() => handleSendMessage(inputValue.trim())}
