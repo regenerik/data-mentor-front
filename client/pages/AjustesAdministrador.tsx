@@ -45,7 +45,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { authActions } from "../store";
-
+import Reports from "./Reports.tsx";
 interface User {
   dni: string;
   name: string;
@@ -131,7 +131,7 @@ export default function AjustesAdministrador() {
         admin: user.admin,
         url_image: user.url_image,
         // Convertir el status a booleano de forma segura
-        status: user.status === true || user.status === "true", 
+        status: user.status === true || user.status === "true",
         lastLogin: "N/A",
       }));
       setUsers(fetchedUsers);
@@ -260,7 +260,7 @@ export default function AjustesAdministrador() {
       if (!response.ok) {
         throw new Error(result.error || "Error al eliminar el usuario.");
       }
-      
+
       setModalMessage(result.message);
       setShowSuccessModal(true);
       fetchUsers();
@@ -504,9 +504,9 @@ export default function AjustesAdministrador() {
               <Users className="h-4 w-4" />
               Usuarios
             </TabsTrigger>
-            <TabsTrigger value="system" className="flex items-center gap-2">
+            <TabsTrigger value="reports" className="flex items-center gap-2">
               <Settings className="h-4 w-4" />
-              Sistema
+              Reportes
             </TabsTrigger>
             <TabsTrigger value="security" className="flex items-center gap-2">
               <Shield className="h-4 w-4" />
@@ -560,7 +560,7 @@ export default function AjustesAdministrador() {
                       }
                     />
                   </div>
-                  
+
                   <div className="space-y-2">
                     <Label htmlFor="user-dni">DNI</Label>
                     <Input
@@ -702,134 +702,10 @@ export default function AjustesAdministrador() {
             </div>
           </TabsContent>
 
-          {/* System Settings */}
-          <TabsContent value="system" className="space-y-6">
-            <Card className="border-border shadow-xl">
-              <CardHeader>
-                <CardTitle className="text-foreground">
-                  Configuración del sistema
-                </CardTitle>
-                <CardDescription>
-                  Configuración general de sistema y preferencias
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="grid md:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <Label htmlFor="site-name">Nombre del sitio</Label>
-                    <Input
-                      id="site-name"
-                      value={systemSettings.siteName}
-                      onChange={(e) =>
-                        handleSystemSettingChange("siteName", e.target.value)
-                      }
-                    />
-                  </div>
+          {/* Reports Settings */}
 
-                  <div className="space-y-2">
-                    <Label htmlFor="max-file-size">
-                      Max File Size (MB)
-                    </Label>
-                    <Input
-                      id="max-file-size"
-                      type="number"
-                      value={systemSettings.maxFileSize}
-                      onChange={(e) =>
-                        handleSystemSettingChange("maxFileSize", e.target.value)
-                      }
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="session-timeout">
-                      Session Timeout (minutes)
-                    </Label>
-                    <Input
-                      id="session-timeout"
-                      type="number"
-                      value={systemSettings.sessionTimeout}
-                      onChange={(e) =>
-                        handleSystemSettingChange(
-                          "sessionTimeout",
-                          e.target.value
-                        )
-                      }
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <Label htmlFor="notifications">Habilitar Notificaciones</Label>
-                      <p className="text-sm text-muted-foreground">
-                        Enviar notificacione de sistema a los usuarios
-                      </p>
-                    </div>
-                    <Switch
-                      id="notifications"
-                      checked={systemSettings.enableNotifications}
-                      onCheckedChange={(checked) =>
-                        handleSystemSettingChange("enableNotifications", checked)
-                      }
-                    />
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <Label htmlFor="analytics">Habilitar Analytics</Label>
-                      <p className="text-sm text-muted-foreground">
-                        Recolectar análisis de datos usados
-                      </p>
-                    </div>
-                    <Switch
-                      id="analytics"
-                      checked={systemSettings.enableAnalytics}
-                      onCheckedChange={(checked) =>
-                        handleSystemSettingChange("enableAnalytics", checked)
-                      }
-                    />
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <Label htmlFor="maintenance">Modo Mantenimiento</Label>
-                      <p className="text-sm text-muted-foreground">
-                        Habilitar modo de mantenimiento para actualizaciones de sistema
-                      </p>
-                    </div>
-                    <Switch
-                      id="maintenance"
-                      checked={systemSettings.maintenanceMode}
-                      onCheckedChange={(checked) =>
-                        handleSystemSettingChange("maintenanceMode", checked)
-                      }
-                    />
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <Label htmlFor="registration">Permitir Registros</Label>
-                      <p className="text-sm text-muted-foreground">
-                        Permitir a nuevos usuarios registrar cuentas.
-                      </p>
-                    </div>
-                    <Switch
-                      id="registration"
-                      checked={systemSettings.allowRegistration}
-                      onCheckedChange={(checked) =>
-                        handleSystemSettingChange("allowRegistration", checked)
-                      }
-                    />
-                  </div>
-                </div>
-
-                <Button onClick={handleSaveSettings} className="w-full">
-                  <Save className="h-4 w-4 mr-2" />
-                  Guardar cambios
-                </Button>
-              </CardContent>
-            </Card>
+          <TabsContent value="reports" className="space-y-6">
+            <Reports />
           </TabsContent>
 
           {/* Security Settings */}
