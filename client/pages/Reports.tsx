@@ -28,10 +28,10 @@ const API_KEY =
 const ENDPOINTS = {
   LIST: `${API_OLD_BASE}/reportes_acumulados`,
   DOWNLOAD_VERSION: (id: string | number) =>
-    `${API_OLD_BASE}/download_report_version/${id}`,
+    `${API_OLD_BASE}/descargar_reporte/${id}`,
   DELETE_GROUP: `${API_OLD_BASE}/delete_report_group`,
   DELETE_VERSION: (id: string | number) =>
-    `${API_OLD_BASE}/delete_report_version/${id}`,
+    `${API_OLD_BASE}/delete_individual_report/${id}`,
 };
 
 // -------- helpers de fecha ----------
@@ -176,31 +176,72 @@ export default function Reports() {
     }
   };
 
-  const handleDownloadVersion = async (versionId: string | number) => {
-    if (loadingDownloadIds.includes(versionId)) return;
-    setLoadingDownloadIds((prev) => [...prev, versionId]);
+  const getFilenameFromDisposition = (disposition: string | null, fallback: string) => {
+  if (!disposition) return fallback;
+
+  // filename*=UTF-8''nombre%20con%20espacios.csv (RFC 5987)
+  const starMatch = disposition.match(/filename\*\s*=\s*UTF-8''([^;]+)/i);
+  if (starMatch && starMatch[1]) {
     try {
-      const res = await fetch(ENDPOINTS.DOWNLOAD_VERSION(versionId), {
-        method: "GET",
-        headers: { Authorization: API_KEY },
-      });
-      if (!res.ok) throw new Error("Error descargando el archivo.");
-      const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `reporte_${versionId}.zip`; // o .pdf según tu backend
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      URL.revokeObjectURL(url);
-    } catch (e) {
-      console.error(e);
-      alert("No se pudo descargar el reporte.");
-    } finally {
-      setLoadingDownloadIds((prev) => prev.filter((id) => id !== versionId));
+      return decodeURIComponent(starMatch[1]);
+    } catch {
+      // si falla el decode, seguimos
     }
-  };
+  }
+
+  // filename="nombre.csv"  o  filename=nombre.csv
+  const simpleMatch = disposition.match(/filename\s*=\s*("?)([^";]+)\1/i);
+  if (simpleMatch && simpleMatch[2]) {
+    return simpleMatch[2];
+  }
+
+  return fallback;
+};
+
+const handleDownloadVersion = async (versionId: string | number) => {
+  if (loadingDownloadIds.includes(versionId)) return;
+  setLoadingDownloadIds((prev) => [...prev, versionId]);
+
+  try {
+    const res = await fetch(ENDPOINTS.DOWNLOAD_VERSION(versionId), {
+      method: "GET",
+      headers: {
+        Authorization: API_KEY,
+        Accept: "text/csv,application/octet-stream", // por las dudas
+      },
+    });
+
+    if (!res.ok) throw new Error("Error descargando el archivo.");
+
+    const blob = await res.blob();
+
+    // Intentamos obtener el filename real del header
+    const dispo = res.headers.get("Content-Disposition") || res.headers.get("content-disposition");
+    const contentType = res.headers.get("Content-Type") || "application/octet-stream";
+
+    // Si no viene filename, armamos uno por defecto según content-type
+    let defaultExt = "csv";
+    if (contentType.includes("pdf")) defaultExt = "pdf";
+    else if (contentType.includes("zip")) defaultExt = "zip";
+
+    const fallbackName = `reporte_${versionId}.${defaultExt}`;
+    const filename = getFilenameFromDisposition(dispo, fallbackName);
+
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename; // <- nombre correcto que te manda el server
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  } catch (e) {
+    console.error(e);
+    alert("No se pudo descargar el reporte.");
+  } finally {
+    setLoadingDownloadIds((prev) => prev.filter((id) => id !== versionId));
+  }
+};
 
   const handleDeleteGroup = async (report_url: string) => {
     if (!window.confirm("¿Eliminar este grupo de reportes?")) return;
