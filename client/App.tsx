@@ -18,6 +18,8 @@ import History from "./pages/History";
 import MyProfile from "./pages/MyProfile";
 import CourseEditor from "./pages/CourseEditor";
 import Share from "./pages/Share";
+import Forms from "./pages/Forms";
+import Form from "./pages/Form";
 import { authStore } from "./store";
 
 const queryClient = new QueryClient();
@@ -123,6 +125,22 @@ const App = () => (
             element={
               <ProtectedRoute>
                 <Share />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/forms"
+            element={
+              <ProtectedRoute>
+                <Forms />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/forms/new"
+            element={
+              <ProtectedRoute>
+                <Form />
               </ProtectedRoute>
             }
           />
