@@ -1,65 +1,117 @@
 import { useState, useRef, useEffect } from "react";
-import { Link, useNavigate  } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { authActions } from "../store";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ArrowLeft, Send, Bot, User } from "lucide-react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+
+// const API_BASE = "http://localhost:5000";
+const API_BASE = "https://repomatic-turbo-meww.onrender.com";
+
+interface Trace {
+  mode?: string;
+  sql?: string;
+  rows?: number;
+  router_ms?: number;
+}
 
 interface Message {
   id: string;
   type: "user" | "bot";
   content: string;
-  timestamp: Date;
+  timestamp: string; // guardo ISO para persistir fácil
 }
 
 export default function ChatDataMentor() {
   const navigate = useNavigate();
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: "1",
-      type: "bot",
-      content:
-        "¡Hola! Soy tu Mentor de Datos. ¿En qué puedo ayudarte hoy?",
-      timestamp: new Date(),
-    },
-  ]);
+  const [messages, setMessages] = useState<Message[]>(() => {
+    const saved = localStorage.getItem("dm_messages");
+    return saved
+      ? JSON.parse(saved)
+      : [
+          {
+            id: "1",
+            type: "bot",
+            content: "¡Hola! Soy tu Mentor de Datos. ¿En qué puedo ayudarte hoy?",
+            timestamp: new Date().toISOString(),
+          },
+        ];
+  });
   const [inputValue, setInputValue] = useState("");
   const [isTyping, setIsTyping] = useState(false);
-  const [threadId, setThreadId] = useState<string | null>(null);
+  const [threadId, setThreadId] = useState<string | null>(() => localStorage.getItem("dm_thread_id"));
+  const [trace, setTrace] = useState<Trace | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
+  const scrollToBottom = () => messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
 
+  // Auto-scroll y persistencia de mensajes
   useEffect(() => {
     scrollToBottom();
+    localStorage.setItem("dm_messages", JSON.stringify(messages));
   }, [messages]);
 
-  const handleSendMessage = async () => {
-    if (!inputValue.trim()) return;
+  // Persistir threadId
+  useEffect(() => {
+    if (threadId) localStorage.setItem("dm_thread_id", threadId);
+  }, [threadId]);
 
+  // Verificación de token al montar
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "auto" });
+
+    const handlerLogOut = () => {
+      authActions.logout();
+      navigate("/");
+    };
+
+    const checkTokenValidity = async () => {
+      const token = localStorage.getItem("token");
+      if (!token) return handlerLogOut();
+
+      try {
+        const resp = await fetch(`${API_BASE}/check_token`, {
+          method: "GET",
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!resp.ok) handlerLogOut();
+      } catch {
+        handlerLogOut();
+      }
+    };
+
+    checkTokenValidity();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const handleSendMessage = async () => {
+    if (!inputValue.trim() || isTyping) return;
+
+    const nowISO = new Date().toISOString();
     const userMessage: Message = {
       id: Date.now().toString(),
       type: "user",
       content: inputValue,
-      timestamp: new Date(),
+      timestamp: nowISO,
     };
 
     setMessages((prev) => [...prev, userMessage]);
     setInputValue("");
     setIsTyping(true);
+    setTrace(null);
 
     try {
-      const response = await fetch("https://repomatic-turbo-meww.onrender.com/chat_mentor", {
+      const response = await fetch(`${API_BASE}/chat_mentor`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: "1803-1989-1803-1989",
+          Authorization: `1803-1989-1803-1989`,
         },
         body: JSON.stringify({
-          prompt: inputValue,
+          prompt: userMessage.content,
           ...(threadId && { thread_id: threadId }),
         }),
       });
@@ -67,12 +119,14 @@ export default function ChatDataMentor() {
       const data = await response.json();
 
       if (response.ok) {
-        setThreadId(data.thread_id);
+        setThreadId(data.thread_id ?? threadId);
+        setTrace(data.trace ?? null);
+
         const botMessage: Message = {
-          id: Date.now().toString() + "-bot",
+          id: `${Date.now()}-bot`,
           type: "bot",
           content: data.response || "No se obtuvo respuesta del asistente.",
-          timestamp: new Date(),
+          timestamp: new Date().toISOString(),
         };
         setMessages((prev) => [...prev, botMessage]);
       } else {
@@ -80,60 +134,16 @@ export default function ChatDataMentor() {
       }
     } catch (error: any) {
       const errorMsg: Message = {
-        id: Date.now().toString() + "-err",
+        id: `${Date.now()}-err`,
         type: "bot",
         content: `⚠️ Error: ${error.message}`,
-        timestamp: new Date(),
+        timestamp: new Date().toISOString(),
       };
       setMessages((prev) => [...prev, errorMsg]);
     } finally {
       setIsTyping(false);
     }
   };
-
-  useEffect(() => {
-    window.scrollTo({ top: 0, behavior: "auto" });
-  }, []);
-
-  
-        const handlerLogOut = () => {
-          authActions.logout();
-          navigate("/");
-      };
-  
-  
-   // Lógica para verificar el token de sesión al cargar el componente
-      useEffect(() => {
-          const checkTokenValidity = async () => {
-              const token = localStorage.getItem("token");
-  
-              if (!token) {
-                  console.warn("No se encontró un token. Redirigiendo a login.");
-                  handlerLogOut();
-                  return;
-              }
-  
-              try {
-                  const response = await fetch('https://repomatic-turbo-meww.onrender.com/check_token', {
-                      method: 'GET',
-                      headers: {
-                          'Authorization': `Bearer ${token}`,
-                      },
-                  });
-  
-                  if (!response.ok) {
-                      console.warn("Token expirado o inválido. Cerrando sesión automáticamente.");
-                      handlerLogOut();
-                  }
-              } catch (error) {
-                  console.error("Error al verificar el token:", error);
-                  handlerLogOut();
-              }
-          };
-  
-          checkTokenValidity();
-      }, [navigate]);
-  
 
   return (
     <div className="min-h-screen bg-background">
@@ -149,9 +159,7 @@ export default function ChatDataMentor() {
             </div>
             <div>
               <h1 className="text-xl font-semibold text-foreground">Mentor de Datos</h1>
-              <p className="text-sm text-muted-foreground">
-                Asistente de análisis de datos con IA
-              </p>
+              <p className="text-sm text-muted-foreground">Asistente de análisis de datos con IA</p>
             </div>
           </div>
         </div>
@@ -163,38 +171,52 @@ export default function ChatDataMentor() {
           {/* Messages */}
           <ScrollArea className="h-[400px] p-6">
             <div className="space-y-6">
-              {messages.map((message) => (
-                <div
-                  key={message.id}
-                  className={`flex gap-3 ${message.type === "user" ? "justify-end" : "justify-start"}`}
-                >
-                  {message.type === "bot" && (
-                    <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
-                      <Bot className="h-4 w-4 text-primary" />
-                    </div>
-                  )}
-
+              {messages.map((message) => {
+                const timeLabel = new Date(message.timestamp).toLocaleTimeString();
+                const isUser = message.type === "user";
+                return (
                   <div
-                    className={`max-w-[80%] rounded-xl px-4 py-3 ${
-                      message.type === "user"
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-muted text-muted-foreground"
-                    }`}
+                    key={message.id}
+                    className={`flex gap-3 ${isUser ? "justify-end" : "justify-start"}`}
                   >
-                    <p className="text-sm leading-relaxed">{message.content}</p>
-                    <span className="text-xs opacity-70 mt-2 block">
-                      {message.timestamp.toLocaleTimeString()}
-                    </span>
-                  </div>
+                    {!isUser && (
+                      <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
+                        <Bot className="h-4 w-4 text-primary" />
+                      </div>
+                    )}
 
-                  {message.type === "user" && (
-                    <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center flex-shrink-0">
-                      <User className="h-4 w-4 text-secondary-foreground" />
+                    <div
+                      className={`max-w-[80%] rounded-xl px-4 py-3 ${
+                        isUser
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-muted text-muted-foreground"
+                      }`}
+                    >
+                      {/* Render: user = texto plano, bot = Markdown */}
+                      {isUser ? (
+                        <p className="text-sm leading-relaxed whitespace-pre-wrap">
+                          {message.content}
+                        </p>
+                      ) : (
+                        <div className="prose prose-sm dark:prose-invert max-w-none">
+                          <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                            {message.content}
+                          </ReactMarkdown>
+                        </div>
+                      )}
+                      <span className="text-xs opacity-70 mt-2 block">{timeLabel}</span>
                     </div>
-                  )}
-                </div>
-              ))}
 
+                    {isUser && (
+                      <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center flex-shrink-0">
+                        <User className="h-4 w-4 text-secondary-foreground" />
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+
+              {/* Typing dots */}
               {isTyping && (
                 <div className="flex gap-3 justify-start">
                   <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
@@ -203,8 +225,14 @@ export default function ChatDataMentor() {
                   <div className="max-w-[80%] rounded-xl px-4 py-3 bg-muted">
                     <div className="flex gap-1">
                       <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" />
-                      <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
-                      <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+                      <div
+                        className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce"
+                        style={{ animationDelay: "150ms" }}
+                      />
+                      <div
+                        className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce"
+                        style={{ animationDelay: "300ms" }}
+                      />
                     </div>
                   </div>
                 </div>
@@ -212,6 +240,25 @@ export default function ChatDataMentor() {
               <div ref={messagesEndRef} />
             </div>
           </ScrollArea>
+
+          {/* Trace panel */}
+          {trace && (
+            <div className="border-t border-border px-4 py-2 text-xs bg-card/70">
+              <details>
+                <summary className="cursor-pointer select-none">
+                  Traza (modo: <b>{trace.mode ?? "-"}</b>, filas: <b>{trace.rows ?? 0}</b>)
+                </summary>
+                <div className="mt-2 space-y-1">
+                  {trace.router_ms !== undefined && <div>Router: {trace.router_ms} ms</div>}
+                  {trace.sql && (
+                    <pre className="whitespace-pre-wrap rounded-md bg-muted p-2 text-muted-foreground">
+{trace.sql}
+                    </pre>
+                  )}
+                </div>
+              </details>
+            </div>
+          )}
 
           {/* Input */}
           <div className="border-t border-border p-4 bg-card/50">
@@ -221,12 +268,20 @@ export default function ChatDataMentor() {
                 onChange={(e) => setInputValue(e.target.value)}
                 placeholder="Preguntame lo que quieras sobre tus datos..."
                 className="flex-1 bg-background"
-                onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    handleSendMessage();
+                  }
+                }}
               />
               <Button onClick={handleSendMessage} disabled={!inputValue.trim() || isTyping}>
                 <Send className="h-4 w-4" />
               </Button>
             </div>
+            <p className="text-[11px] text-muted-foreground mt-2">
+              Enter = enviar • Shift+Enter = salto de línea
+            </p>
           </div>
         </div>
       </div>
