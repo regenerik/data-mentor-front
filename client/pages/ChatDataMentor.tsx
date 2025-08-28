@@ -4,11 +4,13 @@ import { authActions } from "../store";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { ArrowLeft, Send, Bot, User } from "lucide-react";
+import { ArrowLeft, Send, Bot, User, AlertTriangle } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
-// const API_BASE = "http://localhost:5000";
+// Toast
+import { useToast } from "@/components/ui/use-toast";
+
 const API_BASE = "https://repomatic-turbo-meww.onrender.com";
 
 interface Trace {
@@ -27,6 +29,7 @@ interface Message {
 
 export default function ChatDataMentor() {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [messages, setMessages] = useState<Message[]>(() => {
     const saved = localStorage.getItem("dm_messages");
     return saved
@@ -44,6 +47,7 @@ export default function ChatDataMentor() {
   const [isTyping, setIsTyping] = useState(false);
   const [threadId, setThreadId] = useState<string | null>(() => localStorage.getItem("dm_thread_id"));
   const [trace, setTrace] = useState<Trace | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -59,7 +63,7 @@ export default function ChatDataMentor() {
     if (threadId) localStorage.setItem("dm_thread_id", threadId);
   }, [threadId]);
 
-  // Verificación de token al montar
+  // Verificación de token y rol de admin al montar
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "auto" });
 
@@ -84,6 +88,8 @@ export default function ChatDataMentor() {
     };
 
     checkTokenValidity();
+    const adminStatus = localStorage.getItem("admin") === "true";
+    setIsAdmin(adminStatus);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -145,6 +151,56 @@ export default function ChatDataMentor() {
     }
   };
 
+  const handleReportError = async (botMessage: Message) => {
+    const userEmail = localStorage.getItem("email") || "desconocido";
+    const previousMessage = messages[messages.indexOf(botMessage) - 1];
+
+    if (!previousMessage || previousMessage.type !== "user") {
+      toast({
+        title: "Error al reportar",
+        description: "No se encontró la pregunta anterior.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const reportData = {
+      user: userEmail,
+      question: previousMessage.content,
+      failed_answer: botMessage.content,
+      sql_query: trace?.sql || "No disponible",
+    };
+
+    console.log("Datos a enviar para reporte:", reportData);
+
+    try {
+      const response = await fetch(`${API_BASE}/report_to_data_mentor`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: "1803-1989-1803-1989",
+        },
+        body: JSON.stringify(reportData),
+      });
+
+      if (response.ok) {
+        toast({
+          title: "¡Reporte enviado! 🎉",
+          description: "El error ha sido enviado a los administradores para su revisión.",
+        });
+      } else {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Error desconocido al enviar el reporte.");
+      }
+    } catch (error: any) {
+      toast({
+        title: "Error al reportar",
+        description: `Hubo un problema al enviar el reporte: ${error.message}`,
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -190,9 +246,8 @@ export default function ChatDataMentor() {
                         isUser
                           ? "bg-primary text-primary-foreground"
                           : "bg-muted text-muted-foreground"
-                      }`}
+                      } flex flex-col`}
                     >
-                      {/* Render: user = texto plano, bot = Markdown */}
                       {isUser ? (
                         <p className="text-sm leading-relaxed whitespace-pre-wrap">
                           {message.content}
@@ -204,7 +259,20 @@ export default function ChatDataMentor() {
                           </ReactMarkdown>
                         </div>
                       )}
-                      <span className="text-xs opacity-70 mt-2 block">{timeLabel}</span>
+                      <div className="flex justify-between items-center mt-2">
+                        <span className="text-xs opacity-70">{timeLabel}</span>
+                        {!isUser && !isTyping && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="w-6 h-6 ml-2 text-red-500 hover:bg-red-500/10"
+                            onClick={() => handleReportError(message)}
+                            title="Reportar error"
+                          >
+                            <AlertTriangle className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </div>
                     </div>
 
                     {isUser && (
@@ -241,8 +309,8 @@ export default function ChatDataMentor() {
             </div>
           </ScrollArea>
 
-          {/* Trace panel */}
-          {trace && (
+          {/* Trace panel (visible solo para admins) */}
+          {isAdmin && trace && (
             <div className="border-t border-border px-4 py-2 text-xs bg-card/70">
               <details>
                 <summary className="cursor-pointer select-none">
@@ -252,7 +320,7 @@ export default function ChatDataMentor() {
                   {trace.router_ms !== undefined && <div>Router: {trace.router_ms} ms</div>}
                   {trace.sql && (
                     <pre className="whitespace-pre-wrap rounded-md bg-muted p-2 text-muted-foreground">
-{trace.sql}
+                      {trace.sql}
                     </pre>
                   )}
                 </div>
@@ -266,7 +334,7 @@ export default function ChatDataMentor() {
               <Input
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
-                placeholder="Preguntame lo que quieras sobre tus datos..."
+                placeholder="Pregúntame lo que quieras sobre tus datos..."
                 className="flex-1 bg-background"
                 onKeyDown={(e) => {
                   if (e.key === "Enter" && !e.shiftKey) {

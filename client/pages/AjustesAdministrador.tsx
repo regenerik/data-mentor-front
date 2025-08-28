@@ -34,6 +34,7 @@ import {
   CheckCircle2,
   XCircle,
   AlertTriangle,
+  Bug,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -46,13 +47,15 @@ import {
 } from "@/components/ui/dialog";
 import { authActions } from "../store";
 import Reports from "./Reports.tsx";
+import ErroresReportados from "./ErroresReportados.tsx";
+
 interface User {
   dni: string;
   name: string;
   email: string;
   admin: boolean;
   url_image: string;
-  status: boolean; // Ahora solo acepta un booleano
+  status: boolean;
   lastLogin?: string;
 }
 
@@ -508,9 +511,9 @@ export default function AjustesAdministrador() {
               <Settings className="h-4 w-4" />
               Reportes
             </TabsTrigger>
-            <TabsTrigger value="security" className="flex items-center gap-2">
-              <Shield className="h-4 w-4" />
-              Seguridad
+            <TabsTrigger value="reported_errors" className="flex items-center gap-2">
+              <Bug className="h-4 w-4" />
+              Errores reportados
             </TabsTrigger>
             <TabsTrigger value="database" className="flex items-center gap-2">
               <Database className="h-4 w-4" />
@@ -702,70 +705,14 @@ export default function AjustesAdministrador() {
             </div>
           </TabsContent>
 
-          {/* Reports Settings */}
-
+          {/* Reports Content */}
           <TabsContent value="reports" className="space-y-6">
             <Reports />
           </TabsContent>
 
-          {/* Security Settings */}
-          <TabsContent value="security" className="space-y-6">
-            <Card className="border-border shadow-xl">
-              <CardHeader>
-                <CardTitle className="text-foreground">
-                  Configuración de seguridad
-                </CardTitle>
-                <CardDescription>
-                  Administrar políticas de seguridad y accesos
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="grid gap-6">
-                  <div className="space-y-4">
-                    <h3 className="text-lg font-semibold text-foreground">
-                      Políticas de password
-                    </h3>
-                    <div className="grid md:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label>Longitud mínima del password</Label>
-                        <Input type="number" defaultValue="8" />
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Vencimiento de password (dias)</Label>
-                        <Input type="number" defaultValue="90" />
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="space-y-4">
-                    <h3 className="text-lg font-semibold text-foreground">
-                      Control de Acceso
-                    </h3>
-                    <div className="space-y-4">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <Label>Autenticación de dos factores</Label>
-                          <p className="text-sm text-muted-foreground">
-                            Requerir autenticación de 2 factores para todos los Admin
-                          </p>
-                        </div>
-                        <Switch defaultChecked />
-                      </div>
-
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <Label>IP Whitelist</Label>
-                          <p className="text-sm text-muted-foreground">
-                            Restringir acceso solo a IP's específicas
-                          </p>
-                        </div>
-                        <Switch />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+          {/* Reported Errors Content */}
+          <TabsContent value="reported_errors" className="space-y-6">
+            <ErroresReportados />
           </TabsContent>
 
           {/* Database Settings */}
