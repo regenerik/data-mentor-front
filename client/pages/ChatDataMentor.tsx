@@ -6,10 +6,20 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ArrowLeft, Send, Bot, User, AlertTriangle } from "lucide-react";
 import ReactMarkdown from "react-markdown";
+
+// Importación corregida de remarkGfm
 import remarkGfm from "remark-gfm";
 
 // Toast
 import { useToast } from "@/components/ui/use-toast";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 
 const API_BASE = "https://repomatic-turbo-meww.onrender.com";
 
@@ -24,7 +34,7 @@ interface Message {
   id: string;
   type: "user" | "bot";
   content: string;
-  timestamp: string; // guardo ISO para persistir fácil
+  timestamp: string;
 }
 
 export default function ChatDataMentor() {
@@ -45,25 +55,28 @@ export default function ChatDataMentor() {
   });
   const [inputValue, setInputValue] = useState("");
   const [isTyping, setIsTyping] = useState(false);
-  const [threadId, setThreadId] = useState<string | null>(() => localStorage.getItem("dm_thread_id"));
+  const [threadId, setThreadId] = useState<string | null>(() =>
+    localStorage.getItem("dm_thread_id")
+  );
   const [trace, setTrace] = useState<Trace | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [reportToSubmit, setReportToSubmit] = useState<Message | null>(null);
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const scrollToBottom = () => messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  const scrollToBottom = () =>
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
 
-  // Auto-scroll y persistencia de mensajes
   useEffect(() => {
     scrollToBottom();
     localStorage.setItem("dm_messages", JSON.stringify(messages));
   }, [messages]);
 
-  // Persistir threadId
   useEffect(() => {
     if (threadId) localStorage.setItem("dm_thread_id", threadId);
   }, [threadId]);
 
-  // Verificación de token y rol de admin al montar
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "auto" });
 
@@ -151,9 +164,16 @@ export default function ChatDataMentor() {
     }
   };
 
-  const handleReportError = async (botMessage: Message) => {
+  const handleReportError = (botMessage: Message) => {
+    setReportToSubmit(botMessage);
+    setShowReportModal(true);
+  };
+
+  const confirmReportSubmit = async () => {
+    if (!reportToSubmit) return;
+
     const userEmail = localStorage.getItem("email") || "desconocido";
-    const previousMessage = messages[messages.indexOf(botMessage) - 1];
+    const previousMessage = messages[messages.indexOf(reportToSubmit) - 1];
 
     if (!previousMessage || previousMessage.type !== "user") {
       toast({
@@ -161,17 +181,17 @@ export default function ChatDataMentor() {
         description: "No se encontró la pregunta anterior.",
         variant: "destructive",
       });
+      setShowReportModal(false);
       return;
     }
 
     const reportData = {
       user: userEmail,
       question: previousMessage.content,
-      failed_answer: botMessage.content,
+      failed_answer: reportToSubmit.content,
       sql_query: trace?.sql || "No disponible",
     };
 
-    console.log("Datos a enviar para reporte:", reportData);
 
     try {
       const response = await fetch(`${API_BASE}/report_to_data_mentor`, {
@@ -198,6 +218,9 @@ export default function ChatDataMentor() {
         description: `Hubo un problema al enviar el reporte: ${error.message}`,
         variant: "destructive",
       });
+    } finally {
+      setShowReportModal(false);
+      setReportToSubmit(null);
     }
   };
 
@@ -206,7 +229,10 @@ export default function ChatDataMentor() {
       {/* Header */}
       <div className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-10">
         <div className="container mx-auto px-4 py-4 flex items-center gap-4">
-          <Link to="/" className="text-muted-foreground hover:text-foreground transition-colors">
+          <Link
+            to="/"
+            className="text-muted-foreground hover:text-foreground transition-colors"
+          >
             <ArrowLeft className="h-5 w-5" />
           </Link>
           <div className="flex items-center gap-3">
@@ -214,8 +240,12 @@ export default function ChatDataMentor() {
               <Bot className="h-5 w-5 text-primary" />
             </div>
             <div>
-              <h1 className="text-xl font-semibold text-foreground">Mentor de Datos</h1>
-              <p className="text-sm text-muted-foreground">Asistente de análisis de datos con IA</p>
+              <h1 className="text-xl font-semibold text-foreground">
+                Mentor de Datos
+              </h1>
+              <p className="text-sm text-muted-foreground">
+                Asistente de análisis de datos con IA
+              </p>
             </div>
           </div>
         </div>
@@ -233,7 +263,9 @@ export default function ChatDataMentor() {
                 return (
                   <div
                     key={message.id}
-                    className={`flex gap-3 ${isUser ? "justify-end" : "justify-start"}`}
+                    className={`flex gap-3 ${
+                      isUser ? "justify-end" : "justify-start"
+                    }`}
                   >
                     {!isUser && (
                       <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
@@ -317,7 +349,9 @@ export default function ChatDataMentor() {
                   Traza (modo: <b>{trace.mode ?? "-"}</b>, filas: <b>{trace.rows ?? 0}</b>)
                 </summary>
                 <div className="mt-2 space-y-1">
-                  {trace.router_ms !== undefined && <div>Router: {trace.router_ms} ms</div>}
+                  {trace.router_ms !== undefined && (
+                    <div>Router: {trace.router_ms} ms</div>
+                  )}
                   {trace.sql && (
                     <pre className="whitespace-pre-wrap rounded-md bg-muted p-2 text-muted-foreground">
                       {trace.sql}
@@ -353,6 +387,32 @@ export default function ChatDataMentor() {
           </div>
         </div>
       </div>
+
+      {/* Modal de confirmación para reportar error */}
+      <Dialog open={showReportModal} onOpenChange={setShowReportModal}>
+        <DialogContent>
+          <DialogHeader className="flex flex-col items-center text-center">
+            <AlertTriangle className="h-12 w-12 text-yellow-500 mb-2" />
+            <DialogTitle className="text-2xl font-bold text-yellow-500">
+              Confirmar Reporte de Error
+            </DialogTitle>
+            <DialogDescription className="text-lg">
+              ¿Estás seguro de que quieres reportar esta respuesta como un error?
+            </DialogDescription>
+            <DialogDescription className="text-sm text-muted-foreground">
+              Esta acción ayudará a mejorar la calidad del asistente.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex flex-row justify-end gap-2">
+            <Button variant="outline" onClick={() => setShowReportModal(false)}>
+              Cancelar
+            </Button>
+            <Button variant="default" onClick={confirmReportSubmit}>
+              Confirmar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

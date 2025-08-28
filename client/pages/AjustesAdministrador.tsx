@@ -48,6 +48,7 @@ import {
 import { authActions } from "../store";
 import Reports from "./Reports.tsx";
 import ErroresReportados from "./ErroresReportados.tsx";
+import Instructions from "./Instructions.tsx";
 
 interface User {
   dni: string;
@@ -515,9 +516,9 @@ export default function AjustesAdministrador() {
               <Bug className="h-4 w-4" />
               Errores reportados
             </TabsTrigger>
-            <TabsTrigger value="database" className="flex items-center gap-2">
-              <Database className="h-4 w-4" />
-              Base de datos
+            <TabsTrigger value="instructions" className="flex items-center gap-2">
+              <Settings className="h-4 w-4" />
+              Instrucciones IA
             </TabsTrigger>
           </TabsList>
 
@@ -715,71 +716,9 @@ export default function AjustesAdministrador() {
             <ErroresReportados />
           </TabsContent>
 
-          {/* Database Settings */}
-          <TabsContent value="database" className="space-y-6">
-            <Card className="border-border shadow-xl">
-              <CardHeader>
-                <CardTitle className="text-foreground">
-                  Control General de base de datos
-                </CardTitle>
-                <CardDescription>
-                  Monitor y mantenimiento de salud de base de datos
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="grid md:grid-cols-2 gap-6">
-                  <div className="space-y-4">
-                    <h3 className="text-lg font-semibold text-foreground">
-                      Configuraciones de buck-up
-                    </h3>
-                    <div className="space-y-2">
-                      <Label>Frecuencia de buck-up's</Label>
-                      <Select defaultValue="daily">
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="hourly">Por hora</SelectItem>
-                          <SelectItem value="daily">Por dia</SelectItem>
-                          <SelectItem value="weekly">Por semana</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <Button variant="outline" className="w-full">
-                      Abrir manual de buck-up
-                    </Button>
-                  </div>
-
-                  <div className="space-y-4">
-                    <h3 className="text-lg font-semibold text-foreground">
-                      Estado de base de datos
-                    </h3>
-                    <div className="space-y-2">
-                      <div className="flex justify-between">
-                        <span className="text-sm text-muted-foreground">
-                          Estado de conección:
-                        </span>
-                        <Badge className="bg-neon-green/20 text-neon-green">
-                          Conectado
-                        </Badge>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-sm text-muted-foreground">
-                          Ultimo buck-up:
-                        </span>
-                        <span className="text-sm">2024-01-15 08:00</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-sm text-muted-foreground">
-                          Tamaño de base de datos:
-                        </span>
-                        <span className="text-sm">245 MB</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+          {/* Instructions Content */}
+          <TabsContent value="instructions" className="space-y-6">
+            <Instructions />
           </TabsContent>
         </Tabs>
       </div>
