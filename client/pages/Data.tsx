@@ -100,53 +100,57 @@ export default function Data() {
   };
 
   const handleRestoreDB = async () => {
-    if (!selectedFile) return;
+  if (!selectedFile) return;
 
-    setShowRestoreModal(false);
-    setLoading(true);
-    toast({
-      title: "Iniciando restauración ⏳",
-      description: "El servidor está restaurando la base de datos. No cierres la página.",
+  setShowRestoreModal(false);
+  setLoading(true);
+  toast({
+    title: "Iniciando restauración ⏳",
+    description: "El servidor está restaurando la base de datos. No cierres la página.",
+  });
+
+  try {
+    const formData = new FormData();
+    formData.append("file", selectedFile);
+    
+    // --- CAMBIO AQUÍ: AÑADIMOS EL PASSWORD AL FORM DATA ---
+    formData.append("password", password);
+
+    const response = await fetch(`${API_BASE}/restaurar_db`, {
+      method: "POST",
+      headers: {
+        Authorization: "1803-1989-1803-1989",
+        // NOTA: No incluyas 'Content-Type' cuando usas FormData, el navegador lo configura automáticamente.
+      },
+      body: formData,
     });
 
-    try {
-      const formData = new FormData();
-      formData.append("file", selectedFile);
+    const result = await response.json();
 
-      const response = await fetch(`${API_BASE}/restaurar_db`, {
-        method: "POST",
-        headers: {
-          Authorization: "1803-1989-1803-1989",
-        },
-        body: formData,
-      });
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(result.error || "Error al restaurar la base de datos.");
-      }
-
-      toast({
-        title: "Restauración exitosa 🎉",
-        description: "La base de datos ha sido restaurada con éxito.",
-      });
-      setPassword("");
-      setSelectedFile(null);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
-    } catch (error: any) {
-      console.error("Error restoring database:", error);
-      toast({
-        title: "Error de restauración",
-        description: `Hubo un problema: ${error.message}`,
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
+    if (!response.ok) {
+      throw new Error(result.error || "Error al restaurar la base de datos.");
     }
-  };
+
+    toast({
+      title: "Restauración exitosa 🎉",
+      description: "La base de datos ha sido restaurada con éxito.",
+    });
+    setPassword("");
+    setSelectedFile(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  } catch (error: any) {
+    console.error("Error restoring database:", error);
+    toast({
+      title: "Error de restauración",
+      description: `Hubo un problema: ${error.message}`,
+      variant: "destructive",
+    });
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <div className="space-y-6">
