@@ -28,7 +28,7 @@ export default function Dashboard() {
 
     const handlerLogOut = () => {
         authActions.logout();
-        navigate("/");
+        navigate("/expired-token");
     };
 
     // Lógica para verificar el token de sesión al cargar el componente

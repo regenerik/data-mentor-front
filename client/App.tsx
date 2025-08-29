@@ -20,6 +20,7 @@ import CourseEditor from "./pages/CourseEditor";
 import Share from "./pages/Share";
 import Forms from "./pages/Forms";
 import Form from "./pages/Form";
+import ExpiredToken from "./pages/ExpiredToken";
 import { authStore } from "./store";
 
 const queryClient = new QueryClient();
@@ -56,6 +57,7 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<LogIn />} />
+          <Route path="/expired-token" element={<ExpiredToken />} />
           <Route
             path="/dashboard"
             element={

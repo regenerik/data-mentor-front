@@ -82,7 +82,7 @@ export default function ChatDataMentor() {
 
     const handlerLogOut = () => {
       authActions.logout();
-      navigate("/");
+      navigate("/expired-token");
     };
 
     const checkTokenValidity = async () => {

@@ -170,7 +170,7 @@ export default function AjustesAdministrador() {
         if (!response.ok) {
           console.warn("Token expirado o inválido. Cerrando sesión automáticamente.");
           authActions.logout();
-          navigate("/");
+          navigate("/expired-token");
           return;
         }
         fetchUsers();
