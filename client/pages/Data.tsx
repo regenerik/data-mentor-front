@@ -100,14 +100,6 @@ export default function Data() {
   };
 
   const handleRestoreDB = async () => {
-    if (password !== RESTAURAR_PASSWORD_UNICO) {
-      toast({
-        title: "Error de autenticación",
-        description: "La contraseña es incorrecta. Inténtalo de nuevo.",
-        variant: "destructive",
-      });
-      return;
-    }
     if (!selectedFile) return;
 
     setShowRestoreModal(false);
