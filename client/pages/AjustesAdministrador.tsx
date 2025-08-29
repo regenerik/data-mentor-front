@@ -49,6 +49,7 @@ import { authActions } from "../store";
 import Reports from "./Reports.tsx";
 import ErroresReportados from "./ErroresReportados.tsx";
 import Instructions from "./Instructions.tsx";
+import Data from "./Data.tsx";
 
 interface User {
   dni: string;
@@ -500,27 +501,32 @@ export default function AjustesAdministrador() {
         </DialogContent>
       </Dialog>
 
-
       {/* Main Content */}
       <div className="container mx-auto px-4 py-6 max-w-6xl">
         <Tabs defaultValue="users" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="users" className="flex items-center gap-2">
-              <Users className="h-4 w-4" />
-              Usuarios
-            </TabsTrigger>
-            <TabsTrigger value="reports" className="flex items-center gap-2">
-              <Settings className="h-4 w-4" />
-              Reportes
-            </TabsTrigger>
-            <TabsTrigger value="reported_errors" className="flex items-center gap-2">
-              <Bug className="h-4 w-4" />
-              Errores reportados
-            </TabsTrigger>
-            <TabsTrigger value="instructions" className="flex items-center gap-2">
-              <Settings className="h-4 w-4" />
-              Instrucciones IA
-            </TabsTrigger>
+          <TabsList className="p-1 bg-muted text-muted-foreground rounded-md w-full mb-4">
+            <div className="flex flex-wrap justify-center w-full gap-1">
+              <TabsTrigger value="users" className="flex items-center gap-2 flex-grow sm:flex-auto min-w-[120px]">
+                <Users className="h-4 w-4" />
+                Usuarios
+              </TabsTrigger>
+              <TabsTrigger value="reports" className="flex items-center gap-2 flex-grow sm:flex-auto min-w-[120px]">
+                <Settings className="h-4 w-4" />
+                Reportes
+              </TabsTrigger>
+              <TabsTrigger value="reported_errors" className="flex items-center gap-2 flex-grow sm:flex-auto min-w-[120px]">
+                <Bug className="h-4 w-4" />
+                Errores reportados
+              </TabsTrigger>
+              <TabsTrigger value="instructions" className="flex items-center gap-2 flex-grow sm:flex-auto min-w-[120px]">
+                <Settings className="h-4 w-4" />
+                Instrucciones IA
+              </TabsTrigger>
+              <TabsTrigger value="data" className="flex items-center gap-2 flex-grow sm:flex-auto min-w-[120px]">
+                <Database className="h-4 w-4" />
+                Datos
+              </TabsTrigger>
+            </div>
           </TabsList>
 
           {/* Users Management */}
@@ -720,6 +726,11 @@ export default function AjustesAdministrador() {
           {/* Instructions Content */}
           <TabsContent value="instructions" className="space-y-6">
             <Instructions />
+          </TabsContent>
+
+          {/* New Data Content Tab */}
+          <TabsContent value="data" className="space-y-6">
+            <Data />
           </TabsContent>
         </Tabs>
       </div>
