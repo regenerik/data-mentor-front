@@ -149,6 +149,7 @@ export default function AjustesAdministrador() {
   };
 
   useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "auto" });
     const checkTokenAndFetchUsers = async () => {
       const token = localStorage.getItem("token");
       const isAdmin = JSON.parse(localStorage.getItem("admin") || "false");
