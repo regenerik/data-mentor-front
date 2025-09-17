@@ -241,6 +241,7 @@ export default function Dashboard() {
                         </Card>
 
                         {/* RRHH Card */}
+                    {isAdmin && (
                         <Card className="group relative overflow-hidden border-border/50 bg-card/80 backdrop-blur-sm hover:border-amber-500/50 transition-all duration-300 hover:shadow-2xl hover:shadow-amber-500/10">
                             <div className="absolute inset-0 bg-gradient-to-r from-amber-500/5 to-amber-300/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
 
@@ -276,7 +277,7 @@ export default function Dashboard() {
                                 </Link>
                             </CardContent>
                         </Card>
-
+                        )}
 
                         {/* Tarjeta Ajustes de Administrador (condicional) */}
                         {isAdmin && (
