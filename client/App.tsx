@@ -21,6 +21,7 @@ import Share from "./pages/Share";
 import Forms from "./pages/Forms";
 import Form from "./pages/Form";
 import ExpiredToken from "./pages/ExpiredToken";
+import Recursos from "./pages/Recursos.tsx";
 import { authStore } from "./store";
 
 const queryClient = new QueryClient();
@@ -143,6 +144,14 @@ const App = () => (
             element={
               <ProtectedRoute>
                 <Form />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/recursos"
+            element={
+              <ProtectedRoute>
+                <Recursos />
               </ProtectedRoute>
             }
           />

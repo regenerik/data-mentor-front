@@ -18,6 +18,7 @@ import {
     LogOut,
     GraduationCap,
     Settings,
+    Users,
     Zap,
 } from "lucide-react";
 import { authActions } from "../store";
@@ -70,7 +71,7 @@ export default function Dashboard() {
         navigate("/mi-perfil")
     }
 
-       const handlerGoToForms = () => {
+    const handlerGoToForms = () => {
         navigate("/forms")
     }
 
@@ -238,6 +239,44 @@ export default function Dashboard() {
                                 </Link>
                             </CardContent>
                         </Card>
+
+                        {/* RRHH Card */}
+                        <Card className="group relative overflow-hidden border-border/50 bg-card/80 backdrop-blur-sm hover:border-amber-500/50 transition-all duration-300 hover:shadow-2xl hover:shadow-amber-500/10">
+                            <div className="absolute inset-0 bg-gradient-to-r from-amber-500/5 to-amber-300/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+
+                            <CardHeader className="relative z-10">
+                                <div className="w-12 h-12 rounded-xl bg-amber-500/20 flex items-center justify-center mb-4 group-hover:bg-amber-500/30 transition-colors">
+                                    <Users className="h-6 w-6 text-amber-500" />
+                                </div>
+                                <CardTitle className="text-xl font-semibold text-foreground group-hover:text-amber-500 transition-colors">
+                                    Gestión de Talento (RRHH)
+                                </CardTitle>
+                                <CardDescription className="text-muted-foreground">
+                                    Encuentra personas por habilidades en nuestra base de datos de currículums y gestiona cargas masivas de CV.
+                                </CardDescription>
+                            </CardHeader>
+
+                            <CardContent className="relative z-10">
+                                <div className="space-y-3 mb-6">
+                                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                        <div className="w-1.5 h-1.5 bg-amber-500 rounded-full"></div>
+                                        Búsqueda rápida por descripción
+                                    </div>
+                                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                        <div className="w-1.5 h-1.5 bg-amber-400 rounded-full"></div>
+                                        Subida masiva de currículums (PDF, DOCX, TXT)
+                                    </div>
+                                </div>
+
+                                <Link to="/recursos">
+                                    <Button className="w-full group/btn bg-amber-500/90 hover:bg-amber-500 text-primary-foreground">
+                                        Ir a RRHH
+                                        <ArrowRight className="ml-2 h-4 w-4 group-hover/btn:translate-x-1 transition-transform" />
+                                    </Button>
+                                </Link>
+                            </CardContent>
+                        </Card>
+
 
                         {/* Tarjeta Ajustes de Administrador (condicional) */}
                         {isAdmin && (
