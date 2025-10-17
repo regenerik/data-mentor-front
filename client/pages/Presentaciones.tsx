@@ -1,11 +1,13 @@
 import React, { useState } from "react";
+import { Link } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { FilePlus, Loader2, X } from "lucide-react"; // Importamos el ícono de cruz
+import { FilePlus, ArrowLeft, Bot, Loader2, X } from "lucide-react"; // Importamos el ícono de cruz
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
 
 // Configuración de Cloudinary
 const CLOUDINARY_UPLOAD_PRESET = "yu1h90st"; // Reemplaza con tu preset de carga
@@ -113,7 +115,7 @@ export default function Presentaciones() {
         if (tono) fd.append("tone", tono);             // Corregido: "tone"
         if (audiencia) fd.append("audience", audiencia); // Corregido: "audience"
         if (tema) fd.append("themeName", tema);         // Corregido: "themeName"
-        if (idioma) fd.append("language", idioma); 
+        if (idioma) fd.append("language", idioma);
 
         try {
             const res = await fetch(BACKEND_API_URL, {
@@ -143,7 +145,31 @@ export default function Presentaciones() {
     }
 
     return (
-        <div className="min-h-screen bg-background py-10">
+        <div className="min-h-screen bg-background pb-10">
+            {/* Header */}
+            <div className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-10 mb-4">
+                <div className="container mx-auto px-4 py-4 flex items-center gap-4">
+                    <Link
+                        to="/"
+                        className="text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                        <ArrowLeft className="h-5 w-5" />
+                    </Link>
+                    <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center">
+                            <Bot className="h-5 w-5 text-primary" />
+                        </div>
+                        <div>
+                            <h1 className="text-xl font-semibold text-foreground">
+                                Presentaciones
+                            </h1>
+                            <p className="text-sm text-muted-foreground">
+                                Creación de presentaciones power-point automatizadas
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
             <div className="container mx-auto px-4">
                 <Card className="max-w-3xl mx-auto">
                     <CardHeader>
@@ -186,7 +212,7 @@ export default function Presentaciones() {
                                     placeholder="Describe los objetivos o puntos clave para la presentación"
                                 />
                             </div>
-                            
+
                             {/* Nuevos campos para los parámetros opcionales */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>

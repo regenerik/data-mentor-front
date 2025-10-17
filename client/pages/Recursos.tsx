@@ -1,11 +1,12 @@
 import React, { useEffect, useRef, useState } from "react";
+import { Link } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { FilePlus, Download, UploadCloud, X, Loader2, ListTodo } from "lucide-react";
+import { FilePlus, Download, UploadCloud, X, Loader2, ListTodo , ArrowLeft, Bot} from "lucide-react";
 
 // Types
 type JobListItem = { job_description_id: number; titulo: string };
@@ -372,7 +373,31 @@ export default function Recursos({ userEmail }: { userEmail?: string }) {
     : Math.round(((progress.done + progress.error) / uploadableTotal) * 100);
 
   return (
-    <div className="min-h-screen bg-background p-4 md:p-6">
+    <div className="min-h-screen bg-background px-4 md:px-6 pt-0 pb-4 md:pb-6">
+      {/* Header */}
+      <div className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-10 mb-4">
+        <div className="container mx-auto px-4 py-4 flex items-center gap-4">
+          <Link
+            to="/"
+            className="text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </Link>
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center">
+              <Bot className="h-5 w-5 text-primary" />
+            </div>
+            <div>
+              <h1 className="text-xl font-semibold text-foreground">
+                Selección de CV's
+              </h1>
+              <p className="text-sm text-muted-foreground">
+                Sube una lista de currículos y obtiene una lista ordenada con los mejores candidatos
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
       <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6">
 
         {/* --- Card 1: Creación de Job y Subida de CVs --- */}
