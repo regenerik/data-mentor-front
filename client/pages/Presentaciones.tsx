@@ -12,8 +12,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 // Configuración de Cloudinary
 const CLOUDINARY_UPLOAD_PRESET = "yu1h90st"; // Reemplaza con tu preset de carga
 const CLOUDINARY_CLOUD_NAME = "drlqmol4c"; // Reemplaza con tu nombre de nube
-// const BACKEND_API_URL = "https://dm-back-fn4l.onrender.com/create-gamma"; // URL del backend, ajusta si es necesario
-const BACKEND_API_URL = "http://localhost:5000/create-gamma"
+const BACKEND_API_URL = "https://dm-back-fn4l.onrender.com/create-gamma"; // URL del backend, ajusta si es necesario
+// const BACKEND_API_URL = "http://localhost:5000/create-gamma"
 export default function Presentaciones() {
     const persistedEmail = localStorage.getItem("email") || "";
 
