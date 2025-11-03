@@ -12,8 +12,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 // Configuración de Cloudinary
 const CLOUDINARY_UPLOAD_PRESET = "yu1h90st"; // Reemplaza con tu preset de carga
 const CLOUDINARY_CLOUD_NAME = "drlqmol4c"; // Reemplaza con tu nombre de nube
-const BACKEND_API_URL = "https://dm-back-fn4l.onrender.com/create-gamma"; // URL del backend, ajusta si es necesario
-
+// const BACKEND_API_URL = "https://dm-back-fn4l.onrender.com/create-gamma"; // URL del backend, ajusta si es necesario
+const BACKEND_API_URL = "http://localhost:5000/create-gamma"
 export default function Presentaciones() {
     const persistedEmail = localStorage.getItem("email") || "";
 
@@ -33,10 +33,11 @@ export default function Presentaciones() {
     // NUEVOS estados para los parámetros opcionales
     const [numCards, setNumCards] = useState<string>(""); // Nuevo estado para numCards
     const [amount, setAmount] = useState<string>("medium"); // Nuevo estado para amount
-    const [tono, setTono] = useState<string>("");
+    const [tono, setTono] = useState<string>("Profesional");
     const [audiencia, setAudiencia] = useState<string>("");
     const [tema, setTema] = useState<string>("");
     const [idioma, setIdioma] = useState<string>("es");
+    const [exportAs, setExportAs ] = useState<string>("pptx")
 
     function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
         const f = e.target.files && e.target.files[0];
@@ -116,6 +117,7 @@ export default function Presentaciones() {
         if (audiencia) fd.append("audience", audiencia); // Corregido: "audience"
         if (tema) fd.append("themeName", tema);         // Corregido: "themeName"
         if (idioma) fd.append("language", idioma);
+        if (exportAs) fd.append("exportAs", exportAs);
 
         try {
             const res = await fetch(BACKEND_API_URL, {
@@ -215,7 +217,7 @@ export default function Presentaciones() {
 
                             {/* Nuevos campos para los parámetros opcionales */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
+                                {/* <div>
                                     <Label htmlFor="tono">Tono de la presentación (opcional)</Label>
                                     <Input
                                         id="tono"
@@ -223,7 +225,7 @@ export default function Presentaciones() {
                                         onChange={(e) => setTono(e.target.value)}
                                         placeholder="Ej: Profesional, inspirador, humorístico"
                                     />
-                                </div>
+                                </div> */}
                                 <div>
                                     <Label htmlFor="audiencia">Audiencia (opcional)</Label>
                                     <Input
@@ -326,7 +328,7 @@ export default function Presentaciones() {
 
                                 {pdfUrl && (
                                     <a href={pdfUrl} target="_blank" rel="noreferrer" className="inline-block">
-                                        <Button variant="outline">Descargar PDF</Button>
+                                        <Button variant="outline">Descargar PPTX</Button>
                                     </a>
                                 )}
                             </div>
@@ -336,10 +338,10 @@ export default function Presentaciones() {
                             <div className="mt-4">
                                 <h3 className="text-sm font-semibold">Resultado</h3>
                                 <p className="text-sm text-muted-foreground">
-                                    La presentación ha sido generada correctamente. Haz clic para descargar el PDF.
+                                    La presentación ha sido generada correctamente. Haz clic para descargar el PPTX.
                                 </p>
                                 <a href={pdfUrl} target="_blank" rel="noreferrer" className="text-primary underline">
-                                    Descargar PDF
+                                    Descargar PPTX
                                 </a>
                                 {gammaUrl && (
                                     <p className="mt-2 text-xs text-muted-foreground">
