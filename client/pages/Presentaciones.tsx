@@ -118,7 +118,7 @@ export default function Presentaciones() {
         if (tema) fd.append("themeName", tema);         // Corregido: "themeName"
         if (idioma) fd.append("language", idioma);
         if (exportAs) fd.append("exportAs", exportAs);
-
+        if (persistedEmail) fd.append("email", persistedEmail)
         try {
             const res = await fetch(BACKEND_API_URL, {
                 method: "POST",
@@ -319,7 +319,7 @@ export default function Presentaciones() {
                                     {isLoading || isUploadingImage ? (
                                         <>
                                             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                            {isUploadingImage ? "Subiendo imagen..." : "Generando..."}
+                                            {isUploadingImage ? "Subiendo imagen..." : "Generando... Puede tardar unos minutos"}
                                         </>
                                     ) : (
                                         "Generar Presentación"
@@ -338,7 +338,7 @@ export default function Presentaciones() {
                             <div className="mt-4">
                                 <h3 className="text-sm font-semibold">Resultado</h3>
                                 <p className="text-sm text-muted-foreground">
-                                    La presentación ha sido generada correctamente. Haz clic para descargar el PPTX.
+                                    La presentación ha sido generada correctamente y enviada a tu email. Haz clic para descargar el PPTX. Recordá revisar el "correo no deseado"
                                 </p>
                                 <a href={pdfUrl} target="_blank" rel="noreferrer" className="text-primary underline">
                                     Descargar PPTX
