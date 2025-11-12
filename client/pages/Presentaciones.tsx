@@ -35,7 +35,7 @@ export default function Presentaciones() {
     const [amount, setAmount] = useState<string>("medium"); // Nuevo estado para amount
     const [tono, setTono] = useState<string>("Profesional");
     const [audiencia, setAudiencia] = useState<string>("");
-    const [tema, setTema] = useState<string>("9038q60czgn8a7o");
+    const [tema, setTema] = useState<string>("YPF");
     const [idioma, setIdioma] = useState<string>("es");
     const [exportAs, setExportAs ] = useState<string>("pptx")
 
@@ -115,7 +115,7 @@ export default function Presentaciones() {
         if (amount) fd.append("amount", amount);       // Correcto
         if (tono) fd.append("tone", tono);             // Corregido: "tone"
         if (audiencia) fd.append("audience", audiencia); // Corregido: "audience"
-        if (tema) fd.append("themeId", tema);         // Corregido: "themeId"
+        if (tema) fd.append("themeName", tema);         // Corregido: "themeId"
         if (idioma) fd.append("language", idioma);
         if (exportAs) fd.append("exportAs", exportAs);
         if (persistedEmail) fd.append("email", persistedEmail)
