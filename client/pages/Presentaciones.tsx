@@ -35,7 +35,7 @@ export default function Presentaciones() {
     const [amount, setAmount] = useState<string>("medium"); // Nuevo estado para amount
     const [tono, setTono] = useState<string>("Profesional");
     const [audiencia, setAudiencia] = useState<string>("");
-    const [tema, setTema] = useState<string>("YPF");
+    const [tema, setTema] = useState<string>("Oasis");
     const [idioma, setIdioma] = useState<string>("es");
     const [exportAs, setExportAs ] = useState<string>("pptx")
 
