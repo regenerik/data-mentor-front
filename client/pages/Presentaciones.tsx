@@ -35,7 +35,7 @@ export default function Presentaciones() {
     const [amount, setAmount] = useState<string>("medium"); // Nuevo estado para amount
     const [tono, setTono] = useState<string>("Profesional");
     const [audiencia, setAudiencia] = useState<string>("");
-    const [tema, setTema] = useState<string>("");
+    const [tema, setTema] = useState<string>("YPF");
     const [idioma, setIdioma] = useState<string>("es");
     const [exportAs, setExportAs ] = useState<string>("pptx")
 
@@ -115,7 +115,7 @@ export default function Presentaciones() {
         if (amount) fd.append("amount", amount);       // Correcto
         if (tono) fd.append("tone", tono);             // Corregido: "tone"
         if (audiencia) fd.append("audience", audiencia); // Corregido: "audience"
-        if (tema) fd.append("themeName", tema);         // Corregido: "themeName"
+        if (tema) fd.append("themeId", tema);         // Corregido: "themeId"
         if (idioma) fd.append("language", idioma);
         if (exportAs) fd.append("exportAs", exportAs);
         if (persistedEmail) fd.append("email", persistedEmail)
@@ -237,7 +237,7 @@ export default function Presentaciones() {
                                 </div>
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <div>
+                                {/* <div>
                                     <Label htmlFor="tema">Nombre del tema (opcional)</Label>
                                     <Input
                                         id="tema"
@@ -245,7 +245,7 @@ export default function Presentaciones() {
                                         onChange={(e) => setTema(e.target.value)}
                                         placeholder="Ej: Oasis, Night Sky"
                                     />
-                                </div>
+                                </div> */}
                                 <div>
                                     <Label htmlFor="idioma">Idioma</Label>
                                     <Select value={idioma} onValueChange={setIdioma}>
