@@ -37,7 +37,7 @@ export default function Presentaciones() {
     const [audiencia, setAudiencia] = useState<string>("");
     const [tema, setTema] = useState<string>("9038q60czgn8a7o");
     const [idioma, setIdioma] = useState<string>("es");
-    const [exportAs, setExportAs ] = useState<string>("pptx")
+    const [exportAs, setExportAs] = useState<string>("pptx")
 
     function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
         const f = e.target.files && e.target.files[0];
@@ -267,8 +267,14 @@ export default function Presentaciones() {
                                         id="numCards"
                                         type="number"
                                         value={numCards}
-                                        onChange={(e) => setNumCards(e.target.value)}
-                                        placeholder="Ej: 10"
+                                        onChange={(e) => {
+                                            const newValue = parseInt(e.target.value, 10);
+                                            if (e.target.value === '' || (newValue <= 12 && newValue >= 0)) { // Asumo que 0 es el mínimo
+                                                setNumCards(e.target.value);
+                                            }
+                                        }}
+                                        placeholder="Valor máximo 12"
+                                        max={12}
                                     />
                                 </div>
                             </div>
@@ -281,10 +287,10 @@ export default function Presentaciones() {
                                             <SelectValue placeholder="Selecciona una cantidad" />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value="brief">Breve</SelectItem>
-                                            <SelectItem value="medium">Medio</SelectItem>
-                                            <SelectItem value="detailed">Detallado</SelectItem>
-                                            <SelectItem value="extensive">Extenso</SelectItem>
+                                            <SelectItem value="brief">Bajo</SelectItem>
+                                            <SelectItem value="medium">Alto</SelectItem>
+                                            {/* <SelectItem value="detailed">Detallado</SelectItem>
+                                            <SelectItem value="extensive">Extenso</SelectItem> */}
                                         </SelectContent>
                                     </Select>
                                 </div>
