@@ -24,6 +24,7 @@ import ExpiredToken from "./pages/ExpiredToken";
 import Recursos from "./pages/Recursos.tsx";
 import Presentaciones from "./pages/Presentaciones.tsx";
 import { authStore } from "./store";
+import Necesidades from "./pages/Necesidades.jsx"
 
 const queryClient = new QueryClient();
 
@@ -81,6 +82,14 @@ const App = () => (
             element={
               <ProtectedRoute>
                 <NecesidadesApies />
+              </ProtectedRoute>
+            }
+          />
+                    <Route
+            path="/necesidades"
+            element={
+              <ProtectedRoute>
+                <Necesidades />
               </ProtectedRoute>
             }
           />
