@@ -21,6 +21,7 @@ import {
     Settings,
     Users,
     Zap,
+    FileText
 } from "lucide-react";
 import { authActions } from "../store";
 
@@ -282,43 +283,79 @@ export default function Dashboard() {
 
                         {/* Presentaciones Card */}
                         {isAdmin && (
+                            <Card className="group relative overflow-hidden border-border/50 bg-card/80 backdrop-blur-sm hover:border-primary/50 transition-all duration-300 hover:shadow-2xl hover:shadow-primary/10">
+                                <div className="absolute inset-0 bg-gradient-to-r from-neon-blue/5 to-neon-purple/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+
+                                <CardHeader className="relative z-10">
+                                    <div className="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center mb-4 group-hover:bg-primary/30 transition-colors">
+                                        <FilePlus className="h-6 w-6 text-primary" />
+                                    </div>
+                                    <CardTitle className="text-xl font-semibold text-foreground group-hover:text-primary transition-colors">
+                                        Presentaciones
+                                    </CardTitle>
+                                    <CardDescription className="text-muted-foreground">
+                                        Genera presentaciones automáticamente a partir de una descripción o archivo adjunto.
+                                    </CardDescription>
+                                </CardHeader>
+
+                                <CardContent className="relative z-10">
+                                    <div className="flex items-center gap-4 mb-6">
+                                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                            <div className="w-1.5 h-1.5 bg-neon-blue rounded-full"></div>
+                                            Creación rápida de presentaciones
+                                        </div>
+                                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                            <div className="w-1.5 h-1.5 bg-neon-purple rounded-full"></div>
+                                            Soporta archivos adjuntos simples
+                                        </div>
+                                    </div>
+
+                                    <Link to="/presentaciones">
+                                        <Button className="w-full group/btn bg-primary/90 hover:bg-primary text-primary-foreground">
+                                            Ir a Presentaciones
+                                            <ArrowRight className="ml-2 h-4 w-4 group-hover/btn:translate-x-1 transition-transform" />
+                                        </Button>
+                                    </Link>
+                                </CardContent>
+                            </Card>
+                        )}
+                        {/* Formularios para Recomendaciones de Cursos Card */}
                         <Card className="group relative overflow-hidden border-border/50 bg-card/80 backdrop-blur-sm hover:border-primary/50 transition-all duration-300 hover:shadow-2xl hover:shadow-primary/10">
-                            <div className="absolute inset-0 bg-gradient-to-r from-neon-blue/5 to-neon-purple/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                            <div className="absolute inset-0 bg-gradient-to-r from-neon-green/5 to-neon-blue/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
 
                             <CardHeader className="relative z-10">
                                 <div className="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center mb-4 group-hover:bg-primary/30 transition-colors">
-                                    <FilePlus className="h-6 w-6 text-primary" />
+                                    <FileText className="h-6 w-6 text-primary" />
                                 </div>
                                 <CardTitle className="text-xl font-semibold text-foreground group-hover:text-primary transition-colors">
-                                    Presentaciones
+                                    Formularios para Recomendaciones de Cursos
                                 </CardTitle>
                                 <CardDescription className="text-muted-foreground">
-                                    Genera presentaciones automáticamente a partir de una descripción o archivo adjunto.
+                                    Llena un formulario según tu evaluación de una apies para obtener los cursos que deberían ser otorgados a la misma.
                                 </CardDescription>
                             </CardHeader>
 
                             <CardContent className="relative z-10">
                                 <div className="flex items-center gap-4 mb-6">
                                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                        <div className="w-1.5 h-1.5 bg-neon-blue rounded-full"></div>
-                                        Creación rápida de presentaciones
+                                        <Zap className="h-4 w-4 text-neon-green" />
+                                        Evaluación Personalizada
                                     </div>
                                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                        <div className="w-1.5 h-1.5 bg-neon-purple rounded-full"></div>
-                                        Soporta archivos adjuntos simples
+                                        <GraduationCap className="h-4 w-4 text-neon-blue" />
+                                        Recomendaciones de Cursos
                                     </div>
                                 </div>
 
-                                <Link to="/presentaciones">
-                                    <Button className="w-full group/btn bg-primary/90 hover:bg-primary text-primary-foreground">
-                                        Ir a Presentaciones
-                                        <ArrowRight className="ml-2 h-4 w-4 group-hover/btn:translate-x-1 transition-transform" />
-                                    </Button>
-                                </Link>
+                                <Button
+                                    onClick={()=> navigate("/formularios-necesidades")}
+                                    className="w-full group/btn bg-primary/90 hover:bg-primary text-primary-foreground"
+                                >
+                                    Comenzar
+                                    <ArrowRight className="ml-2 h-4 w-4 group-hover/btn:translate-x-1 transition-transform" />
+                                </Button>
                             </CardContent>
                         </Card>
-                        )}
-
                         {/* Tarjeta Ajustes de Administrador (condicional) */}
                         {isAdmin && (
                             <Card className="group relative overflow-hidden border-border/50 bg-card/80 backdrop-blur-sm hover:border-primary/50 transition-all duration-300 hover:shadow-2xl hover:shadow-primary/10">
