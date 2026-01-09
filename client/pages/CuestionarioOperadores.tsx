@@ -169,7 +169,7 @@ export default function CuestionarioOperadores() {
 
                 {/* SECCIÓN 1: DATOS GENERALES */}
                 <Card className="bg-[#1e293b] border-slate-700">
-                    <CardHeader><CardTitle className="text-blue-400">🩵 SECCIÓN 1. DATOS GENERALES</CardTitle></CardHeader>
+                    <CardHeader><CardTitle className="text-blue-400">📋 SECCIÓN 1. DATOS GENERALES</CardTitle></CardHeader>
                     <CardContent className="space-y-6">
                         <div className="grid md:grid-cols-2 gap-6">
                             {/* NUEVO CAMPO: GESTOR ASOCIADO */}
