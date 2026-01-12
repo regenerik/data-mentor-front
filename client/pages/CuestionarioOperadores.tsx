@@ -75,16 +75,16 @@ const SortableItem = ({ id, label, index, total }: { id: string; label: string; 
 };
 
 const gestoresEmail: Record<string, string> = {
-  'Jose L. Gallucci': 'jose.l.gallucci@ypf.com',
-  'Mauricio Cuevas': 'mauricio.cuevas@ypf.com',
-  'John Martinez': 'john.martinez@ypf.com',
-  'Georgina M. Cutili': 'georgina.m.cutili@ypf.com',
-  'Octavio Torres': 'octavio.torres@ypf.com',
-  'Fernanda M. Rodriguez': 'fernanda.m.rodriguez@ypf.com',
-  'Pablo J. Raggio': 'pablo.j.raggio@ypf.com',
-  'Noelia Otarula': 'noelia.otarula@ypf.com',
-  'Dante Merluccio': 'dante.merluccio@ypf.com',
-  'Flavia Camuzzi': 'flavia.camuzzi@ypf.com'
+    'Jose L. Gallucci': 'jose.l.gallucci@ypf.com',
+    'Mauricio Cuevas': 'mauricio.cuevas@ypf.com',
+    'John Martinez': 'john.martinez@ypf.com',
+    'Georgina M. Cutili': 'georgina.m.cutili@ypf.com',
+    'Octavio Torres': 'octavio.torres@ypf.com',
+    'Fernanda M. Rodriguez': 'fernanda.m.rodriguez@ypf.com',
+    'Pablo J. Raggio': 'pablo.j.raggio@ypf.com',
+    'Noelia Otarula': 'noelia.otarula@ypf.com',
+    'Dante Merluccio': 'dante.merluccio@ypf.com',
+    'Flavia Camuzzi': 'flavia.camuzzi@ypf.com'
 };
 
 export default function CuestionarioOperadores() {
@@ -147,11 +147,24 @@ export default function CuestionarioOperadores() {
 
     const Likert = ({ label, field }: { label: React.ReactNode, field: keyof FormState }) => (
         <div className="py-4 border-b border-slate-800 last:border-0">
-            <Label className="text-slate-300 block mb-4">{label}</Label>
-            <RadioGroup value={form[field] as string} onValueChange={v => handleInp(field, v)} className="flex justify-between max-w-md">
+            <div className="text-slate-300 block mb-4">
+                {label}
+            </div>
+
+            <RadioGroup
+                value={form[field] as string}
+                onValueChange={v => handleInp(field, v)}
+                className="flex justify-between max-w-md"
+            >
                 {[1, 2, 3, 4, 5].map(v => (
                     <div key={v} className="flex flex-col items-center gap-2">
-                        <RadioGroupItem value={String(v)} id={`${field}-${v}`} className="border-slate-500 text-blue-500" />
+                        <RadioGroupItem
+                            value={String(v)}
+                            id={`${field}-${v}`}
+                            tabIndex={-1}
+                            onMouseDown={(e) => e.preventDefault()}
+                            className="border-slate-500 text-blue-500"
+                        />
                         <Label htmlFor={`${field}-${v}`} className="text-xs text-slate-500">{v}</Label>
                     </div>
                 ))}
