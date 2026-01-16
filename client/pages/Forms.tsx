@@ -216,7 +216,8 @@ const Forms = () => {
             >
               <ArrowLeft className="h-4 w-4" />
             </Button>
-            <h1 className="text-2xl md:text-3xl font-bold text-foreground">Formularios</h1>
+            <h1 className="text-2xl md:text-3xl font-bold text-foreground">Formularios -</h1>
+            <h1 className="text-2xl md:text-3xl font-bold text-foreground">{`Cantidad: ${forms.length}`}</h1>
           </div>
 
           {/* Top Actions */}
