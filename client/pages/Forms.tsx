@@ -32,7 +32,7 @@ const Forms = () => {
   const fetchForms = async () => {
     try {
       setLoading(true);
-      const response = await fetch("https://dm-back-fn4l.onrender.com/get_forms", {
+      const response = await fetch("https://repomatic-old.onrender.com/get_forms", {
         headers: {
           Authorization: "1803-1989-1803-1989"
         }
@@ -63,7 +63,7 @@ const Forms = () => {
 
   const handleDownload = async (id: string | number) => {
     try {
-      const response = await fetch(`https://dm-back-fn4l.onrender.com/get_form_pdf/${id}`, {
+      const response = await fetch(`https://repomatic-old.onrender.com/get_form_pdf/${id}`, {
         headers: { Authorization: "1803-1989-1803-1989" }
       });
       
@@ -96,7 +96,7 @@ const Forms = () => {
   const handleDownloadAll = async () => {
     try {
       const res = await fetch(
-        'https://dm-back-fn4l.onrender.com/form_gestores/download_excel',
+        'https://repomatic-old.onrender.com/form_gestores/download_excel',
         {
           method: 'GET',
           headers: {
@@ -138,7 +138,7 @@ const Forms = () => {
     if (!formToDelete) return;
 
     try {
-      const response = await fetch("https://dm-back-fn4l.onrender.com/delete_especific_form", {
+      const response = await fetch("https://repomatic-old.onrender.com/delete_especific_form", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
