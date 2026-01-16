@@ -160,6 +160,7 @@ export default function Dashboard() {
                             </CardContent>
                         </Card>
                         {/* Tarjeta Necesidades APIES */}
+                        {isAdmin && (
                         <Card className="group relative overflow-hidden border-border/50 bg-card/80 backdrop-blur-sm hover:border-primary/50 transition-all duration-300 hover:shadow-2xl hover:shadow-primary/10">
                             {/* Efecto Glow */}
                             <div className="absolute inset-0 bg-gradient-to-r from-neon-green/5 to-neon-pink/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
@@ -202,7 +203,9 @@ export default function Dashboard() {
                                 </Link>
                             </CardContent>
                         </Card>
+                        )}
                         {/* Tarjeta Chat Data Mentor */}
+                        {isAdmin && (
                         <Card className="group relative overflow-hidden border-border/50 bg-card/80 backdrop-blur-sm hover:border-primary/50 transition-all duration-300 hover:shadow-2xl hover:shadow-primary/10">
                             {/* Efecto Glow */}
                             <div className="absolute inset-0 bg-gradient-to-r from-neon-blue/5 to-neon-purple/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
@@ -241,7 +244,7 @@ export default function Dashboard() {
                                 </Link>
                             </CardContent>
                         </Card>
-
+                        )}
                         {/* RRHH Card */}
                         {isAdmin && (
                             <Card className="group relative overflow-hidden border-border/50 bg-card/80 backdrop-blur-sm hover:border-amber-500/50 transition-all duration-300 hover:shadow-2xl hover:shadow-amber-500/10">
