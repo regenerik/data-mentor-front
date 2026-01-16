@@ -63,7 +63,7 @@ export default function History() {
       }
 
       try {
-        const response = await fetch("https://repomatic-turbo-meww.onrender.com/get-history-by-user", {
+        const response = await fetch("https://dm-back-fn4l.onrender.com/get-history-by-user", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -135,7 +135,7 @@ export default function History() {
     setIsDeleting(true);
     setDeletingItemId(historyId);
     try {
-      const response = await fetch("https://repomatic-turbo-meww.onrender.com/delete-individual-chat", {
+      const response = await fetch("https://dm-back-fn4l.onrender.com/delete-individual-chat", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

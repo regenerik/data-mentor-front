@@ -71,7 +71,7 @@ interface SystemSettings {
   allowRegistration: boolean;
 }
 
-const BASE_URL = "https://repomatic-turbo-meww.onrender.com";
+const BASE_URL = "https://dm-back-fn4l.onrender.com";
 
 export default function AjustesAdministrador() {
   const [users, setUsers] = useState<User[]>([]);

@@ -241,7 +241,7 @@ export default function ChatDataMentorCursos() {
     setIsTyping(true);
 
     try {
-      const response = await fetch("https://repomatic-turbo-meww.onrender.com/chat_mentor_cursos", {
+      const response = await fetch("https://dm-back-fn4l.onrender.com/chat_mentor_cursos", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -299,7 +299,7 @@ export default function ChatDataMentorCursos() {
       }
 
       try {
-        const response = await fetch('https://repomatic-turbo-meww.onrender.com/check_token', {
+        const response = await fetch('https://dm-back-fn4l.onrender.com/check_token', {
           method: 'GET',
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -504,7 +504,7 @@ export default function ChatDataMentorCursos() {
     const texto = messages.map(msg => `${msg.type}: ${msg.content}`).join('\n');
 
     try {
-      const response = await fetch("https://repomatic-turbo-meww.onrender.com/history-user-add", {
+      const response = await fetch("https://dm-back-fn4l.onrender.com/history-user-add", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

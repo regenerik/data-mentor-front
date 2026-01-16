@@ -20,7 +20,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
-const API_BASE = "https://repomatic-turbo-meww.onrender.com";
+const API_BASE = "https://dm-back-fn4l.onrender.com";
 const RESTAURAR_PASSWORD_UNICO = "1803-1989-1803-1989"; // Este debería ser un valor seguro, idealmente en una variable de entorno.
 
 export default function Data() {

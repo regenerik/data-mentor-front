@@ -30,7 +30,7 @@ import { courseActions } from "../store";
 // 👇 shadcn/ui toast
 import { useToast } from "@/components/ui/use-toast";
 
-const EMAIL_API_URL = "https://repomatic-turbo-meww.onrender.com/send-course-pdf";
+const EMAIL_API_URL = "https://dm-back-fn4l.onrender.com/send-course-pdf";
 const AUTH_TOKEN = "1803-1989-1803-1989";
 
 export default function Share() {

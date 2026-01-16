@@ -24,7 +24,7 @@ import {
 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 
-const API_BASE = "https://repomatic-turbo-meww.onrender.com";
+const API_BASE = "https://dm-back-fn4l.onrender.com";
 
 interface Report {
   id: number;

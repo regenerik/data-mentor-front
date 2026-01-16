@@ -21,7 +21,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 
-const API_BASE = "https://repomatic-turbo-meww.onrender.com";
+const API_BASE = "https://dm-back-fn4l.onrender.com";
 
 interface Trace {
   mode?: string;

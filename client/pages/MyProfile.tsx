@@ -48,7 +48,7 @@ interface UserProfile {
   url_image: string;
 }
 
-const BASE_URL = "https://repomatic-turbo-meww.onrender.com";
+const BASE_URL = "https://dm-back-fn4l.onrender.com";
 const CLOUDINARY_UPLOAD_PRESET = "yu1h90st";
 const CLOUDINARY_CLOUD_NAME = "drlqmol4c";
 
@@ -308,7 +308,7 @@ export default function MyProfile() {
       }
 
       try {
-        const response = await fetch('https://repomatic-turbo-meww.onrender.com/check_token', {
+        const response = await fetch('https://dm-back-fn4l.onrender.com/check_token', {
           method: 'GET',
           headers: {
             'Authorization': `Bearer ${token}`,
