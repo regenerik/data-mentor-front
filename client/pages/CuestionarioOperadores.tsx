@@ -7,7 +7,7 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { GripVertical, Loader2, CheckCircle2 } from "lucide-react";
-
+import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -90,7 +90,7 @@ const gestoresEmail: Record<string, string> = {
 export default function CuestionarioOperadores() {
     const [loading, setLoading] = useState(false);
     const [showSuccess, setShowSuccess] = useState(false);
-
+    const { toast } = useToast();
     const [form, setForm] = useState<FormState>({
         provinciaLocalidad: "", apies: "", tipoEstacion: "", empleadosTotal: "",
         playaPersonal: "", tiendaPersonal: "", boxesPersonal: "",
@@ -142,6 +142,109 @@ export default function CuestionarioOperadores() {
             const oldI = list.findIndex(i => i.id === active.id);
             const newI = list.findIndex(i => i.id === over.id);
             handleInp(f, arrayMove(list, oldI, newI));
+        }
+    };
+
+    const buildPayload = () => ({
+        provincia_localidad: form.provinciaLocalidad,
+        apies: form.apies,
+        tipo_estacion: form.tipoEstacion,
+        empleados_total: form.empleadosTotal,
+
+        playa_personal: form.playaPersonal,
+        tienda_personal: form.tiendaPersonal,
+        boxes_personal: form.boxesPersonal,
+
+        anios_operacion: form.aniosOperacion,
+        capacitaciones_anio: form.capacitacionesAnio,
+        solo_aprendizaje: form.soloAprendizaje,
+        detalle_otras_cap: form.detalleOtrasCap,
+        gestor_asociado: form.gestorAsociado,
+
+        nivel_seguridad: form.nivelSeguridad,
+        preparacion_emergencia: form.preparacionEmergencia,
+        mejoras_seguridad: form.mejorasSeguridad,
+
+        nivel_bromatologia: form.nivelBromatologia,
+        mejoras_bromatologia: form.mejorasBromatologia,
+
+        frecuencia_accidentes: form.frecuenciaAccidentes,
+        situaciones_accidentes: form.situacionesAccidentes,
+
+        otro_seguridad_playa: form.otroSeguridadPlaya,
+        otro_seguridad_tienda: form.otroSeguridadTienda,
+        otro_seguridad_boxes: form.otroSeguridadBoxes,
+        otro_bromatologia: form.otroBromatologia,
+        otro_accidentes: form.otroAccidentes,
+
+        nivel_pilares: form.nivelPilares,
+        efectividad_comunicacion: form.efectividadComunicacion,
+        actitud_empatica: form.actitudEmpatica,
+        autonomia_reclamos: form.autonomiaReclamos,
+        adaptacion_estilo: form.adaptacionEstilo,
+
+        aspectos_atencion: form.aspectosAtencion,
+        otro_aspectos_atencion: form.otroAspectosAtencion,
+
+        conoce_playa: form.conocePlaya,
+        conoce_tienda: form.conoceTienda,
+        conoce_boxes: form.conoceBoxes,
+        conoce_digital: form.conoceDigital,
+
+        ranking_temas: form.rankingTemas,
+        dominio_gestion: form.dominioGestion,
+        capacidad_analisis: form.capacidadAnalisis,
+        uso_herramientas_dig: form.usoHerramientasDig,
+
+        ranking_desafios: form.rankingDesafios,
+
+        liderazgo_efectivo: form.liderazgoEfectivo,
+        frecuencia_feedback: form.frecuenciaFeedback,
+        habilidades_org: form.habilidadesOrg,
+        estilo_liderazgo: form.estiloLiderazgo,
+
+        ranking_fortalecer_lider: form.rankingFortalecerLider,
+
+        interes_capacitacion: form.interesCapacitacion,
+        temas_prioritarios: form.temasPrioritarios,
+        otro_tema_prioritario: form.otroTemaPrioritario,
+        sugerencias_finales: form.sugerenciasFinales,
+    });
+
+    const handleSubmit = async () => {
+        try {
+            setLoading(true);
+
+            const payload = buildPayload();
+
+            const res = await fetch("https://dm-back-fn4l.onrender.com/diagnostico", {
+                method: "POST",
+                headers: {
+                    Authorization: "1803-1989-1803-1989",
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(payload),
+            });
+
+            if (!res.ok) {
+                throw new Error("Error enviando diagnóstico");
+            }
+
+            toast({
+                title: "Formulario enviado",
+                description:
+                    "El formulario se envió correctamente. Ya podés cerrar esta ventana. El gestor asociado entrará en contacto.",
+            });
+
+            setShowSuccess(true);
+        } catch (e) {
+            toast({
+                title: "Error",
+                description: "No se pudo enviar el diagnóstico. Intentá nuevamente.",
+                variant: "destructive",
+            });
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -935,9 +1038,19 @@ export default function CuestionarioOperadores() {
 
                 {/* BOTÓN ENVÍO */}
                 <div className="flex flex-col items-center gap-4">
-                    <Button onClick={() => { setLoading(true); setTimeout(() => { setLoading(false); setShowSuccess(true); }, 1500); }}
-                        disabled={loading} className="w-full md:w-80 h-14 bg-blue-600 hover:bg-blue-500 text-lg font-bold">
-                        {loading ? <><Loader2 className="animate-spin mr-2" /> Enviando...</> : "Enviar Diagnóstico"}
+                    <Button
+                        onClick={handleSubmit}
+                        disabled={loading}
+                        className="w-full md:w-80 h-14 bg-blue-600 hover:bg-blue-500 text-lg font-bold"
+                    >
+                        {loading ? (
+                            <>
+                                <Loader2 className="animate-spin mr-2" />
+                                Enviando...
+                            </>
+                        ) : (
+                            "Enviar Diagnóstico"
+                        )}
                     </Button>
                 </div>
             </div>
