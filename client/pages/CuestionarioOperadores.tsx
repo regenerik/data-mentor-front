@@ -63,8 +63,8 @@ interface FormState {
 const SortableItem = ({ id, label, index, total }: { id: string; label: string; index: number; total: number }) => {
     const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id });
     return (
-        <div ref={setNodeRef} style={{ transform: CSS.Transform.toString(transform), transition }}
-            className="flex items-center gap-3 p-3 bg-[#0f172a] rounded-lg border border-slate-700 mb-2">
+        <div  ref={setNodeRef} style={{ transform: CSS.Transform.toString(transform), transition }}
+            className="flex items-center gap-3 p-3 bg-[#0f172a] rounded-lg border border-slate-700 mb-2 touch-none select-none">
             <button {...attributes} {...listeners} className="cursor-grab text-slate-500"><GripVertical size={18} /></button>
             <div className="flex-1 text-sm text-slate-200">{label}</div>
             <div className="bg-blue-900/40 text-blue-300 px-3 py-1 rounded-full text-xs font-bold border border-blue-500/30">
@@ -127,8 +127,17 @@ export default function CuestionarioOperadores() {
         interesCapacitacion: "3", temasPrioritarios: [], otroTemaPrioritario: "", sugerenciasFinales: ""
     });
 
-    const sensors = useSensors(useSensor(PointerSensor), useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }));
-
+    const sensors = useSensors(
+        useSensor(PointerSensor, {
+            activationConstraint: {
+                delay: 200,      // tiempo de presión en mobile
+                tolerance: 5,    // movimiento permitido antes de cancelar
+            },
+        }),
+        useSensor(KeyboardSensor, {
+            coordinateGetter: sortableKeyboardCoordinates,
+        })
+    );
     const handleInp = (f: keyof FormState, v: any) => setForm(prev => ({ ...prev, [f]: v }));
     const handleChk = (listF: keyof FormState, v: string) => {
         const list = form[listF] as string[];
@@ -1058,7 +1067,7 @@ export default function CuestionarioOperadores() {
             <Dialog open={showSuccess} onOpenChange={setShowSuccess}>
                 <DialogContent className="bg-[#1e293b] border-slate-700 text-slate-200">
                     <DialogHeader className="items-center"><CheckCircle2 className="h-12 w-12 text-green-500 mb-2" /><DialogTitle>¡Diagnóstico Enviado!</DialogTitle></DialogHeader>
-                    <p className="text-center text-slate-400">Gracias por completar el diagnóstico. Los datos se han guardado correctamente.</p>
+                    <p className="text-center text-slate-400">Gracias por completar el diagnóstico. Los datos se han guardado correctamente.Ya puede cerrar esta ventana.</p>
                     <DialogFooter><Button className="w-full" onClick={() => setShowSuccess(false)}>Aceptar</Button></DialogFooter>
                 </DialogContent>
             </Dialog>
