@@ -813,7 +813,7 @@ export default function CuestionarioOperadores() {
                                     Ordená de mayor a menor relevancia por puntos los temas que considerás más importantes para seguir fortaleciendo en tu equipo:
                                 </p>
                                 <span className="text-[10px] text-slate-500 uppercase font-bold italic">
-                                    (Arrastrá los elementos para cambiar el orden. A mayor puntaje es más relevante.)
+                                    (Arrastrá los elementos para cambiar el orden. A mayor puntaje es más relevante.) - (MANTENÉ APRETADO UN POCO ANTES DE ARRASTRAR)
                                 </span>
                             </div>
 
@@ -896,7 +896,7 @@ export default function CuestionarioOperadores() {
                                     Ordená del 1 al 4 los aspectos que considerás más desafiantes en el día a día:
                                 </p>
                                 <span className="text-[10px] text-slate-500 uppercase font-bold italic">
-                                    (Arrastrá para priorizar. Cuanto más puntos tiene, más prioritario es.)
+                                    (Arrastrá para priorizar. Cuanto más puntos tiene, más prioritario es.) - (MANTENÉ APRETADO UN POCO ANTES DE ARRASTRAR)
                                 </span>
                             </div>
 
@@ -988,7 +988,7 @@ export default function CuestionarioOperadores() {
                             <div className="space-y-2">
                                 <Label className="text-blue-300 text-base">Prioridades de Liderazgo</Label>
                                 <p className="text-sm text-slate-300 leading-relaxed">
-                                    Ordená de mayor a menor importancia por puntos según los aspectos que más necesitás fortalecer en tu rol. (+puntos = +importancia) :
+                                    Ordená de mayor a menor importancia por puntos según los aspectos que más necesitás fortalecer en tu rol. (+puntos = +importancia)  - (MANTENÉ APRETADO UN POCO ANTES DE ARRASTRAR):
                                 </p>
                             </div>
                             <div className="bg-[#0f172a] p-4 rounded-xl border border-slate-800">
