@@ -593,7 +593,7 @@ export default function CuestionarioOperadores() {
                         {/* --- ACCIDENTES --- */}
                         <div className="space-y-4">
                             <Label className="text-slate-300 block">Frecuencia de accidentes o incidentes registrados:</Label>
-                            <RadioGroup onValueChange={v => handleInp("frecuenciaAccidentes", v)} className="flex gap-6 bg-[#0f172a] p-4 rounded-lg border border-slate-800">
+                            <RadioGroup onValueChange={v => handleInp("frecuenciaAccidentes", v)} className="flex flex-col gap-4 md:flex-row md:gap-6 bg-[#0f172a] p-4 rounded-lg border border-slate-800">
                                 {["Nunca", "Ocasionalmente", "Frecuentemente"].map(op => (
                                     <div key={op} className="flex items-center space-x-2">
                                         <RadioGroupItem value={op} id={`freq-${op}`} />
