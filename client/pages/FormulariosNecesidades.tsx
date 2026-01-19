@@ -50,6 +50,8 @@ const FormulariosNecesidades = () => {
   const { toast } = useToast();
   const [data, setData] = useState<Diagnostico[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingIAId, setLoadingIAId] = useState<number | null>(null);
+
 
   const [filters, setFilters] = useState({
     gestor: "",
@@ -124,6 +126,8 @@ const FormulariosNecesidades = () => {
 
   const generateIA = async (id: number) => {
     try {
+      setLoadingIAId(id);
+
       const res = await fetch(
         "https://dm-back-fn4l.onrender.com/diagnostico/ia/evaluar",
         {
@@ -135,6 +139,7 @@ const FormulariosNecesidades = () => {
           body: JSON.stringify({ id }),
         }
       );
+
       const json = await res.json();
 
       setData((prev) =>
@@ -153,8 +158,11 @@ const FormulariosNecesidades = () => {
         description: "No se pudo generar la devolución IA",
         variant: "destructive",
       });
+    } finally {
+      setLoadingIAId(null);
     }
   };
+
 
   const openConclusionEditor = (id: number, text: string | null) => {
     setCurrentId(id);
@@ -359,6 +367,7 @@ const FormulariosNecesidades = () => {
 
               <Button
                 variant="outline"
+                disabled={loadingIAId === d.id}
                 onClick={() =>
                   d.respuesta_ia
                     ? openIAViewer(d.respuesta_ia)
@@ -366,9 +375,11 @@ const FormulariosNecesidades = () => {
                 }
               >
                 <Bot className="h-4 w-4 mr-2" />
-                {d.respuesta_ia
-                  ? "Devolución IA"
-                  : "Crear devolución IA"}
+                {loadingIAId === d.id
+                  ? "Dame unos segundos…"
+                  : d.respuesta_ia
+                    ? "Devolución IA"
+                    : "Crear devolución IA"}
               </Button>
 
               <Button
@@ -392,13 +403,15 @@ const FormulariosNecesidades = () => {
 
       {/* IA Dialog */}
       <Dialog open={openIA} onOpenChange={setOpenIA}>
-        <DialogContent className="max-w-3xl">
+        <DialogContent className="max-w-3xl max-h-[90vh] flex flex-col">
           <DialogHeader>
             <DialogTitle>Devolución IA</DialogTitle>
           </DialogHeader>
-          <div className="whitespace-pre-wrap p-4 bg-muted rounded-lg text-sm">
+
+          <div className="flex-1 overflow-y-auto whitespace-pre-wrap p-4 bg-muted rounded-lg text-sm">
             {selectedText}
           </div>
+
           <DialogFooter>
             <Button variant="secondary" onClick={handleCopy}>
               {copied ? <Check /> : <Copy />}

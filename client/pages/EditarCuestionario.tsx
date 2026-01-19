@@ -8,7 +8,7 @@ import {
     arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, useSortable
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { GripVertical, Loader2, CheckCircle2 } from "lucide-react";
+import { GripVertical, Loader2, CheckCircle2, ArrowLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -135,6 +135,16 @@ export default function EditarCuestionario() {
         interesCapacitacion: "3", temasPrioritarios: [], otroTemaPrioritario: "", sugerenciasFinales: ""
     });
 
+    const safeParse = (v: any) => {
+        if (Array.isArray(v)) return v;
+        try {
+            return JSON.parse(v || "[]");
+        } catch {
+            return [];
+        }
+    };
+
+
     useEffect(() => {
         if (!id) return;
 
@@ -178,13 +188,13 @@ export default function EditarCuestionario() {
 
                     nivelSeguridad: data.nivel_seguridad ?? "3",
                     preparacionEmergencia: data.preparacion_emergencia ?? "3",
-                    mejorasSeguridad: data.mejoras_seguridad ?? [],
+                    mejorasSeguridad: safeParse(data.mejoras_seguridad),
 
                     nivelBromatologia: data.nivel_bromatologia ?? "3",
-                    mejorasBromatologia: data.mejoras_bromatologia ?? [],
+                    mejorasBromatologia: safeParse(data.mejoras_bromatologia),
 
                     frecuenciaAccidentes: data.frecuencia_accidentes ?? "",
-                    situacionesAccidentes: data.situaciones_accidentes ?? [],
+                    situacionesAccidentes: safeParse(data.situaciones_accidentes),
 
                     otroSeguridadPlaya: data.otro_seguridad_playa ?? "",
                     otroSeguridadTienda: data.otro_seguridad_tienda ?? "",
@@ -198,7 +208,7 @@ export default function EditarCuestionario() {
                     autonomiaReclamos: data.autonomia_reclamos ?? "3",
                     adaptacionEstilo: data.adaptacion_estilo ?? "3",
 
-                    aspectosAtencion: data.aspectos_atencion ?? [],
+                    aspectosAtencion: safeParse(data.aspectos_atencion),
                     otroAspectosAtencion: data.otro_aspectos_atencion ?? "",
 
                     conocePlaya: data.conoce_playa ?? "3",
@@ -206,22 +216,22 @@ export default function EditarCuestionario() {
                     conoceBoxes: data.conoce_boxes ?? "3",
                     conoceDigital: data.conoce_digital ?? "3",
 
-                    rankingTemas: data.ranking_temas ?? [],
+                    rankingTemas: safeParse(data.ranking_temas),
                     dominioGestion: data.dominio_gestion ?? "3",
                     capacidadAnalisis: data.capacidad_analisis ?? "3",
                     usoHerramientasDig: data.uso_herramientas_dig ?? "3",
 
-                    rankingDesafios: data.ranking_desafios ?? [],
+                    rankingDesafios: safeParse(data.ranking_desafios),
 
                     liderazgoEfectivo: data.liderazgo_efectivo ?? "3",
                     frecuenciaFeedback: data.frecuencia_feedback ?? "",
                     habilidadesOrg: data.habilidades_org ?? "3",
                     estiloLiderazgo: data.estilo_liderazgo ?? "",
 
-                    rankingFortalecerLider: data.ranking_fortalecer_lider ?? [],
+                    rankingFortalecerLider: safeParse(data.ranking_fortalecer_lider),
 
                     interesCapacitacion: data.interes_capacitacion ?? "3",
-                    temasPrioritarios: data.temas_prioritarios ?? [],
+                    temasPrioritarios: safeParse(data.temas_prioritarios),
                     otroTemaPrioritario: data.otro_tema_prioritario ?? "",
                     sugerenciasFinales: data.sugerencias_finales ?? "",
                 });
@@ -436,9 +446,27 @@ export default function EditarCuestionario() {
     return (
         <div className="min-h-screen bg-[#0f172a] text-slate-200 p-4 md:p-10">
             <div className="max-w-5xl mx-auto space-y-10">
-                <div className="text-center space-y-2">
-                    <h1 className="text-4xl font-bold text-blue-400">Diagnóstico de Necesidades de Capacitación</h1>
-                    <p className="text-slate-400">Operadores / Mandos medios de EESS</p>
+                <div className="relative mb-8">
+                    {/* Volver */}
+                    <div className="flex items-center gap-2 mb-6">
+                        <Button
+                            variant="ghost"
+                            onClick={() => navigate("/formularios-necesidades")}
+                            className="flex items-center gap-2 px-2 py-1 text-slate-300 hover:text-white"
+                            aria-label="Volver sin editar"
+                        >
+                            <ArrowLeft className="h-4 w-4" />
+                            <span className="text-sm font-medium">Volver sin editar</span>
+                        </Button>
+                    </div>
+
+                    {/* Títulos */}
+                    <div className="text-center space-y-2">
+                        <h1 className="text-3xl md:text-4xl font-bold text-blue-400">
+                            Edición de diagnóstico
+                        </h1>
+                        <p className="text-slate-400">Sector para Gestores</p>
+                    </div>
                 </div>
 
                 {/* SECCIÓN 1: DATOS GENERALES */}
@@ -449,7 +477,7 @@ export default function EditarCuestionario() {
                             {/* NUEVO CAMPO: GESTOR ASOCIADO */}
                             <div className="space-y-2 md:col-span-2">
                                 <Label>Gestor Asociado: ( quien te envió el link de esta encuesta )</Label>
-                                <Select onValueChange={v => handleInp("gestorAsociado", v)}>
+                                <Select value={form.gestorAsociado} onValueChange={v => handleInp("gestorAsociado", v)}>
                                     <SelectTrigger className="bg-[#0f172a] border-slate-700">
                                         <SelectValue placeholder="Seleccione su gestor" />
                                     </SelectTrigger>
@@ -465,15 +493,15 @@ export default function EditarCuestionario() {
 
                             <div className="space-y-2">
                                 <Label>Provincia y localidad</Label>
-                                <Input className="bg-[#0f172a] border-slate-700" onChange={e => handleInp("provinciaLocalidad", e.target.value)} />
+                                <Input value={form.provinciaLocalidad} className="bg-[#0f172a] border-slate-700" onChange={e => handleInp("provinciaLocalidad", e.target.value)} />
                             </div>
                             <div className="space-y-2">
                                 <Label>APIES</Label>
-                                <Input className="bg-[#0f172a] border-slate-700" onChange={e => handleInp("apies", e.target.value)} />
+                                <Input value={form.apies} className="bg-[#0f172a] border-slate-700" onChange={e => handleInp("apies", e.target.value)} />
                             </div>
                             <div className="space-y-2">
                                 <Label>Tipo de estación </Label>
-                                <Select onValueChange={v => handleInp("tipoEstacion", v)}>
+                                <Select value={form.tipoEstacion} onValueChange={v => handleInp("tipoEstacion", v)}>
                                     <SelectTrigger className="bg-[#0f172a] border-slate-700"><SelectValue placeholder="Seleccionar" /></SelectTrigger>
                                     <SelectContent className="bg-[#1e293b] text-white">
                                         <SelectItem value="Abanderada">Abanderada</SelectItem>
@@ -483,17 +511,27 @@ export default function EditarCuestionario() {
                             </div>
                             <div className="space-y-2">
                                 <Label>Cantidad total de empleados</Label>
-                                <Input type="number" className="bg-[#0f172a] border-slate-700" onChange={e => handleInp("empleadosTotal", e.target.value)} />
+                                <Input value={form.empleadosTotal} type="number" className="bg-[#0f172a] border-slate-700" onChange={e => handleInp("empleadosTotal", e.target.value)} />
                             </div>
                         </div>
 
                         <br />
                         <Label>Distribución aproximada del personal:</Label>
+
                         <div className="grid grid-cols-3 gap-4 p-4 bg-[#0f172a] rounded-lg border border-slate-700">
-                            {["Playa", "Tienda", "Boxes"].map((s, i) => (
-                                <div key={i} className="space-y-1">
-                                    <Label className="text-xs text-slate-400">{s}</Label>
-                                    <Input type="number" className="bg-[#1e293b] border-slate-600 h-8" onChange={e => handleInp(`${s.toLowerCase()}Personal` as any, e.target.value)} />
+                            {[
+                                { label: "Playa", key: "playaPersonal" },
+                                { label: "Tienda", key: "tiendaPersonal" },
+                                { label: "Boxes", key: "boxesPersonal" },
+                            ].map(({ label, key }) => (
+                                <div key={key} className="space-y-1">
+                                    <Label className="text-xs text-slate-400">{label}</Label>
+                                    <Input
+                                        type="number"
+                                        className="bg-[#1e293b] border-slate-600 h-8"
+                                        value={form[key] ?? ""}
+                                        onChange={e => handleInp(key as any, e.target.value)}
+                                    />
                                 </div>
                             ))}
                         </div>
@@ -503,7 +541,7 @@ export default function EditarCuestionario() {
                         <div className="grid md:grid-cols-2 gap-6">
                             <div className="space-y-2">
                                 <Label>Cantidad de años de operación de la estación</Label>
-                                <Select onValueChange={v => handleInp("aniosOperacion", v)}>
+                                <Select value={form.aniosOperacion} onValueChange={v => handleInp("aniosOperacion", v)}>
                                     <SelectTrigger className="bg-[#0f172a] border-slate-700"><SelectValue placeholder="Seleccionar años" /></SelectTrigger>
                                     <SelectContent className="bg-[#1e293b] text-white">
                                         <SelectItem value="Menos de 2">Menos de 2</SelectItem>
@@ -516,7 +554,7 @@ export default function EditarCuestionario() {
 
                             <div className="space-y-2">
                                 <Label>Capacitaciones realizadas en el último año</Label>
-                                <Select onValueChange={v => handleInp("capacitacionesAnio", v)}>
+                                <Select value={form.capacitacionesAnio} onValueChange={v => handleInp("capacitacionesAnio", v)}>
                                     <SelectTrigger className="bg-[#0f172a] border-slate-700"><SelectValue placeholder="Seleccionar cantidad" /></SelectTrigger>
                                     <SelectContent className="bg-[#1e293b] text-white">
                                         <SelectItem value="Ninguna">Ninguna</SelectItem>
@@ -530,7 +568,7 @@ export default function EditarCuestionario() {
 
                         <div className="space-y-4">
                             <Label>¿Todas las capacitaciones realizadas en la estación se llevaron a cabo con Aprendizaje Comercial?</Label>
-                            <RadioGroup onValueChange={v => handleInp("soloAprendizaje", v)} className="flex gap-4">
+                            <RadioGroup value={form.soloAprendizaje} onValueChange={v => handleInp("soloAprendizaje", v)} className="flex gap-4">
                                 <div className="flex items-center space-x-2">
                                     <RadioGroupItem value="Sí" id="cap-si" />
                                     <Label htmlFor="cap-si">Sí</Label>
@@ -545,6 +583,7 @@ export default function EditarCuestionario() {
                                 <div className="space-y-2 animate-in fade-in slide-in-from-top-2">
                                     <Label className="text-xs text-blue-400">Indicá cuáles se realizaron y con qué centros/profesionales:</Label>
                                     <Textarea
+                                        value={form.detalleOtrasCap}
                                         className="bg-[#0f172a] border-slate-700 min-h-[100px]"
                                         placeholder="Ej: Curso de liderazgo con Universidad X..."
                                         onChange={e => handleInp("detalleOtrasCap", e.target.value)}
@@ -598,7 +637,7 @@ export default function EditarCuestionario() {
                                 <div className="grid md:grid-cols-2 gap-3 bg-[#0f172a] p-4 rounded-lg border border-slate-800">
                                     {["Uso del uniforme completo", "Procedimientos ante emergencias (Plan de emergencia y roles)", "Seguridad eléctrica (Equipos, corte de energía, evacuación)", "Disposición de residuos peligrosos"].map((opt) => (
                                         <div key={opt} className="flex items-start gap-2">
-                                            <Checkbox onCheckedChange={() => handleChk("mejorasSeguridad", opt)} />
+                                            <Checkbox checked={form.mejorasSeguridad.includes(opt)} onCheckedChange={() => handleChk("mejorasSeguridad", opt)} />
                                             <span className="text-xs text-slate-400 leading-tight">{opt}</span>
                                         </div>
                                     ))}
@@ -619,12 +658,16 @@ export default function EditarCuestionario() {
                                         "Orden, limpieza y pisos secos en playa"
                                     ].map((opt) => (
                                         <div key={opt} className="flex items-start gap-2">
-                                            <Checkbox onCheckedChange={() => handleChk("mejorasSeguridad", opt)} />
+                                            <Checkbox
+                                                checked={form.mejorasSeguridad.includes(opt)}
+                                                onCheckedChange={() => handleChk("mejorasSeguridad", opt)}
+                                            />
                                             <span className="text-xs text-slate-400 leading-tight">{opt}</span>
                                         </div>
                                     ))}
                                     <div className="md:col-span-2 mt-2">
                                         <Input
+                                            value={form.otroSeguridadPlaya}
                                             placeholder="Otros playa (especificar)..."
                                             className="h-8 bg-[#1e293b] border-slate-700 text-xs"
                                             onChange={(e) => handleInp("otroSeguridadPlaya", e.target.value)}
@@ -649,12 +692,13 @@ export default function EditarCuestionario() {
                                         "Procedimientos ante accidentes (Cortes, quemaduras)"
                                     ].map((opt) => (
                                         <div key={opt} className="flex items-start gap-2">
-                                            <Checkbox onCheckedChange={() => handleChk("mejorasSeguridad", opt)} />
+                                            <Checkbox checked={form.mejorasSeguridad.includes(opt)} onCheckedChange={() => handleChk("mejorasSeguridad", opt)} />
                                             <span className="text-xs text-slate-400 leading-tight">{opt}</span>
                                         </div>
                                     ))}
                                     <div className="md:col-span-2 mt-2">
                                         <Input
+                                            value={form.otroSeguridadTienda}
                                             placeholder="Otros tienda (especificar)..."
                                             className="h-8 bg-[#1e293b] border-slate-700 text-xs"
                                             onChange={(e) => handleInp("otroSeguridadTienda", e.target.value)}
@@ -676,12 +720,16 @@ export default function EditarCuestionario() {
                                         "Recepción, almacenamiento y manejo seguro de productos"
                                     ].map((opt) => (
                                         <div key={opt} className="flex items-start gap-2">
-                                            <Checkbox onCheckedChange={() => handleChk("mejorasSeguridad", opt)} />
+                                            <Checkbox
+                                                checked={form.mejorasSeguridad.includes(opt)}
+                                                onCheckedChange={() => handleChk("mejorasSeguridad", opt)}
+                                            />
                                             <span className="text-xs text-slate-400 leading-tight">{opt}</span>
                                         </div>
                                     ))}
                                     <div className="md:col-span-2 mt-2">
                                         <Input
+                                            value={form.otroSeguridadBoxes}
                                             placeholder="Otros boxes (especificar)..."
                                             className="h-8 bg-[#1e293b] border-slate-700 text-xs"
                                             onChange={(e) => handleInp("otroSeguridadBoxes", e.target.value)}
@@ -723,12 +771,13 @@ export default function EditarCuestionario() {
                                     "Almacenamiento de productos", "Orden y rotación de stock"
                                 ].map((opt) => (
                                     <div key={opt} className="flex items-start gap-2">
-                                        <Checkbox onCheckedChange={() => handleChk("mejorasBromatologia", opt)} />
+                                        <Checkbox checked={form.mejorasBromatologia.includes(opt)} onCheckedChange={() => handleChk("mejorasBromatologia", opt)} />
                                         <span className="text-xs text-slate-400 leading-tight">{opt}</span>
                                     </div>
                                 ))}
                                 <div className="md:col-span-2 mt-2">
                                     <Input
+                                        value={form.otroBromatologia}
                                         placeholder="Otros bromatología (especificar)..."
                                         className="h-8 bg-[#1e293b] border-slate-700 text-xs"
                                         onChange={(e) => handleInp("otroBromatologia", e.target.value)}
@@ -742,11 +791,17 @@ export default function EditarCuestionario() {
                         {/* --- ACCIDENTES --- */}
                         <div className="space-y-4">
                             <Label className="text-slate-300 block">Frecuencia de accidentes o incidentes registrados:</Label>
-                            <RadioGroup onValueChange={v => handleInp("frecuenciaAccidentes", v)} className="flex gap-6 bg-[#0f172a] p-4 rounded-lg border border-slate-800">
+                            <RadioGroup
+                                value={form.frecuenciaAccidentes}
+                                onValueChange={v => handleInp("frecuenciaAccidentes", v)}
+                                className="flex gap-6 bg-[#0f172a] p-4 rounded-lg border border-slate-800"
+                            >
                                 {["Nunca", "Ocasionalmente", "Frecuentemente"].map(op => (
                                     <div key={op} className="flex items-center space-x-2">
                                         <RadioGroupItem value={op} id={`freq-${op}`} />
-                                        <Label htmlFor={`freq-${op}`} className="text-sm cursor-pointer">{op}</Label>
+                                        <Label htmlFor={`freq-${op}`} className="text-sm cursor-pointer">
+                                            {op}
+                                        </Label>
                                     </div>
                                 ))}
                             </RadioGroup>
@@ -769,12 +824,13 @@ export default function EditarCuestionario() {
                                     "En Boxes o área de lubricación", "En el estacionamiento o zona de tránsito"
                                 ].map((opt) => (
                                     <div key={opt} className="flex items-start gap-2">
-                                        <Checkbox onCheckedChange={() => handleChk("situacionesAccidentes", opt)} />
+                                        <Checkbox checked={form.situacionesAccidentes.includes(opt)} onCheckedChange={() => handleChk("situacionesAccidentes", opt)} />
                                         <span className="text-xs text-slate-400 leading-tight">{opt}</span>
                                     </div>
                                 ))}
                                 <div className="md:col-span-2 mt-2">
                                     <Input
+                                        value={form.otroAccidentes}
                                         placeholder="Otras situaciones (especificar)..."
                                         className="h-8 bg-[#1e293b] border-slate-700 text-xs"
                                         onChange={(e) => handleInp("otroAccidentes", e.target.value)}
@@ -875,12 +931,13 @@ export default function EditarCuestionario() {
                                     "Comunicación clara entre miembros del equipo"
                                 ].map((opt) => (
                                     <div key={opt} className="flex items-start gap-2">
-                                        <Checkbox onCheckedChange={() => handleChk("aspectosAtencion", opt)} />
+                                        <Checkbox checked={form.aspectosAtencion.includes(opt)} onCheckedChange={() => handleChk("aspectosAtencion", opt)} />
                                         <span className="text-xs text-slate-400 leading-tight">{opt}</span>
                                     </div>
                                 ))}
                                 <div className="md:col-span-2 mt-2">
                                     <Input
+                                        value={form.otroAspectosAtencion}
                                         placeholder="Otros aspectos (especificar)..."
                                         className="h-8 bg-[#1e293b] border-slate-700 text-xs"
                                         onChange={(e) => handleInp("otroAspectosAtencion", e.target.value)}
@@ -1095,11 +1152,17 @@ export default function EditarCuestionario() {
 
                             <div className="space-y-3">
                                 <Label className="text-slate-300 block">Frecuencia de feedback y reconocimiento:</Label>
-                                <RadioGroup onValueChange={v => handleInp("frecuenciaFeedback", v)} className="flex flex-wrap gap-4 bg-[#0f172a] p-4 rounded-lg border border-slate-800">
+                                <RadioGroup
+                                    value={form.frecuenciaFeedback}
+                                    onValueChange={v => handleInp("frecuenciaFeedback", v)}
+                                    className="flex flex-wrap gap-4 bg-[#0f172a] p-4 rounded-lg border border-slate-800"
+                                >
                                     {["Nunca", "A veces", "Frecuentemente", "Siempre"].map(op => (
                                         <div key={op} className="flex items-center space-x-2">
                                             <RadioGroupItem value={op} id={`feed-${op}`} />
-                                            <Label htmlFor={`feed-${op}`} className="text-sm cursor-pointer">{op}</Label>
+                                            <Label htmlFor={`feed-${op}`} className="text-sm cursor-pointer">
+                                                {op}
+                                            </Label>
                                         </div>
                                     ))}
                                 </RadioGroup>
@@ -1119,7 +1182,7 @@ export default function EditarCuestionario() {
 
                             <div className="space-y-3">
                                 <Label className="text-slate-300 block">Estilo de liderazgo predominante:</Label>
-                                <RadioGroup onValueChange={v => handleInp("estiloLiderazgo", v)} className="grid grid-cols-2 gap-4 bg-[#0f172a] p-4 rounded-lg border border-slate-800">
+                                <RadioGroup value={form.estiloLiderazgo} onValueChange={v => handleInp("estiloLiderazgo", v)} className="grid grid-cols-2 gap-4 bg-[#0f172a] p-4 rounded-lg border border-slate-800">
                                     {["Controlador", "Participativo", "Delegativo", "Inspirador / Coach"].map(estilo => (
                                         <div key={estilo} className="flex items-center space-x-2">
                                             <RadioGroupItem value={estilo} id={`estilo-${estilo}`} />
@@ -1167,12 +1230,13 @@ export default function EditarCuestionario() {
                                 <div className="grid md:grid-cols-2 gap-3 bg-[#0f172a] p-4 rounded-lg border border-slate-800">
                                     {["Neuroventas", "Coaching y liderazgo", "Comunicación efectiva", "Negociación", "Gestión de equipos"].map((opt) => (
                                         <div key={opt} className="flex items-start gap-2">
-                                            <Checkbox onCheckedChange={() => handleChk("temasPrioritarios", opt)} />
+                                            <Checkbox checked={form.temasPrioritarios.includes(opt)} onCheckedChange={() => handleChk("temasPrioritarios", opt)} />
                                             <span className="text-xs text-slate-400">{opt}</span>
                                         </div>
                                     ))}
                                     <div className="md:col-span-2 mt-2">
                                         <Input
+                                            value={form.otroTemaPrioritario}
                                             placeholder="Otros temas (especificar)..."
                                             className="h-8 bg-[#1e293b] border-slate-700 text-xs"
                                             onChange={(e) => handleInp("otroTemaPrioritario", e.target.value)}
@@ -1184,6 +1248,7 @@ export default function EditarCuestionario() {
                             <div className="space-y-3">
                                 <Label className="text-slate-300">Comentarios o sugerencias finales:</Label>
                                 <Textarea
+                                    value={form.sugerenciasFinales}
                                     placeholder="Escribí aquí tus sugerencias sobre formación o desarrollo..."
                                     className="bg-[#0f172a] border-slate-700 min-h-[100px]"
                                     onChange={(e) => handleInp("sugerenciasFinales", e.target.value)}
@@ -1214,12 +1279,27 @@ export default function EditarCuestionario() {
             </div>
 
             <Dialog open={showSuccess} onOpenChange={setShowSuccess}>
-                <DialogContent className="bg-[#1e293b] border-slate-700 text-slate-200">
-                    <DialogHeader className="items-center"><CheckCircle2 className="h-12 w-12 text-green-500 mb-2" /><DialogTitle>¡Diagnóstico Enviado!</DialogTitle></DialogHeader>
-                    <p className="text-center text-slate-400">Gracias por completar el diagnóstico. Los datos se han guardado correctamente.</p>
-                    <DialogFooter><Button className="w-full" onClick={() => setShowSuccess(false)}>Aceptar</Button></DialogFooter>
+                <DialogContent
+                    className="bg-[#1e293b] border-slate-700 text-slate-200"
+                    aria-describedby={undefined}
+                >
+                    <DialogHeader className="items-center">
+                        <CheckCircle2 className="h-12 w-12 text-green-500 mb-2" />
+                        <DialogTitle>¡Diagnóstico Enviado!</DialogTitle>
+                    </DialogHeader>
+
+                    <p className="text-center text-slate-400">
+                        Gracias por completar el diagnóstico. Los datos se han guardado correctamente.
+                    </p>
+
+                    <DialogFooter>
+                        <Button className="w-full" onClick={() => setShowSuccess(false)}>
+                            Aceptar
+                        </Button>
+                    </DialogFooter>
                 </DialogContent>
             </Dialog>
+
         </div>
     );
 }
