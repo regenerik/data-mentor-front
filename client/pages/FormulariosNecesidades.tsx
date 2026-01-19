@@ -257,34 +257,34 @@ const FormulariosNecesidades = () => {
   return (
     <div className="p-4 max-w-7xl mx-auto">
 
-                        {/* Header */}
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-                    {/* Title with Back Arrow */}
-                    <div className="flex items-center gap-4">
-                        <Button
-                            variant="ghost"
-                            onClick={() => navigate("/dashboard")}
-                            className="flex items-center gap-2 p-2"
-                            aria-label="Volver al dashboard"
-                        >
-                            <ArrowLeft className="h-4 w-4" />
-                        </Button>
-                        <h1 className="text-2xl md:text-3xl font-bold text-foreground">Formularios de Necesidades</h1>
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+        {/* Title with Back Arrow */}
+        <div className="flex items-center gap-4">
+          <Button
+            variant="ghost"
+            onClick={() => navigate("/dashboard")}
+            className="flex items-center gap-2 p-2"
+            aria-label="Volver al dashboard"
+          >
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+          <h1 className="text-2xl md:text-3xl font-bold text-foreground">Formularios de Necesidades</h1>
 
-                    </div>
+        </div>
 
-                    {/* Top Actions */}
-                    <div className="flex flex-col sm:flex-row gap-2">
-                        <Button
-                            onClick={() => navigate("/cuestionario-operadores")}
-                            className="flex items-center gap-2"
-                        >
-                            <Plus className="h-4 w-4" />
-                            Llenar formulario
-                        </Button>
+        {/* Top Actions */}
+        <div className="flex flex-col sm:flex-row gap-2">
+          <Button
+            onClick={() => navigate("/cuestionario-operadores")}
+            className="flex items-center gap-2"
+          >
+            <Plus className="h-4 w-4" />
+            Llenar formulario
+          </Button>
 
-                    </div>
-                </div>
+        </div>
+      </div>
 
 
       <div className="grid grid-cols-1 md:grid-cols-6 gap-4 mb-6">
@@ -373,7 +373,7 @@ const FormulariosNecesidades = () => {
 
               <Button
                 variant="ghost"
-                onClick={() => console.log("EDIT", d.id)}
+                onClick={() => navigate(`/editar-cuestionario/${d.id}`)}
               >
                 <Pencil className="h-4 w-4" />
               </Button>

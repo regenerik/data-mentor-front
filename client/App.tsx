@@ -27,6 +27,7 @@ import { authStore } from "./store";
 import Necesidades from "./pages/Necesidades.jsx"
 import FormulariosNecesidades from "./pages/FormulariosNecesidades.tsx"
 import CuestionarioOperadores from "./pages/CuestionarioOperadores.tsx";
+import EditarCuestionario from "./pages/EditarCuestionario.tsx";
 
 const queryClient = new QueryClient();
 
@@ -188,6 +189,14 @@ const App = () => (
             element={
               <ProtectedRoute>
                 <CuestionarioOperadores />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/editar-cuestionario/:id"
+            element={
+              <ProtectedRoute>
+                <EditarCuestionario />
               </ProtectedRoute>
             }
           />
