@@ -187,9 +187,9 @@ const App = () => (
           <Route
             path="/cuestionario-operadores"
             element={
-              <ProtectedRoute>
+
                 <CuestionarioOperadores />
-              </ProtectedRoute>
+
             }
           />
           <Route
