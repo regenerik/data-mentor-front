@@ -29,6 +29,20 @@ export default function Dashboard() {
 
     const navigate = useNavigate();
 
+    const isAdmin = JSON.parse(localStorage.getItem("admin") || "false");
+
+    const permissions: string[] = (() => {
+        try {
+            const raw = localStorage.getItem("permissions");
+            const parsed = raw ? JSON.parse(raw) : [];
+            return Array.isArray(parsed) ? parsed : [];
+        } catch {
+            return [];
+        }
+    })();
+
+    const can = (sectorKey: string) => isAdmin || permissions.includes(sectorKey);
+
     const handlerLogOut = () => {
         authActions.logout();
         navigate("/expired-token");
@@ -66,8 +80,7 @@ export default function Dashboard() {
         checkTokenValidity();
     }, [navigate]);
 
-    // Leer el valor de "admin" desde localStorage para el renderizado condicional
-    const isAdmin = JSON.parse(localStorage.getItem("admin"));
+
 
     const handlerGoToMyProfile = () => {
         navigate("/mi-perfil")
@@ -122,7 +135,10 @@ export default function Dashboard() {
 
                     {/* Grid de herramientas */}
                     <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+
+
                         {/* Chat Data Mentor Cursos Card */}
+                        {can("course_creator") && (
                         <Card className="group relative overflow-hidden border-border/50 bg-card/80 backdrop-blur-sm hover:border-primary/50 transition-all duration-300 hover:shadow-2xl hover:shadow-primary/10">
                             {/* Glow Effect */}
                             <div className="absolute inset-0 bg-gradient-to-r from-neon-purple/5 to-neon-pink/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
@@ -159,94 +175,95 @@ export default function Dashboard() {
                                 </Link>
                             </CardContent>
                         </Card>
+                        )}
                         {/* Tarjeta Necesidades APIES */}
-                        {isAdmin && (
-                        <Card className="group relative overflow-hidden border-border/50 bg-card/80 backdrop-blur-sm hover:border-primary/50 transition-all duration-300 hover:shadow-2xl hover:shadow-primary/10">
-                            {/* Efecto Glow */}
-                            <div className="absolute inset-0 bg-gradient-to-r from-neon-green/5 to-neon-pink/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                        {can("needs_apies") && (
+                            <Card className="group relative overflow-hidden border-border/50 bg-card/80 backdrop-blur-sm hover:border-primary/50 transition-all duration-300 hover:shadow-2xl hover:shadow-primary/10">
+                                {/* Efecto Glow */}
+                                <div className="absolute inset-0 bg-gradient-to-r from-neon-green/5 to-neon-pink/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
 
-                            <CardHeader className="relative z-10">
-                                <div className="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center mb-4 group-hover:bg-primary/30 transition-colors">
-                                    <FileSpreadsheet className="h-6 w-6 text-primary" />
-                                </div>
-                                <CardTitle className="text-xl font-semibold text-foreground group-hover:text-primary transition-colors">
-                                    Necesidades APIES
-                                </CardTitle>
-                                <CardDescription className="text-muted-foreground">
-                                    Herramienta avanzada para procesar archivos Excel con comentarios
-                                    de estaciones de servicio. Clasificá, filtrá y extraé insights valiosos
-                                    con análisis de sentimientos y necesidades.
-                                </CardDescription>
-                            </CardHeader>
+                                <CardHeader className="relative z-10">
+                                    <div className="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center mb-4 group-hover:bg-primary/30 transition-colors">
+                                        <FileSpreadsheet className="h-6 w-6 text-primary" />
+                                    </div>
+                                    <CardTitle className="text-xl font-semibold text-foreground group-hover:text-primary transition-colors">
+                                        Necesidades APIES
+                                    </CardTitle>
+                                    <CardDescription className="text-muted-foreground">
+                                        Herramienta avanzada para procesar archivos Excel con comentarios
+                                        de estaciones de servicio. Clasificá, filtrá y extraé insights valiosos
+                                        con análisis de sentimientos y necesidades.
+                                    </CardDescription>
+                                </CardHeader>
 
-                            <CardContent className="relative z-10">
-                                <div className="space-y-3 mb-6">
-                                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                        <div className="w-1.5 h-1.5 bg-neon-blue rounded-full"></div>
-                                        Procesamiento y análisis de archivos Excel
+                                <CardContent className="relative z-10">
+                                    <div className="space-y-3 mb-6">
+                                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                            <div className="w-1.5 h-1.5 bg-neon-blue rounded-full"></div>
+                                            Procesamiento y análisis de archivos Excel
+                                        </div>
+                                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                            <div className="w-1.5 h-1.5 bg-neon-green rounded-full"></div>
+                                            Filtros avanzados por fecha, sentimiento y estación
+                                        </div>
+                                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                            <div className="w-1.5 h-1.5 bg-neon-purple rounded-full"></div>
+                                            Clasificación automática por tópicos
+                                        </div>
                                     </div>
-                                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                        <div className="w-1.5 h-1.5 bg-neon-green rounded-full"></div>
-                                        Filtros avanzados por fecha, sentimiento y estación
-                                    </div>
-                                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                        <div className="w-1.5 h-1.5 bg-neon-purple rounded-full"></div>
-                                        Clasificación automática por tópicos
-                                    </div>
-                                </div>
 
-                                <Link to="/necesidades-apies">
-                                    <Button className="w-full group/btn bg-primary/90 hover:bg-primary text-primary-foreground">
-                                        Abrir herramienta
-                                        <ArrowRight className="ml-2 h-4 w-4 group-hover/btn:translate-x-1 transition-transform" />
-                                    </Button>
-                                </Link>
-                            </CardContent>
-                        </Card>
+                                    <Link to="/necesidades-apies">
+                                        <Button className="w-full group/btn bg-primary/90 hover:bg-primary text-primary-foreground">
+                                            Abrir herramienta
+                                            <ArrowRight className="ml-2 h-4 w-4 group-hover/btn:translate-x-1 transition-transform" />
+                                        </Button>
+                                    </Link>
+                                </CardContent>
+                            </Card>
                         )}
                         {/* Tarjeta Chat Data Mentor */}
-                        {isAdmin && (
-                        <Card className="group relative overflow-hidden border-border/50 bg-card/80 backdrop-blur-sm hover:border-primary/50 transition-all duration-300 hover:shadow-2xl hover:shadow-primary/10">
-                            {/* Efecto Glow */}
-                            <div className="absolute inset-0 bg-gradient-to-r from-neon-blue/5 to-neon-purple/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                        {can("chat_data_mentor") && (
+                            <Card className="group relative overflow-hidden border-border/50 bg-card/80 backdrop-blur-sm hover:border-primary/50 transition-all duration-300 hover:shadow-2xl hover:shadow-primary/10">
+                                {/* Efecto Glow */}
+                                <div className="absolute inset-0 bg-gradient-to-r from-neon-blue/5 to-neon-purple/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
 
-                            <CardHeader className="relative z-10">
-                                <div className="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center mb-4 group-hover:bg-primary/30 transition-colors">
-                                    <MessageCircle className="h-6 w-6 text-primary" />
-                                </div>
-                                <CardTitle className="text-xl font-semibold text-foreground group-hover:text-primary transition-colors">
-                                    Chat Data Mentor
-                                </CardTitle>
-                                <CardDescription className="text-muted-foreground">
-                                    Asistente conversacional inteligente para análisis de datos en tiempo real,
-                                    generación de insights y resolución de consultas mediante procesamiento
-                                    de lenguaje natural avanzado.
-                                </CardDescription>
-                            </CardHeader>
-
-                            <CardContent className="relative z-10">
-                                <div className="flex items-center gap-4 mb-6">
-                                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                        <Zap className="h-4 w-4 text-neon-green" />
-                                        Análisis en tiempo real
+                                <CardHeader className="relative z-10">
+                                    <div className="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center mb-4 group-hover:bg-primary/30 transition-colors">
+                                        <MessageCircle className="h-6 w-6 text-primary" />
                                     </div>
-                                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                        <Brain className="h-4 w-4 text-neon-purple" />
-                                        Potenciado con IA
-                                    </div>
-                                </div>
+                                    <CardTitle className="text-xl font-semibold text-foreground group-hover:text-primary transition-colors">
+                                        Chat Data Mentor
+                                    </CardTitle>
+                                    <CardDescription className="text-muted-foreground">
+                                        Asistente conversacional inteligente para análisis de datos en tiempo real,
+                                        generación de insights y resolución de consultas mediante procesamiento
+                                        de lenguaje natural avanzado.
+                                    </CardDescription>
+                                </CardHeader>
 
-                                <Link to="/chat-data-mentor">
-                                    <Button className="w-full group/btn bg-primary/90 hover:bg-primary text-primary-foreground">
-                                        (en construccion)
-                                        <ArrowRight className="ml-2 h-4 w-4 group-hover/btn:translate-x-1 transition-transform" />
-                                    </Button>
-                                </Link>
-                            </CardContent>
-                        </Card>
+                                <CardContent className="relative z-10">
+                                    <div className="flex items-center gap-4 mb-6">
+                                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                            <Zap className="h-4 w-4 text-neon-green" />
+                                            Análisis en tiempo real
+                                        </div>
+                                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                            <Brain className="h-4 w-4 text-neon-purple" />
+                                            Potenciado con IA
+                                        </div>
+                                    </div>
+
+                                    <Link to="/chat-data-mentor">
+                                        <Button className="w-full group/btn bg-primary/90 hover:bg-primary text-primary-foreground">
+                                            (en construccion)
+                                            <ArrowRight className="ml-2 h-4 w-4 group-hover/btn:translate-x-1 transition-transform" />
+                                        </Button>
+                                    </Link>
+                                </CardContent>
+                            </Card>
                         )}
                         {/* RRHH Card */}
-                        {isAdmin && (
+                        {can("talent_management") && (
                             <Card className="group relative overflow-hidden border-border/50 bg-card/80 backdrop-blur-sm hover:border-amber-500/50 transition-all duration-300 hover:shadow-2xl hover:shadow-amber-500/10">
                                 <div className="absolute inset-0 bg-gradient-to-r from-amber-500/5 to-amber-300/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
 
@@ -285,7 +302,7 @@ export default function Dashboard() {
                         )}
 
                         {/* Presentaciones Card */}
-                        {isAdmin && (
+                        {can("presentations") && (
                             <Card className="group relative overflow-hidden border-border/50 bg-card/80 backdrop-blur-sm hover:border-primary/50 transition-all duration-300 hover:shadow-2xl hover:shadow-primary/10">
                                 <div className="absolute inset-0 bg-gradient-to-r from-neon-blue/5 to-neon-purple/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
 
@@ -323,6 +340,8 @@ export default function Dashboard() {
                             </Card>
                         )}
                         {/* Formularios para Recomendaciones de Cursos Card */}
+
+                        {can("recommendations_form") && (
                         <Card className="group relative overflow-hidden border-border/50 bg-card/80 backdrop-blur-sm hover:border-primary/50 transition-all duration-300 hover:shadow-2xl hover:shadow-primary/10">
                             <div className="absolute inset-0 bg-gradient-to-r from-neon-green/5 to-neon-blue/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
 
@@ -351,7 +370,7 @@ export default function Dashboard() {
                                 </div>
 
                                 <Button
-                                    onClick={()=> navigate("/formularios-necesidades")}
+                                    onClick={() => navigate("/formularios-necesidades")}
                                     className="w-full group/btn bg-primary/90 hover:bg-primary text-primary-foreground"
                                 >
                                     Comenzar
@@ -359,6 +378,8 @@ export default function Dashboard() {
                                 </Button>
                             </CardContent>
                         </Card>
+                        )}
+
                         {/* Tarjeta Ajustes de Administrador (condicional) */}
                         {isAdmin && (
                             <Card className="group relative overflow-hidden border-border/50 bg-card/80 backdrop-blur-sm hover:border-primary/50 transition-all duration-300 hover:shadow-2xl hover:shadow-primary/10">

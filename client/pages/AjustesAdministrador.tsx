@@ -71,7 +71,16 @@ interface SystemSettings {
   allowRegistration: boolean;
 }
 
+interface SectorPermission {
+  key: string;
+  label: string;
+  description?: string;
+  enabled: boolean;
+}
+
 const BASE_URL = "https://dm-back-fn4l.onrender.com";
+const isAdminLS = () => localStorage.getItem("admin") === "true";
+
 
 export default function AjustesAdministrador() {
   const [users, setUsers] = useState<User[]>([]);
@@ -106,6 +115,12 @@ export default function AjustesAdministrador() {
   const [showAdminRoleModal, setShowAdminRoleModal] = useState(false);
   const [userToToggleAdmin, setUserToToggleAdmin] = useState<User | null>(null);
 
+  const [showPermissionsModal, setShowPermissionsModal] = useState(false);
+  const [userToEditPermissions, setUserToEditPermissions] = useState<User | null>(null);
+  const [permissions, setPermissions] = useState<SectorPermission[]>([]);
+  const [loadingPermissions, setLoadingPermissions] = useState(false);
+  const [savingPermissions, setSavingPermissions] = useState(false);
+
   const navigate = useNavigate();
 
   const fetchUsers = async () => {
@@ -120,6 +135,7 @@ export default function AjustesAdministrador() {
       const response = await fetch(`${BASE_URL}/users`, {
         method: "GET",
         headers: {
+          "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
       });
@@ -153,7 +169,8 @@ export default function AjustesAdministrador() {
     window.scrollTo({ top: 0, behavior: "auto" });
     const checkTokenAndFetchUsers = async () => {
       const token = localStorage.getItem("token");
-      const isAdmin = JSON.parse(localStorage.getItem("admin") || "false");
+      const isAdmin = localStorage.getItem("admin") === "true";
+
 
       if (!token || !isAdmin) {
         console.warn("Acceso denegado. Redirigiendo a dashboard.");
@@ -206,6 +223,13 @@ export default function AjustesAdministrador() {
       return;
     }
 
+    const token = localStorage.getItem("token"); // 👈 AGREGAR
+    if (!token) {
+      setModalMessage("Sesión inválida. Volvé a iniciar sesión.");
+      setShowErrorModal(true);
+      return;
+    }
+
     setLoading(true);
     setFormError("");
 
@@ -222,6 +246,7 @@ export default function AjustesAdministrador() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`, // ✅ ACÁ
         },
         body: JSON.stringify(payload),
       });
@@ -235,7 +260,7 @@ export default function AjustesAdministrador() {
       setShowSuccessModal(true);
       setNewUser({ name: "", email: "", password: "", dni: "", role: "User" });
       fetchUsers();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error creating user:", error);
       setModalMessage(error.message || "Ocurrió un error al crear el usuario.");
       setShowErrorModal(true);
@@ -247,6 +272,7 @@ export default function AjustesAdministrador() {
       }, 3000);
     }
   };
+
 
   const handleDeleteUser = async (user: User) => {
     const token = localStorage.getItem("token");
@@ -329,6 +355,7 @@ export default function AjustesAdministrador() {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`, // ✅ ACÁ
         },
         body: JSON.stringify({ email: user.email, admin: !user.admin }),
       });
@@ -341,7 +368,7 @@ export default function AjustesAdministrador() {
       setModalMessage(result.message);
       setShowSuccessModal(true);
       fetchUsers();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error toggling admin role:", error);
       setModalMessage(error.message || "Ocurrió un error al cambiar el rol del usuario.");
       setShowErrorModal(true);
@@ -354,6 +381,92 @@ export default function AjustesAdministrador() {
       }, 3000);
     }
   };
+
+
+  const openPermissionsModal = async (user: User) => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    setUserToEditPermissions(user);
+    setShowPermissionsModal(true);
+    setLoadingPermissions(true);
+    setPermissions([]);
+
+    try {
+      const res = await fetch(`${BASE_URL}/users/${user.dni}/permissions`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error || "Error al obtener permisos.");
+
+      setPermissions(data.permissions || []);
+    } catch (err: any) {
+      console.error("Error fetching permissions:", err);
+      setModalMessage(err.message || "Error al cargar permisos del usuario.");
+      setShowErrorModal(true);
+      // Si falla, cerramos el modal para no dejar una UI rota
+      setPermissions([]); // opcional, para que no queden permisos viejos
+    } finally {
+      setLoadingPermissions(false);
+    }
+  };
+
+  const togglePermission = (key: string) => {
+    setPermissions((prev) =>
+      prev.map((p) => (p.key === key ? { ...p, enabled: !p.enabled } : p))
+    );
+  };
+
+  const savePermissions = async () => {
+    if (!userToEditPermissions) return;
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    setSavingPermissions(true);
+    try {
+      const payload = {
+        permissions: permissions.map((p) => ({ key: p.key, enabled: p.enabled })),
+      };
+
+      const res = await fetch(`${BASE_URL}/users/${userToEditPermissions.dni}/permissions`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error || "Error al guardar permisos.");
+
+      setModalMessage("Permisos actualizados correctamente.");
+      setShowSuccessModal(true);
+
+      setShowPermissionsModal(false);
+      setUserToEditPermissions(null);
+
+      setTimeout(() => setShowSuccessModal(false), 2500);
+    } catch (err: any) {
+      console.error("Error saving permissions:", err);
+      setModalMessage(err.message || "Ocurrió un error al guardar permisos.");
+      setShowErrorModal(true);
+      setTimeout(() => setShowErrorModal(false), 3000);
+    } finally {
+      setSavingPermissions(false);
+    }
+  };
+
+  const closePermissionsModal = () => {
+    setShowPermissionsModal(false);
+    setUserToEditPermissions(null);
+    setPermissions([]);
+  };
+
 
   const getRoleColor = (isAdmin: boolean) => {
     return isAdmin
@@ -496,6 +609,86 @@ export default function AjustesAdministrador() {
               onClick={() => userToToggleAdmin && handleToggleAdminRole(userToToggleAdmin)}
             >
               Confirmar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal de permisos por usuario */}
+      <Dialog open={showPermissionsModal} onOpenChange={(open) => {
+        // si se cierra desde afuera, reseteamos
+        if (!open) closePermissionsModal();
+        else setShowPermissionsModal(true);
+      }}>
+        <DialogContent className="sm:max-w-[650px]">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold flex items-center gap-2">
+              <Shield className="h-5 w-5 text-primary" />
+              Permisos por usuario
+            </DialogTitle>
+            <DialogDescription>
+              Editando permisos de: <span className="font-semibold">{userToEditPermissions?.name}</span>
+            </DialogDescription>
+          </DialogHeader>
+
+          {loadingPermissions ? (
+            <div className="flex justify-center items-center py-10">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+          ) : (
+            <div className="space-y-3 max-h-[420px] overflow-y-auto pr-2">
+              {permissions.length === 0 ? (
+                <p className="text-sm text-muted-foreground">
+                  No hay sectores cargados o no se pudo obtener la lista.
+                </p>
+              ) : (
+                permissions.map((p) => (
+                  <div
+                    key={p.key}
+                    className="flex items-center justify-between border border-border rounded-lg p-3"
+                  >
+                    <div className="pr-4">
+                      <p className="font-medium text-foreground">{p.label}</p>
+                      {p.description ? (
+                        <p className="text-xs text-muted-foreground">{p.description}</p>
+                      ) : null}
+                      <p className="text-[11px] text-muted-foreground mt-1">
+                        key: <span className="font-mono">{p.key}</span>
+                      </p>
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                      <Badge variant="outline" className={p.enabled ? "bg-neon-green/20 text-neon-green border-neon-green/30" : ""}>
+                        {p.enabled ? "Habilitado" : "Deshabilitado"}
+                      </Badge>
+
+                      <Switch
+                        checked={p.enabled}
+                        onCheckedChange={() => togglePermission(p.key)}
+                      />
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          )}
+
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={closePermissionsModal} disabled={savingPermissions}>
+              Cancelar
+            </Button>
+            <Button onClick={savePermissions} disabled={savingPermissions || loadingPermissions}>
+              {savingPermissions ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Guardando...
+                </>
+              ) : (
+                <>
+                  <Save className="h-4 w-4 mr-2" />
+                  Guardar
+                </>
+              )}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -688,6 +881,21 @@ export default function AjustesAdministrador() {
                                 >
                                   {user.status ? "Activo" : "Inactivo"}
                                 </Badge>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => {
+                                    if (!isAdminLS()) {
+                                      setModalMessage("Acceso denegado (admin requerido).");
+                                      setShowErrorModal(true);
+                                      return;
+                                    }
+                                    openPermissionsModal(user);
+                                  }}
+                                  title="Permisos"
+                                >
+                                  <Settings className="h-4 w-4" />
+                                </Button>
                                 <Button
                                   variant="ghost"
                                   size="sm"

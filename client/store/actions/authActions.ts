@@ -15,13 +15,12 @@ export interface User {
   admin?: boolean;
   dni?: string;
   url_image?: string;
+  permissions?: string[]; // ✅ NUEVO
 }
 
 export const authActions = {
   loginStart: () => {
-    dispatcher.dispatch({
-      type: AuthActionTypes.LOGIN_START,
-    });
+    dispatcher.dispatch({ type: AuthActionTypes.LOGIN_START });
   },
 
   loginSuccess: (user: User) => {
@@ -40,12 +39,9 @@ export const authActions = {
 
   logout: () => {
     localStorage.clear();
-    dispatcher.dispatch({
-      type: AuthActionTypes.LOGOUT,
-    });
+    dispatcher.dispatch({ type: AuthActionTypes.LOGOUT });
   },
 
-  // 🔥 Login real
   login: async (credentials: LoginCredentials) => {
     authActions.loginStart();
 
@@ -58,33 +54,48 @@ export const authActions = {
 
       const data = await response.json();
 
+      if (!response.ok) {
+        // backend devuelve {error: "..."} ahora
+        throw new Error(data?.error || "Credenciales inválidas");
+      }
+
       if (!data.access_token) {
         throw new Error("Credenciales inválidas");
       }
+
+      const permissions: string[] = Array.isArray(data.permissions) ? data.permissions : [];
 
       const user: User = {
         id: data.dni || "unknown",
         email: data.email,
         name: data.name,
         token: data.access_token,
-        admin: data.admin,
+        admin: !!data.admin,
         dni: data.dni,
         url_image: data.url_image,
+        permissions, // ✅
       };
 
-      // Guardar en localStorage
+      // ✅ Guardar en localStorage (simple y consistente)
       localStorage.setItem("token", data.access_token);
       localStorage.setItem("name", data.name);
       localStorage.setItem("email", data.email);
-      localStorage.setItem("admin", JSON.stringify(data.admin));
-      localStorage.setItem("dni", data.dni);
-      localStorage.setItem("url_image", data.url_image);
+      localStorage.setItem("admin", JSON.stringify(!!data.admin));
+      localStorage.setItem("dni", String(data.dni ?? ""));
+      localStorage.setItem("url_image", data.url_image ?? "");
+      localStorage.setItem("permissions", JSON.stringify(permissions)); // ✅ CLAVE
+
+      // (Opcional) mantener tu "auth" para no romper partes existentes
+      const authPayload = {
+        user,
+        token: data.access_token,
+      };
+      localStorage.setItem("auth", JSON.stringify(authPayload));
 
       authActions.loginSuccess(user);
       return user;
     } catch (error: any) {
-      const errorMessage =
-        error instanceof Error ? error.message : "Login fallido";
+      const errorMessage = error instanceof Error ? error.message : "Login fallido";
       authActions.loginFailure(errorMessage);
       throw error;
     }
