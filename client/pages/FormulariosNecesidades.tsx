@@ -46,6 +46,39 @@ const formatDate = (date: string) => {
   }
 };
 
+const renderIAFormatted = (text: string) => {
+  if (!text) return null;
+
+  // 1) reemplazar guiones bajos por espacios
+  const cleaned = text.replace(/_/g, " ");
+
+  // 2) separar por líneas y renderizar
+  const lines = cleaned.split("\n");
+
+  return (
+    <div className="whitespace-pre-wrap text-sm leading-relaxed">
+      {lines.map((line, idx) => {
+        // Match: [ALGO] al inicio de línea (con espacios opcionales)
+        const match = line.match(/^\s*\[([^\]]+)\]\s*$/);
+
+        if (match) {
+          return (
+            <div key={idx} className="mt-4 mb-2 pb-2 border-b">
+              <strong className="text-foreground text-base">{match[1]}</strong>
+            </div>
+          );
+        }
+
+        return (
+          <div key={idx}>
+            {line}
+          </div>
+        );
+      })}
+    </div>
+  );
+};
+
 const FormulariosNecesidades = () => {
   const { toast } = useToast();
   const [data, setData] = useState<Diagnostico[]>([]);
@@ -340,65 +373,68 @@ const FormulariosNecesidades = () => {
       </div>
 
       <div className="space-y-3">
-        {filtered.map((d) => (
-          <div
-            key={d.id}
-            className="border rounded-lg p-4 flex flex-col md:flex-row justify-between gap-4"
-          >
-            <div className="space-y-1">
-              <div className="font-medium">{d.apies}</div>
-              <div className="text-sm text-muted-foreground">
-                {d.gestor_asociado} · {d.tipo_estacion}
+        {filtered.map((d) => {
+          const isDone = !!d.respuesta_ia && !!d.conclucion_final;
+
+          return (
+            <div
+              key={d.id}
+              className="border rounded-lg p-4 flex flex-col md:flex-row md:items-center justify-between gap-4"
+            >
+              <div className="space-y-1">
+                <div className="font-medium">{d.apies}</div>
+                <div className="text-sm text-muted-foreground">
+                  {d.gestor_asociado} · {d.tipo_estacion}
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  {formatDate(d.created_at)}
+                </div>
               </div>
-              <div className="text-xs text-muted-foreground">
-                {formatDate(d.created_at)}
+
+              {/* lado derecho: acciones + tilde final */}
+              <div className="flex items-center gap-3">
+                <div className="flex gap-2 flex-wrap">
+                  <Button
+                    variant="outline"
+                    onClick={() => openConclusionEditor(d.id, d.conclucion_final)}
+                  >
+                    {d.conclucion_final ? "C. Final" : "+ C. Final"}
+                  </Button>
+
+                  <Button
+                    variant="outline"
+                    disabled={loadingIAId === d.id}
+                    onClick={() => (d.respuesta_ia ? openIAViewer(d.respuesta_ia) : generateIA(d.id))}
+                  >
+                    <Bot className="h-4 w-4 mr-2" />
+                    {loadingIAId === d.id
+                      ? "Dame unos segundos…"
+                      : d.respuesta_ia
+                        ? "Devolución IA"
+                        : "Crear devolución IA"}
+                  </Button>
+
+                  <Button variant="ghost" onClick={() => navigate(`/editar-cuestionario/${d.id}`)}>
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+
+                  <Button
+                    variant="ghost"
+                    className="text-destructive"
+                    onClick={() => handleDelete(d.id)}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+
+                {isDone && (
+                  <Check className="h-6 w-6 text-green-600 shrink-0" aria-label="Completo" />
+                )}
               </div>
             </div>
+          );
+        })}
 
-            <div className="flex gap-2 flex-wrap">
-              <Button
-                variant="outline"
-                onClick={() =>
-                  openConclusionEditor(d.id, d.conclucion_final)
-                }
-              >
-                {d.conclucion_final ? "C. Final" : "+ C. Final"}
-              </Button>
-
-              <Button
-                variant="outline"
-                disabled={loadingIAId === d.id}
-                onClick={() =>
-                  d.respuesta_ia
-                    ? openIAViewer(d.respuesta_ia)
-                    : generateIA(d.id)
-                }
-              >
-                <Bot className="h-4 w-4 mr-2" />
-                {loadingIAId === d.id
-                  ? "Dame unos segundos…"
-                  : d.respuesta_ia
-                    ? "Devolución IA"
-                    : "Crear devolución IA"}
-              </Button>
-
-              <Button
-                variant="ghost"
-                onClick={() => navigate(`/editar-cuestionario/${d.id}`)}
-              >
-                <Pencil className="h-4 w-4" />
-              </Button>
-
-              <Button
-                variant="ghost"
-                className="text-destructive"
-                onClick={() => handleDelete(d.id)}
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-        ))}
       </div>
 
       {/* IA Dialog */}
@@ -408,9 +444,10 @@ const FormulariosNecesidades = () => {
             <DialogTitle>Devolución IA</DialogTitle>
           </DialogHeader>
 
-          <div className="flex-1 overflow-y-auto whitespace-pre-wrap p-4 bg-muted rounded-lg text-sm">
-            {selectedText}
+          <div className="flex-1 overflow-y-auto p-4 bg-muted rounded-lg">
+            {renderIAFormatted(selectedText)}
           </div>
+
 
           <DialogFooter>
             <Button variant="secondary" onClick={handleCopy}>
