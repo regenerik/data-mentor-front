@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
     DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent
 } from "@dnd-kit/core";
@@ -63,7 +63,7 @@ interface FormState {
 const SortableItem = ({ id, label, index, total }: { id: string; label: string; index: number; total: number }) => {
     const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id });
     return (
-        <div  ref={setNodeRef} style={{ transform: CSS.Transform.toString(transform), transition }}
+        <div ref={setNodeRef} style={{ transform: CSS.Transform.toString(transform), transition }}
             className="flex items-center gap-3 p-3 bg-[#0f172a] rounded-lg border border-slate-700 mb-2 touch-none select-none">
             <button {...attributes} {...listeners} className="cursor-grab text-slate-500"><GripVertical size={18} /></button>
             <div className="flex-1 text-sm text-slate-200">{label}</div>
@@ -74,18 +74,7 @@ const SortableItem = ({ id, label, index, total }: { id: string; label: string; 
     );
 };
 
-const gestoresEmail: Record<string, string> = {
-    'Jose L. Gallucci': 'jose.l.gallucci@ypf.com',
-    'Mauricio Cuevas': 'mauricio.cuevas@ypf.com',
-    'John Martinez': 'john.martinez@ypf.com',
-    'Georgina M. Cutili': 'georgina.m.cutili@ypf.com',
-    'Octavio Torres': 'octavio.torres@ypf.com',
-    'Fernanda M. Rodriguez': 'fernanda.m.rodriguez@ypf.com',
-    'Pablo J. Raggio': 'pablo.j.raggio@ypf.com',
-    'Noelia Otarula': 'noelia.otarula@ypf.com',
-    'Dante Merluccio': 'dante.merluccio@ypf.com',
-    'Flavia Camuzzi': 'flavia.camuzzi@ypf.com'
-};
+
 
 export default function CuestionarioOperadores() {
     const [loading, setLoading] = useState(false);
@@ -126,6 +115,41 @@ export default function CuestionarioOperadores() {
         ],
         interesCapacitacion: "3", temasPrioritarios: [], otroTemaPrioritario: "", sugerenciasFinales: ""
     });
+    const [gestoresEmail, setGestoresEmail] = useState<Record<string, string>>({});
+
+    useEffect(() => {
+        const fetchGestores = async () => {
+            try {
+                const res = await fetch("https://dm-back-fn4l.onrender.com/get_gestores", {
+                    method: "GET",
+                    headers: {
+                        Authorization: "1803-1989-1803-1989", // mismo esquema que /diagnostico
+                    },
+                });
+
+                if (!res.ok) throw new Error("No se pudieron cargar los gestores");
+
+                const data: Array<{ name: string; email: string; gestor: boolean }> = await res.json();
+
+                // Transform: [{name,email,gestor:true}] -> { [name]: email }
+                const map: Record<string, string> = {};
+                for (const u of data || []) {
+                    if (u?.gestor && u?.name && u?.email) {
+                        map[u.name] = u.email;
+                    }
+                }
+
+                setGestoresEmail(map);
+            } catch (err) {
+                console.error("Error cargando gestores:", err);
+
+                // opcional: fallback vacío (ya está vacío por default)
+                setGestoresEmail({});
+            }
+        };
+
+        fetchGestores();
+    }, []);
 
     const sensors = useSensors(
         useSensor(PointerSensor, {

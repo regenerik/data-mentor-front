@@ -76,24 +76,14 @@ const SortableItem = ({ id, label, index, total }: { id: string; label: string; 
     );
 };
 
-const gestoresEmail: Record<string, string> = {
-    'Jose L. Gallucci': 'jose.l.gallucci@ypf.com',
-    'Mauricio Cuevas': 'mauricio.cuevas@ypf.com',
-    'John Martinez': 'john.martinez@ypf.com',
-    'Georgina M. Cutili': 'georgina.m.cutili@ypf.com',
-    'Octavio Torres': 'octavio.torres@ypf.com',
-    'Fernanda M. Rodriguez': 'fernanda.m.rodriguez@ypf.com',
-    'Pablo J. Raggio': 'pablo.j.raggio@ypf.com',
-    'Noelia Otarula': 'noelia.otarula@ypf.com',
-    'Dante Merluccio': 'dante.merluccio@ypf.com',
-    'Flavia Camuzzi': 'flavia.camuzzi@ypf.com'
-};
+
 
 export default function EditarCuestionario() {
 
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
 
+    const [gestoresEmail, setGestoresEmail] = useState<Record<string, string>>({});
 
 
     const [loading, setLoading] = useState(false);
@@ -415,6 +405,44 @@ export default function EditarCuestionario() {
             setLoading(false);
         }
     };
+
+    useEffect(() => {
+        const fetchGestores = async () => {
+            try {
+                const res = await fetch("https://dm-back-fn4l.onrender.com/get_gestores", {
+                    method: "GET",
+                    headers: {
+                        Authorization: "1803-1989-1803-1989",
+                        "Content-Type": "application/json",
+                    },
+                });
+
+                if (!res.ok) throw new Error("Error obteniendo gestores");
+
+                const data = await res.json();
+
+                // ✅ Soporta 2 formatos comunes sin romper nada:
+                // 1) ya viene como objeto { "Nombre": "email", ... }
+                // 2) viene como array [{ nombre, email }, ...]
+                const mapped: Record<string, string> = Array.isArray(data)
+                    ? data.reduce((acc: Record<string, string>, g: any) => {
+                        const nombre = g?.nombre ?? g?.name;
+                        const email = g?.email;
+                        if (nombre && email) acc[nombre] = email;
+                        return acc;
+                    }, {})
+                    : (data ?? {});
+
+                setGestoresEmail(mapped);
+            } catch (e) {
+                // si falla no rompemos el form, solo queda vacío el select
+                setGestoresEmail({});
+            }
+        };
+
+        fetchGestores();
+    }, []);
+
 
     const Likert = ({ label, field }: { label: React.ReactNode, field: keyof FormState }) => (
         <div className="py-4 border-b border-slate-800 last:border-0">

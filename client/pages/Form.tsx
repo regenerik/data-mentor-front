@@ -78,18 +78,8 @@ const Form = () => {
     }
   };
 
-  const gestoresEmail: Record<string, string> = {
-    'Jose L. Gallucci': 'jose.l.gallucci@ypf.com',
-    'Mauricio Cuevas': 'mauricio.cuevas@ypf.com',
-    'John Martinez': 'john.martinez@ypf.com',
-    'Georgina M. Cutili': 'georgina.m.cutili@ypf.com',
-    'Octavio Torres': 'octavio.torres@ypf.com',
-    'Fernanda M. Rodriguez': 'fernanda.m.rodriguez@ypf.com',
-    'Pablo J. Raggio': 'pablo.j.raggio@ypf.com',
-    'Noelia Otarula': 'noelia.otarula@ypf.com',
-    'Dante Merluccio': 'dante.merluccio@ypf.com',
-    'Flavia Camuzzi': 'flavia.camuzzi@ypf.com'
-  };
+  const [gestoresEmail, setGestoresEmail] = useState<Record<string, string>>({});
+
 
   const recomendacionesMapping: Record<string, string[]> = {
     'WOW Playa': [
@@ -143,7 +133,7 @@ const Form = () => {
   // Update objective, content and recommendations when course changes
   useEffect(() => {
     if (!formData.curso) return;
-    
+
     const courseData = objetivosContenido[formData.curso];
     if (!courseData) return;
 
@@ -172,8 +162,8 @@ const Form = () => {
   // Update emailGestor when gestor changes
   useEffect(() => {
     if (!formData.gestor) return;
-    setFormData(prev => ({ 
-      ...prev, 
+    setFormData(prev => ({
+      ...prev,
       emailGestor: gestoresEmail[formData.gestor] || ''
     }));
   }, [formData.gestor]);
@@ -205,7 +195,7 @@ const Form = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       toast({
         title: "Error de validación",
@@ -216,7 +206,7 @@ const Form = () => {
     }
 
     setLoading(true);
-    
+
     try {
       const response = await fetch('https://repomatic-old.onrender.com/form_gestores', {
         method: 'POST',
@@ -248,6 +238,52 @@ const Form = () => {
       setLoading(false);
     }
   };
+  useEffect(() => {
+    const loadGestores = async () => {
+      try {
+        const resp = await fetch("https://dm-back-fn4l.onrender.com/get_gestores", {
+          headers: { "Authorization": "1803-1989-1803-1989" }
+        });
+
+        if (!resp.ok) throw new Error("Error trayendo gestores");
+
+        const data = await resp.json();
+
+        // Caso A: backend devuelve [{name,email}, ...]
+        if (Array.isArray(data)) {
+          const map: Record<string, string> = {};
+          data.forEach((g: any) => {
+            if (g?.name && g?.email) map[g.name] = g.email;
+          });
+          setGestoresEmail(map);
+          return;
+        }
+
+        // Caso B: backend devuelve { "Nombre": "email", ... }
+        if (data && typeof data === "object") {
+          setGestoresEmail(data);
+          return;
+        }
+
+        setGestoresEmail({});
+      } catch (err) {
+        console.error("Error cargando gestores:", err);
+        setGestoresEmail({});
+      }
+    };
+
+    loadGestores();
+  }, []);
+
+  useEffect(() => {
+    if (!formData.gestor) return;
+
+    setFormData(prev => ({
+      ...prev,
+      emailGestor: gestoresEmail[formData.gestor] || ""
+    }));
+  }, [formData.gestor, gestoresEmail]);
+
 
   return (
     <div className="min-h-screen bg-background p-4 md:p-6">
@@ -486,7 +522,7 @@ const Form = () => {
                       {['alto', 'medio', 'bajo'].map(option => (
                         <div key={option} className="flex items-center space-x-2">
                           <RadioGroupItem value={option} id={`${name}-${option}`} />
-                          <Label 
+                          <Label
                             htmlFor={`${name}-${option}`}
                             className="text-sm font-normal cursor-pointer"
                           >
@@ -530,7 +566,7 @@ const Form = () => {
                         checked={!!formData.recomendaciones[curso]}
                         onCheckedChange={() => handleRecommendationChange(curso)}
                       />
-                      <Label 
+                      <Label
                         htmlFor={`rec-${curso}`}
                         className="text-sm font-medium cursor-pointer"
                       >
@@ -575,8 +611,8 @@ const Form = () => {
 
           {/* Submit Button */}
           <div className="flex justify-center pt-6">
-            <Button 
-              type="submit" 
+            <Button
+              type="submit"
               size="lg"
               disabled={loading || !validateForm()}
               className="min-w-[200px]"

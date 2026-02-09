@@ -58,6 +58,7 @@ interface User {
   admin: boolean;
   url_image: string;
   status: boolean;
+  gestor?: boolean;
   lastLogin?: string;
 }
 
@@ -121,6 +122,10 @@ export default function AjustesAdministrador() {
   const [loadingPermissions, setLoadingPermissions] = useState(false);
   const [savingPermissions, setSavingPermissions] = useState(false);
 
+  const [gestorEnabled, setGestorEnabled] = useState(false);     // estado actual del switch
+  const [originalGestorEnabled, setOriginalGestorEnabled] = useState(false); // para comparar al guardar
+
+
   const navigate = useNavigate();
 
   const fetchUsers = async () => {
@@ -151,6 +156,7 @@ export default function AjustesAdministrador() {
         email: user.email,
         admin: user.admin,
         url_image: user.url_image,
+        gestor: user.gestor === true || user.gestor === "true",
         // Convertir el status a booleano de forma segura
         status: user.status === true || user.status === "true",
         lastLogin: "N/A",
@@ -388,6 +394,10 @@ export default function AjustesAdministrador() {
     if (!token) return;
 
     setUserToEditPermissions(user);
+
+    setGestorEnabled(!!user.gestor);
+    setOriginalGestorEnabled(!!user.gestor);
+
     setShowPermissionsModal(true);
     setLoadingPermissions(true);
     setPermissions([]);
@@ -427,7 +437,9 @@ export default function AjustesAdministrador() {
     if (!token) return;
 
     setSavingPermissions(true);
+
     try {
+      // 1) Guardar permisos (lo que ya hacías)
       const payload = {
         permissions: permissions.map((p) => ({ key: p.key, enabled: p.enabled })),
       };
@@ -443,6 +455,33 @@ export default function AjustesAdministrador() {
 
       const data = await res.json();
       if (!res.ok) throw new Error(data?.error || "Error al guardar permisos.");
+
+      // 2) Si cambió gestor, llamamos al switch
+      if (gestorEnabled !== originalGestorEnabled) {
+        const resGestor = await fetch(`${BASE_URL}/switch_gestores`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ dni: userToEditPermissions.dni }),
+        });
+
+        const dataGestor = await resGestor.json();
+        if (!resGestor.ok) {
+          throw new Error(dataGestor?.error || "Error al actualizar estado de gestor.");
+        }
+
+        // 3) Actualizo el user en la lista local (así no dependés de refetch)
+        setUsers((prev) =>
+          prev.map((u) =>
+            u.dni === userToEditPermissions.dni ? { ...u, gestor: gestorEnabled } : u
+          )
+        );
+
+        // y si querés mantener consistente el “original” por si reabrís modal sin refetch
+        setOriginalGestorEnabled(gestorEnabled);
+      }
 
       setModalMessage("Permisos actualizados correctamente.");
       setShowSuccessModal(true);
@@ -460,6 +499,7 @@ export default function AjustesAdministrador() {
       setSavingPermissions(false);
     }
   };
+
 
   const closePermissionsModal = () => {
     setShowPermissionsModal(false);
@@ -630,6 +670,25 @@ export default function AjustesAdministrador() {
               Editando permisos de: <span className="font-semibold">{userToEditPermissions?.name}</span>
             </DialogDescription>
           </DialogHeader>
+          <div className="flex items-center justify-between border border-border rounded-lg p-3 mb-3">
+            <div className="pr-4">
+              <p className="font-medium text-foreground">Rol Gestor</p>
+              <p className="text-xs text-muted-foreground">
+                Define si este usuario aparece como gestor elegible en la app.
+              </p>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <Badge
+                variant="outline"
+                className={gestorEnabled ? "bg-neon-green/20 text-neon-green border-neon-green/30" : ""}
+              >
+                {gestorEnabled ? "Gestor" : "No gestor"}
+              </Badge>
+
+              <Switch checked={gestorEnabled} onCheckedChange={setGestorEnabled} />
+            </div>
+          </div>
 
           {loadingPermissions ? (
             <div className="flex justify-center items-center py-10">
@@ -871,6 +930,11 @@ export default function AjustesAdministrador() {
                                 >
                                   {user.admin ? "Admin" : "User"}
                                 </Badge>
+                                {user.gestor && (
+                                  <Badge variant="outline" className="bg-neon-green/20 text-neon-green border-neon-green/30">
+                                    Gestor
+                                  </Badge>
+                                )}
                                 <Badge
                                   variant="outline"
                                   className={`cursor-pointer ${getStatusColor(user.status)}`}
