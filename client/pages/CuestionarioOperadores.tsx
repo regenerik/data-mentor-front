@@ -22,10 +22,25 @@ import { Separator } from "@/components/ui/separator";
 // --- Interfaces ---
 interface RankingItem { id: string; label: string; }
 
+type PersonalFieldKey =
+    | "playaPersonal"
+    | "tiendaPersonal"
+    | "boxesPersonal"
+    | "administrativoPersonal"
+    | "jefesEstacionPersonal"
+    | "responsableTurnoPersonal"
+    | "operadorPersonal";
+
 interface FormState {
     // SECCIÓN 1
     provinciaLocalidad: string; apies: string; tipoEstacion: string; empleadosTotal: string;
-    playaPersonal: string; tiendaPersonal: string; boxesPersonal: string;
+    playaPersonal: string;
+    tiendaPersonal: string;
+    boxesPersonal: string;
+    administrativoPersonal: string;
+    jefesEstacionPersonal: string;
+    responsableTurnoPersonal: string;
+    operadorPersonal: string;
     aniosOperacion: string; capacitacionesAnio: string; soloAprendizaje: string; detalleOtrasCap: string;
     gestorAsociado: string;
 
@@ -65,8 +80,8 @@ const SortableItem = ({ id, label, index, total }: { id: string; label: string; 
     return (
         <div ref={setNodeRef} style={{ transform: CSS.Transform.toString(transform), transition }}
             className="flex items-center gap-3 p-3 bg-[#0f172a] rounded-lg border border-slate-700 mb-2 touch-none select-none">
-            <button {...attributes} {...listeners} className="cursor-grab text-slate-500"><GripVertical size={18} /></button>
-            <div className="flex-1 text-sm text-slate-200">{label}</div>
+            <button {...attributes} {...listeners} className="cursor-grab text-slate-400"><GripVertical size={18} /></button>
+            <div className="flex-1 text-sm text-slate-100">{label}</div>
             <div className="bg-blue-900/40 text-blue-300 px-3 py-1 rounded-full text-xs font-bold border border-blue-500/30">
                 Puntos: {total - index}
             </div>
@@ -82,7 +97,13 @@ export default function CuestionarioOperadores() {
     const { toast } = useToast();
     const [form, setForm] = useState<FormState>({
         provinciaLocalidad: "", apies: "", tipoEstacion: "", empleadosTotal: "",
-        playaPersonal: "", tiendaPersonal: "", boxesPersonal: "",
+        playaPersonal: "",
+        tiendaPersonal: "",
+        boxesPersonal: "",
+        administrativoPersonal: "",
+        jefesEstacionPersonal: "",
+        responsableTurnoPersonal: "",
+        operadorPersonal: "",
         aniosOperacion: "", capacitacionesAnio: "", soloAprendizaje: "", detalleOtrasCap: "",
         nivelSeguridad: "3", preparacionEmergencia: "3", mejorasSeguridad: [],
         gestorAsociado: "",
@@ -187,6 +208,10 @@ export default function CuestionarioOperadores() {
         playa_personal: form.playaPersonal,
         tienda_personal: form.tiendaPersonal,
         boxes_personal: form.boxesPersonal,
+        administrativo_personal: form.administrativoPersonal,
+        jefes_estacion_personal: form.jefesEstacionPersonal,
+        responsable_turno_personal: form.responsableTurnoPersonal,
+        operador_personal: form.operadorPersonal,
 
         anios_operacion: form.aniosOperacion,
         capacitaciones_anio: form.capacitacionesAnio,
@@ -283,7 +308,7 @@ export default function CuestionarioOperadores() {
 
     const Likert = ({ label, field }: { label: React.ReactNode, field: keyof FormState }) => (
         <div className="py-4 border-b border-slate-800 last:border-0">
-            <div className="text-slate-300 block mb-4">
+            <div className="text-slate-100 block mb-4">
                 {label}
             </div>
 
@@ -301,7 +326,7 @@ export default function CuestionarioOperadores() {
                             onMouseDown={(e) => e.preventDefault()}
                             className="border-slate-500 text-blue-500"
                         />
-                        <Label htmlFor={`${field}-${v}`} className="text-xs text-slate-500">{v}</Label>
+                        <Label htmlFor={`${field}-${v}`} className="text-xs text-slate-400">{v}</Label>
                     </div>
                 ))}
             </RadioGroup>
@@ -309,15 +334,15 @@ export default function CuestionarioOperadores() {
     );
 
     return (
-        <div className="min-h-screen bg-[#0f172a] text-slate-200 p-4 md:p-10">
+        <div className="min-h-screen bg-[#0f172a] text-slate-100 p-4 md:p-10">
             <div className="max-w-5xl mx-auto space-y-10">
                 <div className="text-center space-y-2">
                     <h1 className="text-4xl font-bold text-blue-400">Diagnóstico de Necesidades de Capacitación</h1>
-                    <p className="text-slate-400">Operadores / Mandos medios de EESS</p>
+                    <p className="text-slate-300">Operadores / Mandos medios de EESS</p>
                 </div>
 
                 {/* SECCIÓN 1: DATOS GENERALES */}
-                <Card className="bg-[#1e293b] border-slate-700">
+                <Card className="bg-[#182230] border-slate-700">
                     <CardHeader><CardTitle className="text-blue-400">📋 SECCIÓN 1. DATOS GENERALES</CardTitle></CardHeader>
                     <CardContent className="space-y-6">
                         <div className="grid md:grid-cols-2 gap-6">
@@ -363,12 +388,25 @@ export default function CuestionarioOperadores() {
                         </div>
 
                         <br />
-                        <Label>Distribución aproximada del personal:</Label>
-                        <div className="grid grid-cols-3 gap-4 p-4 bg-[#0f172a] rounded-lg border border-slate-700">
-                            {["Playa", "Tienda", "Boxes"].map((s, i) => (
-                                <div key={i} className="space-y-1">
-                                    <Label className="text-xs text-slate-400">{s}</Label>
-                                    <Input type="number" className="bg-[#1e293b] border-slate-600 h-8" onChange={e => handleInp(`${s.toLowerCase()}Personal` as any, e.target.value)} />
+                        <Label>Distribución del personal:</Label>
+                        <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 p-4 bg-[#0f172a] rounded-lg border border-slate-700">
+                            {([
+                                { label: "Playa", key: "playaPersonal" },
+                                { label: "Tienda", key: "tiendaPersonal" },
+                                { label: "Boxes", key: "boxesPersonal" },
+                                { label: "Administrativo", key: "administrativoPersonal" },
+                                { label: "Jefes de estación", key: "jefesEstacionPersonal" },
+                                { label: "Responsable de Turno", key: "responsableTurnoPersonal" },
+                                { label: "Operador", key: "operadorPersonal" },
+                            ] as { label: string; key: PersonalFieldKey }[]).map(({ label, key }) => (
+                                <div key={key} className="space-y-1">
+                                    <Label className="text-xs text-slate-100">{label}</Label>
+                                    <Input
+                                        type="number"
+                                        className="bg-[#1e293b] border-slate-600 h-8"
+                                        value={form[key] ?? ""}
+                                        onChange={e => handleInp(key, e.target.value)}
+                                    />
                                 </div>
                             ))}
                         </div>
@@ -431,14 +469,14 @@ export default function CuestionarioOperadores() {
                 </Card>
 
                 {/* SECCIÓN 2: SEGURIDAD Y CUMPLIMIENTO */}
-                <Card className="bg-[#1e293b] border-slate-700">
+                <Card className="bg-[#182230] border-slate-700">
                     <CardHeader><CardTitle className="text-orange-400">🦺 SECCIÓN 2. SEGURIDAD Y CUMPLIMIENTO</CardTitle></CardHeader>
                     <CardContent className="space-y-6">
                         <Likert
                             label={
                                 <>
                                     Conocimiento y aplicación de procedimientos de seguridad.
-                                    <span className="block text-xs text-slate-400 font-normal mt-1 leading-relaxed">
+                                    <span className="block text-xs text-slate-100 font-normal mt-1 leading-relaxed">
                                         ¿En qué medida el personal de la estación (Playa, Tienda, Boxes) conoce y aplica los procedimientos de seguridad (uso de Elementos de Protección Personal -EPP, manejo de derrames, uso de matafuegos, prevención de incendios, manipulación de equipos eléctricos, etc.)?
                                     </span>
                                 </>
@@ -450,7 +488,7 @@ export default function CuestionarioOperadores() {
                             label={
                                 <>
                                     Preparación ante emergencias o accidentes
-                                    <span className="block text-xs text-slate-400 font-normal mt-1 leading-relaxed">
+                                    <span className="block text-xs text-slate-100 font-normal mt-1 leading-relaxed">
                                         ¿Qué tan preparados considerás que están tus colaboradores para actuar ante una emergencia o accidente en la estación?
                                     </span>
                                 </>
@@ -462,19 +500,19 @@ export default function CuestionarioOperadores() {
                         <div className="space-y-6 pt-4">
                             <div className="space-y-2">
                                 <Label className="text-blue-300">Oportunidades de mejora (Múltiple):</Label>
-                                <span className="block text-xs text-slate-400 font-normal leading-relaxed">
+                                <span className="block text-xs text-slate-300 font-normal leading-relaxed">
                                     Seleccioná los aspectos de seguridad en la Operación de Playa, Tienda y Boxes donde tu equipo presenta mayores oportunidades de mejora. Podés marcar más de una opción.
                                 </span>
                             </div>
 
                             {/* Generales */}
                             <div className="space-y-3">
-                                <Label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Generales de la Estación</Label>
+                                <Label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Generales de la Estación</Label>
                                 <div className="grid md:grid-cols-2 gap-3 bg-[#0f172a] p-4 rounded-lg border border-slate-800">
                                     {["Uso del uniforme completo", "Procedimientos ante emergencias (Plan de emergencia y roles)", "Seguridad eléctrica (Equipos, corte de energía, evacuación)", "Disposición de residuos peligrosos"].map((opt) => (
                                         <div key={opt} className="flex items-start gap-2">
                                             <Checkbox onCheckedChange={() => handleChk("mejorasSeguridad", opt)} />
-                                            <span className="text-xs text-slate-400 leading-tight">{opt}</span>
+                                            <span className="text-xs text-slate-300 leading-tight">{opt}</span>
                                         </div>
                                     ))}
                                 </div>
@@ -482,7 +520,7 @@ export default function CuestionarioOperadores() {
 
                             {/* Playa */}
                             <div className="space-y-3">
-                                <Label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Sector Playa</Label>
+                                <Label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Sector Playa</Label>
                                 <div className="grid md:grid-cols-2 gap-3 bg-[#0f172a] p-4 rounded-lg border border-slate-800">
                                     {[
                                         "Comunicación de riesgos al cliente (Celular, motor apagado, etc.)",
@@ -495,7 +533,7 @@ export default function CuestionarioOperadores() {
                                     ].map((opt) => (
                                         <div key={opt} className="flex items-start gap-2">
                                             <Checkbox onCheckedChange={() => handleChk("mejorasSeguridad", opt)} />
-                                            <span className="text-xs text-slate-400 leading-tight">{opt}</span>
+                                            <span className="text-xs text-slate-300 leading-tight">{opt}</span>
                                         </div>
                                     ))}
                                     <div className="md:col-span-2 mt-2">
@@ -510,7 +548,7 @@ export default function CuestionarioOperadores() {
 
                             {/* Tienda */}
                             <div className="space-y-3">
-                                <Label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Sector Tienda</Label>
+                                <Label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Sector Tienda</Label>
                                 <div className="grid md:grid-cols-2 gap-3 bg-[#0f172a] p-4 rounded-lg border border-slate-800">
                                     {[
                                         "Manipulación segura de equipos (Hornos, cafeteras, freidoras)",
@@ -525,7 +563,7 @@ export default function CuestionarioOperadores() {
                                     ].map((opt) => (
                                         <div key={opt} className="flex items-start gap-2">
                                             <Checkbox onCheckedChange={() => handleChk("mejorasSeguridad", opt)} />
-                                            <span className="text-xs text-slate-400 leading-tight">{opt}</span>
+                                            <span className="text-xs text-slate-300 leading-tight">{opt}</span>
                                         </div>
                                     ))}
                                     <div className="md:col-span-2 mt-2">
@@ -540,7 +578,7 @@ export default function CuestionarioOperadores() {
 
                             {/* Boxes */}
                             <div className="space-y-3">
-                                <Label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Sector Boxes</Label>
+                                <Label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Sector Boxes</Label>
                                 <div className="grid md:grid-cols-2 gap-3 bg-[#0f172a] p-4 rounded-lg border border-slate-800">
                                     {[
                                         "Mantenimiento y orden de equipos (Elevador, compresor)",
@@ -552,7 +590,7 @@ export default function CuestionarioOperadores() {
                                     ].map((opt) => (
                                         <div key={opt} className="flex items-start gap-2">
                                             <Checkbox onCheckedChange={() => handleChk("mejorasSeguridad", opt)} />
-                                            <span className="text-xs text-slate-400 leading-tight">{opt}</span>
+                                            <span className="text-xs text-slate-300 leading-tight">{opt}</span>
                                         </div>
                                     ))}
                                     <div className="md:col-span-2 mt-2">
@@ -574,7 +612,7 @@ export default function CuestionarioOperadores() {
                             label={
                                 <>
                                     Protocolos de bromatología y seguridad alimentaria
-                                    <span className="block text-xs text-slate-400 font-normal mt-1 leading-relaxed">
+                                    <span className="block text-xs text-slate-300 font-normal mt-1 leading-relaxed">
                                         ¿En qué nivel el equipo de Tienda conoce y cumple los protocolos (conservación, control de vencimientos, limpieza, etc.)?
                                     </span>
                                 </>
@@ -585,7 +623,7 @@ export default function CuestionarioOperadores() {
                         <div className="space-y-4">
                             <div className="space-y-2">
                                 <Label className="text-blue-300">Oportunidades de mejora en Bromatología (Múltiple):</Label>
-                                <span className="block text-xs text-slate-400 font-normal leading-relaxed">
+                                <span className="block text-xs text-slate-300 font-normal leading-relaxed">
                                     Marcá los aspectos donde tu equipo presenta mayores oportunidades de mejora en la Tienda.
                                 </span>
                             </div>
@@ -599,7 +637,7 @@ export default function CuestionarioOperadores() {
                                 ].map((opt) => (
                                     <div key={opt} className="flex items-start gap-2">
                                         <Checkbox onCheckedChange={() => handleChk("mejorasBromatologia", opt)} />
-                                        <span className="text-xs text-slate-400 leading-tight">{opt}</span>
+                                        <span className="text-xs text-slate-300 leading-tight">{opt}</span>
                                     </div>
                                 ))}
                                 <div className="md:col-span-2 mt-2">
@@ -616,7 +654,7 @@ export default function CuestionarioOperadores() {
 
                         {/* --- ACCIDENTES --- */}
                         <div className="space-y-4">
-                            <Label className="text-slate-300 block">Frecuencia de accidentes o incidentes registrados:</Label>
+                            <Label className="text-slate-100 block">Frecuencia de accidentes o incidentes registrados:</Label>
                             <RadioGroup onValueChange={v => handleInp("frecuenciaAccidentes", v)} className="flex flex-col gap-4 md:flex-row md:gap-6 bg-[#0f172a] p-4 rounded-lg border border-slate-800">
                                 {["Nunca", "Ocasionalmente", "Frecuentemente"].map(op => (
                                     <div key={op} className="flex items-center space-x-2">
@@ -630,7 +668,7 @@ export default function CuestionarioOperadores() {
                         <div className="space-y-4">
                             <div className="space-y-2">
                                 <Label className="text-blue-300">Situaciones de accidentes o incidentes (Múltiple):</Label>
-                                <span className="block text-xs text-slate-400 font-normal leading-relaxed">
+                                <span className="block text-xs text-slate-300 font-normal leading-relaxed">
                                     ¿En qué tareas suelen ocurrir estos eventos en la estación?
                                 </span>
                             </div>
@@ -645,7 +683,7 @@ export default function CuestionarioOperadores() {
                                 ].map((opt) => (
                                     <div key={opt} className="flex items-start gap-2">
                                         <Checkbox onCheckedChange={() => handleChk("situacionesAccidentes", opt)} />
-                                        <span className="text-xs text-slate-400 leading-tight">{opt}</span>
+                                        <span className="text-xs text-slate-300 leading-tight">{opt}</span>
                                     </div>
                                 ))}
                                 <div className="md:col-span-2 mt-2">
@@ -663,10 +701,10 @@ export default function CuestionarioOperadores() {
                 </Card>
 
                 {/* SECCIÓN 3: EXPERIENCIA DEL CLIENTE Y COMUNICACIÓN */}
-                <Card className="bg-[#1e293b] border-slate-700">
+                <Card className="bg-[#182230] border-slate-700">
                     <CardHeader>
                         <CardTitle className="text-blue-400">🤝 SECCIÓN 3. EXPERIENCIA DEL CLIENTE Y COMUNICACIÓN</CardTitle>
-                        <CardDescription className="text-slate-400">
+                        <CardDescription className="text-slate-300">
                             Evaluación de habilidades de servicio, empatía y adaptación al cliente.
                         </CardDescription>
                     </CardHeader>
@@ -676,7 +714,7 @@ export default function CuestionarioOperadores() {
                             label={
                                 <>
                                     Alineación con los Pilares de la Experiencia
-                                    <span className="block text-xs text-slate-400 font-normal mt-1 leading-relaxed">
+                                    <span className="block text-xs text-slate-300 font-normal mt-1 leading-relaxed">
                                         ¿En qué medida brindan atención Ágil, Cercana, Simple e Innovadora?
                                     </span>
                                 </>
@@ -688,7 +726,7 @@ export default function CuestionarioOperadores() {
                             label={
                                 <>
                                     Efectividad de la comunicación
-                                    <span className="block text-xs text-slate-400 font-normal mt-1 leading-relaxed">
+                                    <span className="block text-xs text-slate-300 font-normal mt-1 leading-relaxed">
                                         ¿Cómo evaluás la escucha activa, el tono, el lenguaje corporal y la claridad con el cliente?
                                     </span>
                                 </>
@@ -700,7 +738,7 @@ export default function CuestionarioOperadores() {
                             label={
                                 <>
                                     Actitud empática y positiva
-                                    <span className="block text-xs text-slate-400 font-normal mt-1 leading-relaxed">
+                                    <span className="block text-xs text-slate-300 font-normal mt-1 leading-relaxed">
                                         ¿Mantienen la calma y empatía incluso frente a clientes difíciles o reclamos?
                                     </span>
                                 </>
@@ -712,7 +750,7 @@ export default function CuestionarioOperadores() {
                             label={
                                 <>
                                     Autonomía en resolución de conflictos
-                                    <span className="block text-xs text-slate-400 font-normal mt-1 leading-relaxed">
+                                    <span className="block text-xs text-slate-300 font-normal mt-1 leading-relaxed">
                                         ¿Cuentan con herramientas para resolver reclamos de manera autónoma?
                                     </span>
                                 </>
@@ -724,7 +762,7 @@ export default function CuestionarioOperadores() {
                             label={
                                 <>
                                     Adaptación al estilo del cliente
-                                    <span className="block text-xs text-slate-400 font-normal mt-1 leading-relaxed">
+                                    <span className="block text-xs text-slate-300 font-normal mt-1 leading-relaxed">
                                         ¿Adaptan su comunicación según el perfil del cliente (impaciente, sociable, estructurado, etc.)?
                                     </span>
                                 </>
@@ -735,7 +773,7 @@ export default function CuestionarioOperadores() {
                         <div className="space-y-4 pt-4">
                             <div className="space-y-2">
                                 <Label className="text-blue-300">Aspectos presentes en la atención (Múltiple):</Label>
-                                <span className="block text-xs text-slate-400 font-normal leading-relaxed">
+                                <span className="block text-xs text-slate-300 font-normal leading-relaxed">
                                     Marcá qué aspectos considerás que se reflejan hoy en el trato con el cliente.
                                 </span>
                             </div>
@@ -751,7 +789,7 @@ export default function CuestionarioOperadores() {
                                 ].map((opt) => (
                                     <div key={opt} className="flex items-start gap-2">
                                         <Checkbox onCheckedChange={() => handleChk("aspectosAtencion", opt)} />
-                                        <span className="text-xs text-slate-400 leading-tight">{opt}</span>
+                                        <span className="text-xs text-slate-300 leading-tight">{opt}</span>
                                     </div>
                                 ))}
                                 <div className="md:col-span-2 mt-2">
@@ -767,10 +805,10 @@ export default function CuestionarioOperadores() {
                 </Card>
 
                 {/* SECCIÓN 4: CONOCIMIENTO Y RANKING */}
-                <Card className="bg-[#1e293b] border-slate-700">
+                <Card className="bg-[#182230] border-slate-700">
                     <CardHeader>
                         <CardTitle className="text-blue-400">🧠 SECCIÓN 4. CONOCIMIENTO Y RANKING</CardTitle>
-                        <CardDescription className="text-slate-400">
+                        <CardDescription className="text-slate-300">
                             Evaluación del dominio técnico y prioridades de capacitación.
                         </CardDescription>
                     </CardHeader>
@@ -782,7 +820,7 @@ export default function CuestionarioOperadores() {
                                 label={
                                     <>
                                         Conocimiento de productos en Playa
-                                        <span className="block text-xs text-slate-400 font-normal mt-1 leading-relaxed">
+                                        <span className="block text-xs text-slate-300 font-normal mt-1 leading-relaxed">
                                             ¿Qué tan sólido es el conocimiento sobre tipos de combustibles, lubricantes y aditivos?
                                         </span>
                                     </>
@@ -794,7 +832,7 @@ export default function CuestionarioOperadores() {
                                 label={
                                     <>
                                         Dominio de información en Tienda
-                                        <span className="block text-xs text-slate-400 font-normal mt-1 leading-relaxed">
+                                        <span className="block text-xs text-slate-300 font-normal mt-1 leading-relaxed">
                                             ¿En qué medida el personal domina la información sobre productos, combos, promociones y stock?
                                         </span>
                                     </>
@@ -806,7 +844,7 @@ export default function CuestionarioOperadores() {
                                 label={
                                     <>
                                         Asesoramiento en Boxes
-                                        <span className="block text-xs text-slate-400 font-normal mt-1 leading-relaxed">
+                                        <span className="block text-xs text-slate-300 font-normal mt-1 leading-relaxed">
                                             ¿Qué tan preparados están los Lubriexpertos para asesorar correctamente sobre productos y servicios?
                                         </span>
                                     </>
@@ -818,7 +856,7 @@ export default function CuestionarioOperadores() {
                                 label={
                                     <>
                                         Promoción de Herramientas Digitales
-                                        <span className="block text-xs text-slate-400 font-normal mt-1 leading-relaxed">
+                                        <span className="block text-xs text-slate-300 font-normal mt-1 leading-relaxed">
                                             ¿El equipo conoce y promueve activamente App YPF, Serviclub e YPF Ruta?
                                         </span>
                                     </>
@@ -833,10 +871,10 @@ export default function CuestionarioOperadores() {
                         <div className="space-y-4">
                             <div className="space-y-2">
                                 <Label className="text-blue-300 text-base">Prioridades de fortalecimiento</Label>
-                                <p className="text-sm text-slate-300 leading-relaxed">
+                                <p className="text-sm text-slate-100 leading-relaxed">
                                     Ordená de mayor a menor relevancia por puntos los temas que considerás más importantes para seguir fortaleciendo en tu equipo:
                                 </p>
-                                <span className="text-[10px] text-slate-500 uppercase font-bold italic">
+                                <span className="text-[10px] text-slate-400 uppercase font-bold italic">
                                     (Arrastrá los elementos para cambiar el orden. A mayor puntaje es más relevante.) - (MANTENÉ APRETADO UN POCO ANTES DE ARRASTRAR)
                                 </span>
                             </div>
@@ -862,10 +900,10 @@ export default function CuestionarioOperadores() {
                 </Card>
 
                 {/* SECCIÓN 5: GESTIÓN DE LA EESS Y REPUTACIÓN DIGITAL */}
-                <Card className="bg-[#1e293b] border-slate-700">
+                <Card className="bg-[#182230] border-slate-700">
                     <CardHeader>
                         <CardTitle className="text-blue-400">📊 SECCIÓN 5. GESTIÓN DE LA EESS Y REPUTACIÓN DIGITAL</CardTitle>
-                        <CardDescription className="text-slate-400">
+                        <CardDescription className="text-slate-300">
                             Evaluación de procesos administrativos, análisis de datos y presencia digital.
                         </CardDescription>
                     </CardHeader>
@@ -877,7 +915,7 @@ export default function CuestionarioOperadores() {
                                 label={
                                     <>
                                         Dominio de gestión operativa y administrativa
-                                        <span className="block text-xs text-slate-400 font-normal mt-1 leading-relaxed">
+                                        <span className="block text-xs text-slate-300 font-normal mt-1 leading-relaxed">
                                             ¿En qué medida los responsables dominan cierres, turnos, control de stock y reportes?
                                         </span>
                                     </>
@@ -889,7 +927,7 @@ export default function CuestionarioOperadores() {
                                 label={
                                     <>
                                         Capacidad de análisis de indicadores
-                                        <span className="block text-xs text-slate-400 font-normal mt-1 leading-relaxed">
+                                        <span className="block text-xs text-slate-300 font-normal mt-1 leading-relaxed">
                                             ¿Qué tan desarrollada está la capacidad para analizar ventas, tickets y rotación para tomar decisiones?
                                         </span>
                                     </>
@@ -901,7 +939,7 @@ export default function CuestionarioOperadores() {
                                 label={
                                     <>
                                         Uso de herramientas digitales y reputación
-                                        <span className="block text-xs text-slate-400 font-normal mt-1 leading-relaxed">
+                                        <span className="block text-xs text-slate-300 font-normal mt-1 leading-relaxed">
                                             ¿Se aprovechan herramientas como Google Mi Negocio y redes sociales para la visibilidad de la estación?
                                         </span>
                                     </>
@@ -916,10 +954,10 @@ export default function CuestionarioOperadores() {
                         <div className="space-y-4">
                             <div className="space-y-2">
                                 <Label className="text-blue-300 text-base">Desafíos de la gestión diaria</Label>
-                                <p className="text-sm text-slate-300 leading-relaxed">
+                                <p className="text-sm text-slate-100 leading-relaxed">
                                     Ordená del 1 al 4 los aspectos que considerás más desafiantes en el día a día:
                                 </p>
-                                <span className="text-[10px] text-slate-500 uppercase font-bold italic">
+                                <span className="text-[10px] text-slate-400 uppercase font-bold italic">
                                     (Arrastrá para priorizar. Cuanto más puntos tiene, más prioritario es.) - (MANTENÉ APRETADO UN POCO ANTES DE ARRASTRAR)
                                 </span>
                             </div>
@@ -945,10 +983,10 @@ export default function CuestionarioOperadores() {
                 </Card>
 
                 {/* SECCIÓN 6: LIDERAZGO Y GESTIÓN DE EQUIPOS */}
-                <Card className="bg-[#1e293b] border-slate-700">
+                <Card className="bg-[#182230] border-slate-700">
                     <CardHeader>
                         <CardTitle className="text-blue-400">👥 SECCIÓN 6. LIDERAZGO Y GESTIÓN DE EQUIPOS</CardTitle>
-                        <CardDescription className="text-slate-400">
+                        <CardDescription className="text-slate-300">
                             Evaluación del estilo de mando, desarrollo del equipo y necesidades futuras.
                         </CardDescription>
                     </CardHeader>
@@ -960,7 +998,7 @@ export default function CuestionarioOperadores() {
                                 label={
                                     <>
                                         Liderazgo efectivo
-                                        <span className="block text-xs text-slate-400 font-normal mt-1 leading-relaxed">
+                                        <span className="block text-xs text-slate-300 font-normal mt-1 leading-relaxed">
                                             ¿En qué medida los mandos medios ejercen un liderazgo basado en acompañamiento y ejemplo?
                                         </span>
                                     </>
@@ -969,7 +1007,7 @@ export default function CuestionarioOperadores() {
                             />
 
                             <div className="space-y-3">
-                                <Label className="text-slate-300 block">Frecuencia de feedback y reconocimiento:</Label>
+                                <Label className="text-slate-100 block">Frecuencia de feedback y reconocimiento:</Label>
                                 <RadioGroup onValueChange={v => handleInp("frecuenciaFeedback", v)} className="flex flex-wrap gap-4 bg-[#0f172a] p-4 rounded-lg border border-slate-800">
                                     {["Nunca", "A veces", "Frecuentemente", "Siempre"].map(op => (
                                         <div key={op} className="flex items-center space-x-2">
@@ -984,7 +1022,7 @@ export default function CuestionarioOperadores() {
                                 label={
                                     <>
                                         Habilidades de organización
-                                        <span className="block text-xs text-slate-400 font-normal mt-1 leading-relaxed">
+                                        <span className="block text-xs text-slate-300 font-normal mt-1 leading-relaxed">
                                             ¿Qué tan sólidas son las habilidades para organizar turnos, delegar y resolver conflictos?
                                         </span>
                                     </>
@@ -993,7 +1031,7 @@ export default function CuestionarioOperadores() {
                             />
 
                             <div className="space-y-3">
-                                <Label className="text-slate-300 block">Estilo de liderazgo predominante:</Label>
+                                <Label className="text-slate-100 block">Estilo de liderazgo predominante:</Label>
                                 <RadioGroup onValueChange={v => handleInp("estiloLiderazgo", v)} className="grid grid-cols-2 gap-4 bg-[#0f172a] p-4 rounded-lg border border-slate-800">
                                     {["Controlador", "Participativo", "Delegativo", "Inspirador / Coach"].map(estilo => (
                                         <div key={estilo} className="flex items-center space-x-2">
@@ -1011,7 +1049,7 @@ export default function CuestionarioOperadores() {
                         <div className="space-y-4">
                             <div className="space-y-2">
                                 <Label className="text-blue-300 text-base">Prioridades de Liderazgo</Label>
-                                <p className="text-sm text-slate-300 leading-relaxed">
+                                <p className="text-sm text-slate-100 leading-relaxed">
                                     Ordená de mayor a menor importancia por puntos según los aspectos que más necesitás fortalecer en tu rol. (+puntos = +importancia)  - (MANTENÉ APRETADO UN POCO ANTES DE ARRASTRAR):
                                 </p>
                             </div>
@@ -1043,7 +1081,7 @@ export default function CuestionarioOperadores() {
                                     {["Neuroventas", "Coaching y liderazgo", "Comunicación efectiva", "Negociación", "Gestión de equipos"].map((opt) => (
                                         <div key={opt} className="flex items-start gap-2">
                                             <Checkbox onCheckedChange={() => handleChk("temasPrioritarios", opt)} />
-                                            <span className="text-xs text-slate-400">{opt}</span>
+                                            <span className="text-xs text-slate-300">{opt}</span>
                                         </div>
                                     ))}
                                     <div className="md:col-span-2 mt-2">
@@ -1057,7 +1095,7 @@ export default function CuestionarioOperadores() {
                             </div>
 
                             <div className="space-y-3">
-                                <Label className="text-slate-300">Comentarios o sugerencias finales:</Label>
+                                <Label className="text-slate-100">Comentarios o sugerencias finales:</Label>
                                 <Textarea
                                     placeholder="Escribí aquí tus sugerencias sobre formación o desarrollo..."
                                     className="bg-[#0f172a] border-slate-700 min-h-[100px]"
@@ -1089,9 +1127,9 @@ export default function CuestionarioOperadores() {
             </div>
 
             <Dialog open={showSuccess} onOpenChange={setShowSuccess}>
-                <DialogContent className="bg-[#1e293b] border-slate-700 text-slate-200">
+                <DialogContent className="bg-[#1e293b] border-slate-700 text-slate-100">
                     <DialogHeader className="items-center"><CheckCircle2 className="h-12 w-12 text-green-500 mb-2" /><DialogTitle>¡Diagnóstico Enviado!</DialogTitle></DialogHeader>
-                    <p className="text-center text-slate-400">Gracias por completar el diagnóstico. Los datos se han guardado correctamente.Ya puede cerrar esta ventana.</p>
+                    <p className="text-center text-slate-300">Gracias por completar el diagnóstico. Los datos se han guardado correctamente.Ya puede cerrar esta ventana.</p>
                     <DialogFooter><Button className="w-full" onClick={() => setShowSuccess(false)}>Aceptar</Button></DialogFooter>
                 </DialogContent>
             </Dialog>
