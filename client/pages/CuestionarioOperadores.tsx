@@ -137,6 +137,7 @@ export default function CuestionarioOperadores() {
         interesCapacitacion: "3", temasPrioritarios: [], otroTemaPrioritario: "", sugerenciasFinales: ""
     });
     const [gestoresEmail, setGestoresEmail] = useState<Record<string, string>>({});
+    const [showAccidentesDetalle, setShowAccidentesDetalle] = useState(false);
 
     useEffect(() => {
         const fetchGestores = async () => {
@@ -171,6 +172,21 @@ export default function CuestionarioOperadores() {
 
         fetchGestores();
     }, []);
+
+    useEffect(() => {
+        const mostrar = form.frecuenciaAccidentes !== "" && form.frecuenciaAccidentes !== "Nunca";
+
+        setShowAccidentesDetalle(mostrar);
+
+        // Limpia el detalle si el usuario marca "Nunca"
+        if (!mostrar) {
+            setForm(prev => ({
+                ...prev,
+                situacionesAccidentes: [],
+                otroAccidentes: "",
+            }));
+        }
+    }, [form.frecuenciaAccidentes]);
 
     const sensors = useSensors(
         useSensor(PointerSensor, {
@@ -665,36 +681,38 @@ export default function CuestionarioOperadores() {
                             </RadioGroup>
                         </div>
 
-                        <div className="space-y-4">
-                            <div className="space-y-2">
-                                <Label className="text-blue-300">Situaciones de accidentes o incidentes (Múltiple):</Label>
-                                <span className="block text-xs text-slate-300 font-normal leading-relaxed">
-                                    ¿En qué tareas suelen ocurrir estos eventos en la estación?
-                                </span>
-                            </div>
-                            <div className="grid md:grid-cols-2 gap-3 bg-[#0f172a] p-4 rounded-lg border border-slate-800">
-                                {[
-                                    "Al destrabar o cerrar un capot", "Durante la descarga de combustible",
-                                    "Al despachar combustible en playa", "Al manipular equipos o utensilios de cocina",
-                                    "Al manipular productos o reponer mercadería", "Al limpiar pisos o superficies",
-                                    "Al trasladar objetos pesados", "Por resbalones o caídas",
-                                    "Por cortes o pinchazos", "Por quemaduras", "Por contacto con productos químicos",
-                                    "En Boxes o área de lubricación", "En el estacionamiento o zona de tránsito"
-                                ].map((opt) => (
-                                    <div key={opt} className="flex items-start gap-2">
-                                        <Checkbox onCheckedChange={() => handleChk("situacionesAccidentes", opt)} />
-                                        <span className="text-xs text-slate-300 leading-tight">{opt}</span>
+                        {showAccidentesDetalle && (
+                            <div className="space-y-4">
+                                <div className="space-y-2">
+                                    <Label className="text-blue-300">Situaciones de accidentes o incidentes (Múltiple):</Label>
+                                    <span className="block text-xs text-slate-300 font-normal leading-relaxed">
+                                        ¿En qué tareas suelen ocurrir estos eventos en la estación?
+                                    </span>
+                                </div>
+                                <div className="grid md:grid-cols-2 gap-3 bg-[#0f172a] p-4 rounded-lg border border-slate-800">
+                                    {[
+                                        "Al destrabar o cerrar un capot", "Durante la descarga de combustible",
+                                        "Al despachar combustible en playa", "Al manipular equipos o utensilios de cocina",
+                                        "Al manipular productos o reponer mercadería", "Al limpiar pisos o superficies",
+                                        "Al trasladar objetos pesados", "Por resbalones o caídas",
+                                        "Por cortes o pinchazos", "Por quemaduras", "Por contacto con productos químicos",
+                                        "En Boxes o área de lubricación", "En el estacionamiento o zona de tránsito"
+                                    ].map((opt) => (
+                                        <div key={opt} className="flex items-start gap-2">
+                                            <Checkbox onCheckedChange={() => handleChk("situacionesAccidentes", opt)} />
+                                            <span className="text-xs text-slate-300 leading-tight">{opt}</span>
+                                        </div>
+                                    ))}
+                                    <div className="md:col-span-2 mt-2">
+                                        <Input
+                                            placeholder="Otras situaciones (especificar)..."
+                                            className="h-8 bg-[#1e293b] border-slate-700 text-xs"
+                                            onChange={(e) => handleInp("otroAccidentes", e.target.value)}
+                                        />
                                     </div>
-                                ))}
-                                <div className="md:col-span-2 mt-2">
-                                    <Input
-                                        placeholder="Otras situaciones (especificar)..."
-                                        className="h-8 bg-[#1e293b] border-slate-700 text-xs"
-                                        onChange={(e) => handleInp("otroAccidentes", e.target.value)}
-                                    />
                                 </div>
                             </div>
-                        </div>
+                        )}
 
                     </CardContent>
 
