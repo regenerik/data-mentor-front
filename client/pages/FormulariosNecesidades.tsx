@@ -16,7 +16,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
-import { Pencil, Check, Copy, Bot, Trash2, ArrowLeft, Plus } from "lucide-react";
+import { Pencil, Check, Copy, Bot, Trash2, ArrowLeft, Plus, Download } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 
@@ -84,6 +84,7 @@ const FormulariosNecesidades = () => {
   const [data, setData] = useState<Diagnostico[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingIAId, setLoadingIAId] = useState<number | null>(null);
+  const [exportingExcel, setExportingExcel] = useState(false);
 
 
   const [filters, setFilters] = useState({
@@ -128,6 +129,51 @@ const FormulariosNecesidades = () => {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleExportExcel = async () => {
+    try {
+      setExportingExcel(true);
+
+      const response = await fetch(
+        "https://dm-back-fn4l.onrender.com/diagnostico/exportar-excel",
+        {
+          method: "GET",
+          headers: {
+            Authorization: AUTH,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("No se pudo descargar el archivo");
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "diagnosticos_operadores.xlsx";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+
+      window.URL.revokeObjectURL(url);
+
+      toast({
+        title: "Excel descargado",
+        description: "El archivo se descargó correctamente",
+      });
+    } catch {
+      toast({
+        title: "Error",
+        description: "No se pudo descargar el Excel",
+        variant: "destructive",
+      });
+    } finally {
+      setExportingExcel(false);
     }
   };
 
@@ -317,13 +363,22 @@ const FormulariosNecesidades = () => {
         {/* Top Actions */}
         <div className="flex flex-col sm:flex-row gap-2">
           <Button
+            variant="outline"
+            onClick={handleExportExcel}
+            disabled={exportingExcel}
+            className="flex items-center gap-2"
+          >
+            <Download className="h-4 w-4" />
+            {exportingExcel ? "Descargando..." : "Descargar Excel"}
+          </Button>
+
+          <Button
             onClick={() => navigate("/cuestionario-operadores")}
             className="flex items-center gap-2"
           >
             <Plus className="h-4 w-4" />
             Llenar formulario
           </Button>
-
         </div>
       </div>
 
