@@ -18,7 +18,8 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { Pencil, Check, Copy, Bot, Trash2, ArrowLeft, Plus, Download, BarChart3 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import NotificationsBell from "@/components/ui/NotificationsBell";
 
 const AUTH = "1803-1989-1803-1989";
 
@@ -30,6 +31,7 @@ type Diagnostico = {
   created_at: string;
   conclucion_final: string | null;
   respuesta_ia: string | null;
+  notif_vista?: boolean;
 };
 
 const formatDate = (date: string) => {
@@ -104,10 +106,23 @@ const FormulariosNecesidades = () => {
 
   const [newConclusion, setNewConclusion] = useState("");
   const [copied, setCopied] = useState(false);
+  const [searchParams] = useSearchParams();
 
   useEffect(() => {
     fetchData();
   }, []);
+
+  useEffect(() => {
+    const apiesFromQuery = searchParams.get("apies") || "";
+
+    setFilters((prev) => {
+      if (prev.apies === apiesFromQuery) return prev;
+      return {
+        ...prev,
+        apies: apiesFromQuery,
+      };
+    });
+  }, [searchParams]);
 
   const fetchData = async () => {
     try {
@@ -361,7 +376,9 @@ const FormulariosNecesidades = () => {
         </div>
 
         {/* Top Actions */}
-        <div className="flex flex-col sm:flex-row gap-2">
+        <div className="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center">
+          <NotificationsBell />
+
           <Button
             variant="outline"
             onClick={handleExportExcel}
@@ -394,23 +411,27 @@ const FormulariosNecesidades = () => {
       <div className="grid grid-cols-1 md:grid-cols-6 gap-4 mb-6">
         <Input
           placeholder="Gestor"
+          value={filters.gestor}
           onChange={(e) =>
             setFilters((f) => ({ ...f, gestor: e.target.value }))
           }
         />
         <Input
           placeholder="APIES"
+          value={filters.apies}
           onChange={(e) =>
             setFilters((f) => ({ ...f, apies: e.target.value }))
           }
         />
         <Input
           type="date"
+          value={filters.date}
           onChange={(e) =>
             setFilters((f) => ({ ...f, date: e.target.value }))
           }
         />
         <Select
+          value={filters.tipo_estacion || undefined}
           onValueChange={(v) =>
             setFilters((f) => ({ ...f, tipo_estacion: v }))
           }
@@ -424,7 +445,10 @@ const FormulariosNecesidades = () => {
           </SelectContent>
         </Select>
 
-        <Select onValueChange={(v: any) => setDateOrder(v)}>
+        <Select
+          value={dateOrder}
+          onValueChange={(v: "newest" | "oldest") => setDateOrder(v)}
+        >
           <SelectTrigger>
             <SelectValue placeholder="Orden fecha" />
           </SelectTrigger>

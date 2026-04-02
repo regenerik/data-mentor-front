@@ -18,6 +18,7 @@ import {
   ChevronDown,
 } from "lucide-react";
 import { authActions } from "../store";
+import NotificationsBell from "@/components/ui/NotificationsBell";
 
 /* ─── Parallax hook ─────────────────────────────────────────── */
 function useParallax() {
@@ -254,6 +255,7 @@ export default function Dashboard() {
               <ClipboardList className="db-nav-btn-icon" />
               <span>Formularios</span>
             </button>
+            {can("recommendations_form") && <NotificationsBell />}
             <button className="db-nav-btn db-nav-btn-danger" onClick={handlerLogOut}>
               <LogOut className="db-nav-btn-icon" />
               <span>Salir</span>

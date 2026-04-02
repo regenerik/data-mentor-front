@@ -35,7 +35,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 const AUTH = "1803-1989-1803-1989";
 const BACKEND_URL = "https://dm-back-fn4l.onrender.com";
 
-const PIE_COLORS = ["#111827", "#2563eb", "#16a34a", "#f59e0b", "#dc2626", "#7c3aed", "#0f766e", "#9333ea"];
+const PIE_COLORS = ["#f8fafg", "#2563eb", "#16a34a", "#f59e0b", "#dc2626", "#7c3aed", "#0f766e", "#9333ea"];
 const LINE_COLORS = {
     seguridad: "#f8fafc",
     experiencia: "#2563eb",
