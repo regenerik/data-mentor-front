@@ -28,6 +28,7 @@ import Necesidades from "./pages/Necesidades.jsx"
 import FormulariosNecesidades from "./pages/FormulariosNecesidades.tsx"
 import CuestionarioOperadores from "./pages/CuestionarioOperadores.tsx";
 import EditarCuestionario from "./pages/EditarCuestionario.tsx";
+import DiagnosticosKPIDashboard from "./pages/DiagnosticosKPIDashboard.tsx";
 
 const queryClient = new QueryClient();
 
@@ -197,6 +198,14 @@ const App = () => (
             element={
               <ProtectedRoute>
                 <EditarCuestionario />
+              </ProtectedRoute>
+            }
+          />
+                    <Route
+            path="/kpis-forms"
+            element={
+              <ProtectedRoute>
+                <DiagnosticosKPIDashboard />
               </ProtectedRoute>
             }
           />

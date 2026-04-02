@@ -16,7 +16,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
-import { Pencil, Check, Copy, Bot, Trash2, ArrowLeft, Plus, Download } from "lucide-react";
+import { Pencil, Check, Copy, Bot, Trash2, ArrowLeft, Plus, Download, BarChart3 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 
@@ -371,7 +371,14 @@ const FormulariosNecesidades = () => {
             <Download className="h-4 w-4" />
             {exportingExcel ? "Descargando..." : "Descargar Excel"}
           </Button>
-
+          <Button
+            variant="outline"
+            onClick={() => navigate("/kpis-forms")}
+            className="flex items-center gap-2"
+          >
+            <BarChart3 className="h-4 w-4" />
+            Ver dashboard KPI
+          </Button>
           <Button
             onClick={() => navigate("/cuestionario-operadores")}
             className="flex items-center gap-2"
@@ -379,6 +386,7 @@ const FormulariosNecesidades = () => {
             <Plus className="h-4 w-4" />
             Llenar formulario
           </Button>
+
         </div>
       </div>
 
