@@ -57,38 +57,45 @@ export default function Metrics() {
   useTrackSectorEntry("admin_metrics");
 
   const fetchMetrics = async () => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      setError("No hay token disponible.");
-      setLoading(false);
-      return;
+  const token = localStorage.getItem("token");
+  if (!token) {
+    setError("No hay token disponible.");
+    setLoading(false);
+    return;
+  }
+
+  try {
+    setLoading(true);
+    setError("");
+
+    const response = await fetch(`${BASE_URL}/metrics/summary`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    const result = await response.json().catch(() => ({}));
+
+    console.log("STATUS metrics:", response.status);
+    console.log("BODY metrics:", result);
+
+    if (!response.ok) {
+      throw new Error(
+        result?.error ||
+        result?.message ||
+        `Error HTTP ${response.status}`
+      );
     }
 
-    try {
-      setLoading(true);
-      setError("");
-
-      const response = await fetch(`${BASE_URL}/metrics/summary`, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(result?.error || "No se pudieron cargar las métricas.");
-      }
-
-      setData(result);
-    } catch (err: any) {
-      console.error("Error fetching metrics:", err);
-      setError(err.message || "Error al cargar métricas.");
-    } finally {
-      setLoading(false);
-    }
-  };
+    setData(result);
+  } catch (err: any) {
+    console.error("Error fetching metrics:", err);
+    setError(err.message || "Error al cargar métricas.");
+  } finally {
+    setLoading(false);
+  }
+};
 
   useEffect(() => {
     fetchMetrics();

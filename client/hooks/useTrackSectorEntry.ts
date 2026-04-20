@@ -4,6 +4,7 @@ const BASE_URL = "https://dm-back-fn4l.onrender.com";
 
 export function useTrackSectorEntry(sectorKey: string) {
   useEffect(() => {
+    console.log(`Tracking entry for sector: ${sectorKey}`);
     const token = localStorage.getItem("token");
     if (!token || !sectorKey) return;
 
