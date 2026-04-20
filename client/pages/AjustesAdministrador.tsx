@@ -34,7 +34,7 @@ import {
   CheckCircle2,
   XCircle,
   AlertTriangle,
-  Bug,
+  BarChart3,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -46,9 +46,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { authActions } from "../store";
-import Reports from "./Reports.tsx";
-import ErroresReportados from "./ErroresReportados.tsx";
-import Instructions from "./Instructions.tsx";
+import Metrics from "@/components/ui/Metrics.tsx";
 import Data from "./Data.tsx";
 
 interface User {
@@ -762,18 +760,12 @@ export default function AjustesAdministrador() {
                 <Users className="h-4 w-4" />
                 Usuarios
               </TabsTrigger>
-              <TabsTrigger value="reports" className="flex items-center gap-2 flex-grow sm:flex-auto min-w-[120px]">
-                <Settings className="h-4 w-4" />
-                Reportes
+
+              <TabsTrigger value="metrics" className="flex items-center gap-2 flex-grow sm:flex-auto min-w-[120px]">
+                <BarChart3 className="h-4 w-4" />
+                Métricas
               </TabsTrigger>
-              <TabsTrigger value="reported_errors" className="flex items-center gap-2 flex-grow sm:flex-auto min-w-[120px]">
-                <Bug className="h-4 w-4" />
-                Errores reportados
-              </TabsTrigger>
-              <TabsTrigger value="instructions" className="flex items-center gap-2 flex-grow sm:flex-auto min-w-[120px]">
-                <Settings className="h-4 w-4" />
-                Instrucciones IA
-              </TabsTrigger>
+
               <TabsTrigger value="data" className="flex items-center gap-2 flex-grow sm:flex-auto min-w-[120px]">
                 <Database className="h-4 w-4" />
                 Datos
@@ -985,19 +977,9 @@ export default function AjustesAdministrador() {
             </div>
           </TabsContent>
 
-          {/* Reports Content */}
-          <TabsContent value="reports" className="space-y-6">
-            <Reports />
-          </TabsContent>
-
-          {/* Reported Errors Content */}
-          <TabsContent value="reported_errors" className="space-y-6">
-            <ErroresReportados />
-          </TabsContent>
-
-          {/* Instructions Content */}
-          <TabsContent value="instructions" className="space-y-6">
-            <Instructions />
+          {/* Metrics Content */}
+          <TabsContent value="metrics" className="space-y-6">
+            <Metrics />
           </TabsContent>
 
           {/* New Data Content Tab */}

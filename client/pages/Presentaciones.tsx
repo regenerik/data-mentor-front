@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { FilePlus, ArrowLeft, Bot, Loader2, X } from "lucide-react"; // Importamos el ícono de cruz
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-
+import { useTrackSectorEntry } from "@/hooks/useTrackSectorEntry";
 
 // Configuración de Cloudinary
 const CLOUDINARY_UPLOAD_PRESET = "yu1h90st"; // Reemplaza con tu preset de carga
@@ -15,6 +15,7 @@ const CLOUDINARY_CLOUD_NAME = "drlqmol4c"; // Reemplaza con tu nombre de nube
 const BACKEND_API_URL = "https://dm-back-fn4l.onrender.com/create-gamma"; // URL del backend, ajusta si es necesario
 // const BACKEND_API_URL = "http://localhost:5000/create-gamma"
 export default function Presentaciones() {
+    useTrackSectorEntry("presentations");
     const persistedEmail = localStorage.getItem("email") || "";
 
     const [email, setEmail] = useState<string>(persistedEmail);

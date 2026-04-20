@@ -45,7 +45,10 @@ import {
 } from "@/components/ui/accordion";
 import ReactMarkdown from 'react-markdown';
 import mammoth from 'mammoth';
+// para metrics...
+import { useTrackSectorEntry } from "@/hooks/useTrackSectorEntry";
 
+//----------------
 interface Course {
   id: string;
   title: string;
@@ -152,6 +155,7 @@ type PredefinedSelections = {
 };
 
 export default function ChatDataMentorCursos() {
+  useTrackSectorEntry("course_creator");
   const navigate = useNavigate();
   const [messages, setMessages] = useState<Message[]>([
     {

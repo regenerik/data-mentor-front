@@ -20,7 +20,7 @@ import { Pencil, Check, Copy, Bot, Trash2, ArrowLeft, Plus, Download, BarChart3 
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import NotificationsBell from "@/components/ui/NotificationsBell";
-
+import { useTrackSectorEntry } from "@/hooks/useTrackSectorEntry";
 const AUTH = "1803-1989-1803-1989";
 
 type Diagnostico = {
@@ -82,6 +82,7 @@ const renderIAFormatted = (text: string) => {
 };
 
 const FormulariosNecesidades = () => {
+  useTrackSectorEntry("recommendations_form");
   const { toast } = useToast();
   const [data, setData] = useState<Diagnostico[]>([]);
   const [loading, setLoading] = useState(true);

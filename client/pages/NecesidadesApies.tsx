@@ -30,8 +30,13 @@ interface FilterState {
   min_caracteres: string;
   sentimiento: string;
 }
+// para metrics...
+import { useTrackSectorEntry } from "@/hooks/useTrackSectorEntry";
+//----------------
 
 export default function NecesidadesApies() {
+
+  useTrackSectorEntry("needs_apies");
   const navigate = useNavigate();
   const [filters, setFilters] = useState<FilterState>({
     fecha_desde: "",

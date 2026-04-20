@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { FilePlus, Download, UploadCloud, X, Loader2, ListTodo , ArrowLeft, Bot} from "lucide-react";
-
+import { useTrackSectorEntry } from "@/hooks/useTrackSectorEntry";
 // Types
 type JobListItem = { job_description_id: number; titulo: string };
 type JobListResponse = { ok: boolean; list_jobs: JobListItem[] };
@@ -39,6 +39,7 @@ const AUTH_HEADER = "1803-1989-1803-1989";
 const API_BASE_URL = "https://dm-back-fn4l.onrender.com";
 
 export default function Recursos({ userEmail }: { userEmail?: string }) {
+  useTrackSectorEntry("talent_management");
   const persistedEmail = userEmail || localStorage.getItem("email") || "";
 
   // Form fields

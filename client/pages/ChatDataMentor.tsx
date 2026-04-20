@@ -20,7 +20,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-
+import { useTrackSectorEntry } from "@/hooks/useTrackSectorEntry";
 const API_BASE = "https://dm-back-fn4l.onrender.com";
 
 interface Trace {
@@ -38,6 +38,7 @@ interface Message {
 }
 
 export default function ChatDataMentor() {
+  useTrackSectorEntry("chat_data_mentor");
   const navigate = useNavigate();
   const { toast } = useToast();
   const [messages, setMessages] = useState<Message[]>(() => {
