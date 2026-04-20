@@ -1,30 +1,44 @@
 import { useEffect } from "react";
+import { useLocation } from "react-router-dom";
 
 const BASE_URL = "https://dm-back-fn4l.onrender.com";
 
 export function useTrackSectorEntry(sectorKey: string) {
+  const location = useLocation();
+
   useEffect(() => {
-    console.log(`Tracking entry for sector: ${sectorKey}`);
     const token = localStorage.getItem("token");
     if (!token || !sectorKey) return;
 
-    const visitKey = `metric:${sectorKey}:${window.location.pathname}`;
-    if (sessionStorage.getItem(visitKey)) return;
+    const run = async () => {
+      try {
+        console.log("Tracking sector:", sectorKey, "path:", location.pathname);
 
-    sessionStorage.setItem(visitKey, "1");
+        const response = await fetch(`${BASE_URL}/metrics/track-sector-entry`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            sector_key: sectorKey,
+            path: location.pathname,
+          }),
+        });
 
-    fetch(`${BASE_URL}/metrics/track-sector-entry`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({
-        sector_key: sectorKey,
-        path: window.location.pathname,
-      }),
-    }).catch((error) => {
-      console.error("Error tracking sector entry:", error);
-    });
-  }, [sectorKey]);
+        const result = await response.json().catch(() => ({}));
+
+        console.log("TRACK status:", response.status);
+        console.log("TRACK body:", result);
+
+        if (!response.ok) {
+          console.error("Tracking failed:", result);
+        }
+      } catch (error) {
+        console.error("Error tracking sector entry:", error);
+      }
+    };
+
+    run();
+  }, [sectorKey, location.pathname]);
 }
