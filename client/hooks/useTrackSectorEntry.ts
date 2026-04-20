@@ -1,17 +1,13 @@
 import { useEffect } from "react";
-import { useLocation } from "react-router-dom";
 
 const BASE_URL = "https://dm-back-fn4l.onrender.com";
 
 export function useTrackSectorEntry(sectorKey: string) {
-  const location = useLocation();
-
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token || !sectorKey) return;
 
-    // evita doble conteo por StrictMode en desarrollo
-    const visitKey = `metric:${sectorKey}:${location.key}`;
+    const visitKey = `metric:${sectorKey}:${window.location.pathname}`;
     if (sessionStorage.getItem(visitKey)) return;
 
     sessionStorage.setItem(visitKey, "1");
@@ -24,10 +20,10 @@ export function useTrackSectorEntry(sectorKey: string) {
       },
       body: JSON.stringify({
         sector_key: sectorKey,
-        path: location.pathname,
+        path: window.location.pathname,
       }),
     }).catch((error) => {
       console.error("Error tracking sector entry:", error);
     });
-  }, [sectorKey, location.key, location.pathname]);
+  }, [sectorKey]);
 }
