@@ -89,6 +89,7 @@ type KPIResponse = {
         completion_rate_complete: number;
         abanderada: number;
         aca: number;
+        opessa: number;
         with_tienda: number;
         with_boxes: number;
         unique_gestores: number;
@@ -362,6 +363,12 @@ export default function DiagnosticosKPIDashboard() {
                     <KPIStatCard
                         title="ACA"
                         value={String(data.summary.aca)}
+                        subtitle="Cantidad histórica"
+                        icon={<Store className="h-5 w-5" />}
+                    />
+                    <KPIStatCard
+                        title="OPESSA"
+                        value={String(data.summary.opessa)}
                         subtitle="Cantidad histórica"
                         icon={<Store className="h-5 w-5" />}
                     />

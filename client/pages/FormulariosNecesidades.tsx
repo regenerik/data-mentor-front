@@ -27,7 +27,7 @@ type Diagnostico = {
   id: number;
   apies: string;
   gestor_asociado: string;
-  tipo_estacion: "Abanderada" | "ACA";
+  tipo_estacion: "Abanderada" | "ACA" | "OPESSA";
   created_at: string;
   conclucion_final: string | null;
   respuesta_ia: string | null;
@@ -443,6 +443,7 @@ const FormulariosNecesidades = () => {
           <SelectContent>
             <SelectItem value="Abanderada">Abanderada</SelectItem>
             <SelectItem value="ACA">ACA</SelectItem>
+            <SelectItem value="OPESSA">OPESSA</SelectItem>
           </SelectContent>
         </Select>
 

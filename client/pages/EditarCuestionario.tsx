@@ -554,6 +554,7 @@ export default function EditarCuestionario() {
                                     <SelectContent className="bg-[#1e293b] text-white">
                                         <SelectItem value="Abanderada">Abanderada</SelectItem>
                                         <SelectItem value="ACA">ACA</SelectItem>
+                                        <SelectItem value="OPESSA">OPESSA</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>
